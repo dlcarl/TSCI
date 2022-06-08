@@ -1,4 +1,4 @@
-#' Two stage curvature identification with boosting
+#' Two stage curvature identification with random forest
 #'
 #' @param Y the outcome vector.
 #' @param D the treatment vector.
@@ -8,17 +8,13 @@
 #' @param vio_space list or matrix containing the violation space.
 #' @param layer logical, if \code{TRUE} violation space selection is performed.
 #' @param split_prop numeric, proportion of observations used to fit the outcome model.
-#' @param nrounds numeric, hyperparameter of the boosting algorithm. Specifies the number of boosting iterations.
-#' @param eta numeric, hyperparameter of the boosting algorithm. Specifies the learning rate.
-#' @param max_depth numeric, hyperparameter of the boosting algorithm. Specifies the maximal depth of each tree.
-#' @param subsample numeric, hyperparameter of the boosting algorithm. Specifies proportion of observations used to fit each tree.
-#' @param colsample_bytree numeric, hyperparameter of the boosting algorithm. Specifies proportion of variables used to fit each tree.
-#' @param early_stopping logical, hyperparameter of the boosting algorithm. If \code{TRUE} early stopping will be applied.
-#' @param nfolds numeric, the number of folds for the k-fold cross validation.
-#' @param l2boost_save logical, specifies if the fitted boosting model should be returned.
+#' @param num_trees numeric, hyperparameter of the random forest algorithm. Specifies the number of trees.
+#' @param mtry numeric, hyperparameter of the random forest algorithm. Specifies the number of variables to possibly split at in each node.
+#' @param max_depth numeric, hyperparameter of the random forest algorithm. Specifies the maximum tree depth. A value of NULL or 0 (the default) corresponds to unlimited depth.
+#' @param min_node_size numeric, hyperparameter of the random forest algorithm. Specifies the minimal node size.
+#' @param forest_save logical, specifies if the fitted random forest model should be returned.
 #' @param str_thol numeric, the minimal value of the threshold of IV strength test.
 #' @param alpha numeric, specifies the desired significance level.
-#' @param xgboost logical, specifies whether xgboost should be used to calculate the hat matrix.
 #' @param alternative_bias_adjustment logical, if \code{TRUE} a slightly
 #' different bias adjustment is used.
 #' @param multi_splitting logical, if \code{TRUE} multi-splitting will be performed.
@@ -69,7 +65,7 @@
 #' \tab \cr
 #' \code{run_OLS} \tab logical, if \code{TRUE} the instrument is weak for all tested non empty violation spaces. \cr
 #' \tab \cr
-#' \code{mse_cv} \tab the cross-validation mean squared error of the first stage.
+#' \code{mse_oob} \tab the out-of-bag mean squared error of the first stage.
 #' }
 #' @export
 #'
@@ -79,53 +75,43 @@
 #' X <- rnorm(n)
 #' D <- Z + 2 * Z^2 + X + rnorm(n)
 #' Y <- D + Z + X + rnorm(n)
-#' tsci_boosting(Y = Y, D = D, Z = Z, X = X)
-tsci_boosting <- function(Y,
-                          D,
-                          Z,
-                          X,
-                          intercept = TRUE,
-                          vio_space = NULL,
-                          layer = TRUE,
-                          split_prop = 2 / 3,
-                          nrounds = NULL,
-                          eta = NULL,
-                          max_depth = NULL,
-                          subsample = NULL,
-                          colsample_bytree = NULL,
-                          early_stopping = NULL,
-                          nfolds = 10,
-                          l2boost_save = TRUE,
-                          str_thol = 20,
-                          alpha = 0.05,
-                          xgboost = TRUE,
-                          alternative_bias_adjustment = FALSE,
-                          multi_splitting = FALSE,
-                          nsplits = NULL,
-                          mult_split_method = "Meinshausen") {
-  # reformat data
+#' tsci_forest(Y = Y, D = D, Z = Z, X = X)
+tsci_forest <- function(Y,
+                        D,
+                        Z,
+                        X,
+                        intercept = TRUE,
+                        vio_space = NULL,
+                        layer = TRUE,
+                        split_prop = 2 / 3,
+                        num_trees = NULL,
+                        mtry = NULL,
+                        max_depth = NULL,
+                        min_node_size = NULL,
+                        forest_save = TRUE,
+                        str_thol = 10,
+                        alpha = 0.05,
+                        alternative_bias_adjustment = FALSE,
+                        multi_splitting = FALSE,
+                        nsplits = NULL,
+                        mult_split_method = "Meinshausen") {
   Y <- as.matrix(Y)
   D <- as.matrix(D)
   Z <- as.matrix(Z)
   X <- as.matrix(X)
-
   # constants
   n <- NROW(X)
-  p <- NCOL(X)
-
-  # define defaults for the hyperparameters
-  if (is.null(nrounds)) nrounds <- 50
-  if (is.null(eta)) eta <- 0.3
-  if (is.null(max_depth)) max_depth <- 6
-  if (is.null(subsample)) subsample <- c(1)
-  if (is.null(colsample_bytree)) colsample_bytree <- c(1)
-  if (is.null(early_stopping)) early_stopping <- TRUE
+  p <- NCOL(X) + NCOL(Z)
+  # default value for hyper-parameters
+  if (is.null(num_trees)) num_trees <- 200
+  if (is.null(mtry)) mtry <- seq(round(p / 3), round(2 * p / 3), by = 1)
+  if (is.null(max_depth)) max_depth <- 0
+  if (is.null(min_node_size)) min_node_size <- c(5, 10, 20)
   if (multi_splitting == TRUE) {
     split_prop <- 0.5
     if (is.null(nsplits)) nsplits <- 50
     if (!(mult_split_method %in% c("Meinshausen", "Chernozhukov"))) {
-      stop("No valid multi-splitting inference method selected.
-           Choose either 'Chernozhukov' or 'Meinshausen'.")
+      stop("No valid multi-splitting inference method selected. Choose either 'Chernozhukov' or 'Meinshausen'.")
     }
   }
 
@@ -175,14 +161,13 @@ tsci_boosting <- function(Y,
   p <- NCOL(W)
   Data <- data.frame(cbind(D, W))
   names(Data) <- c("D", paste("W", seq_len(p), sep = ""))
+
   # grid search
   params_grid <- expand.grid(
-    nrounds = nrounds,
-    eta = eta,
+    num_trees = num_trees,
+    mtry = mtry,
     max_depth = max_depth,
-    subsample = subsample,
-    colsample_bytree = colsample_bytree,
-    early_stopping = early_stopping
+    min_node_size = min_node_size
   )
 
   # split the data into two parts A1 and A2
@@ -193,20 +178,14 @@ tsci_boosting <- function(Y,
   Data_A1 <- Data[A1_ind, ]
   Data_A2 <- Data[-A1_ind, ]
 
-  # perform cross validation to select boosting hyperparameters
-  treeboost_CV <- l2boost_cv(
-    Data_A2 = Data_A2,
-    params_grid = params_grid,
-    nfolds = nfolds,
-    xgboost = xgboost
-  )
-
+  # Hyperparameter selection
+  forest_OOB <- forest_oob(Data_A2 = Data_A2, params_grid = params_grid)
 
   if (multi_splitting == TRUE) {
     # initialize matrices
     Coef_matrix <- sd_matrix <- matrix(NA, nrow = nsplits, ncol = 2 * Q)
     iv_str_matrix <- iv_thol_matrix <- SigmaSqY_matrix <- trace_T_matrix <-
-      explained_iv_matrix <- matrix(NA, nrow = nsplits, ncol = Q)
+      explained_iv_matrix <-matrix(NA, nrow = nsplits, ncol = Q)
     Coef_robust_matrix <- sd_robust_matrix <- matrix(NA, nrow = nsplits, ncol = 4)
     SigmaSqD_matrix <- SigmaSqY_Qmax_matrix <- Qmax_matrix <- q_comp_matrix <-
       q_robust_matrix <- invalidity_matrix <- run_OLS_matrix <- weak_iv_matrix <-
@@ -222,11 +201,10 @@ tsci_boosting <- function(Y,
       Data_A2 <- Data[-A1_ind, ]
 
       # refit model on whole training set A2 and calculate weight matrix for A1
-      treeboost <- get_l2boost_hatmatrix(
+      forest <- get_forest_hatmatrix(
         Data_A1 = Data_A1,
         Data_A2 = Data_A2,
-        params = treeboost_CV$params,
-        xgboost = xgboost
+        params = forest_OOB$params_A2
       )
 
       # Selection of violation space and estimation of treatment effect
@@ -234,14 +212,14 @@ tsci_boosting <- function(Y,
         D,
         Cov_aug,
         A1_ind,
-        weight = treeboost$weight,
+        weight = forest$weight,
         Q = Q,
         rm_ind = rm_ind,
         intercept = intercept,
         layer = layer,
         str_thol = str_thol,
         alpha = alpha,
-        method = "BO",
+        method = "RF",
         alternative_bias_adjustment = alternative_bias_adjustment
       )
 
@@ -291,20 +269,18 @@ tsci_boosting <- function(Y,
     } else if (mult_split_method == "Chernozhukov") {
       sd_vec <- sapply(seq_len(NCOL(Coef_matrix)),
         FUN = function(j) {
-          stats::median(sqrt(sd_matrix[, j]^2 +
-            (Coef_matrix[, j] - stats::median(Coef_matrix[, j]))^2))
+          stats::median(sqrt(sd_matrix[, j]^2 + (Coef_matrix[, j] - stats::median(Coef_matrix[, j]))^2))
         }
       )
       outputs$sd_vec[] <- sd_vec
       sd_robust <- sapply(seq_len(NCOL(Coef_robust_matrix)),
         FUN = function(j) {
           stats::median(sqrt(sd_robust_matrix[, j]^2 +
-            (Coef_robust_matrix[, j] - stats::median(Coef_robust_matrix[, j]))^2))
+                        (Coef_robust_matrix[, j] - stats::median(Coef_robust_matrix[, j]))^2))
         }
       )
       outputs$sd_robust[] <- sd_robust
-      CI_robust <- sapply(seq_len(NCOL(Coef_robust_matrix)),
-        FUN = function(j) {
+      CI_robust <- sapply(seq_len(NCOL(Coef_robust_matrix)),  FUN = function(j) {
           lower <- stats::median(Coef_robust_matrix[, j]) -
             stats::qnorm(1 - alpha / 2) * sd_robust[j]
           upper <- stats::median(Coef_robust_matrix[, j]) +
@@ -312,6 +288,7 @@ tsci_boosting <- function(Y,
           return(c(lower, upper))
         }
       )
+      print(CI_robust)
       outputs$CI_robust[] <- CI_robust
     } else {
       outputs$sd_vec[] <- NA
@@ -334,44 +311,41 @@ tsci_boosting <- function(Y,
     outputs$weak_iv[] <- apply(weak_iv_matrix, 2, stats::median)
   } else {
     # refit model on whole training set A2 and calculate weight matrix for A1
-    treeboost <- get_l2boost_hatmatrix(
+    forest <- get_forest_hatmatrix(
       Data_A1 = Data_A1,
       Data_A2 = Data_A2,
-      params = treeboost_CV$params,
-      xgboost = xgboost
+      params = forest_OOB$params
     )
-
     # Selection of violation space and estimation of treatment effect
     outputs <- tsci_secondstage_selection(Y,
       D,
       Cov_aug,
       A1_ind,
-      weight = treeboost$weight,
+      weight = forest$weight,
       Q = Q,
       rm_ind = rm_ind,
       intercept = intercept,
       layer = layer,
       str_thol = str_thol,
       alpha = alpha,
-      method = "BO",
+      method = "RF",
       alternative_bias_adjustment = alternative_bias_adjustment
     )
   }
 
-
   # Return output
-  if (l2boost_save == TRUE) {
+  if (forest_save == TRUE) {
     outputs <- append(
       outputs,
       list(
-        "mse_cv" = treeboost_CV$MSE_CV_A2,
-        "l2boost" = treeboost$treeboost_A2
+        "mse_oob" = forest_OOB$MSE_OOB_A2,
+        "forest" = forest_OOB$forest_A2
       )
     )
   } else {
     outputs <- append(
       outputs,
-      list("mse_cv" = treeboost_CV$MSE_CV_A2)
+      list("mse_oob" = forest_OOB$MSE_OOB_A2)
     )
   }
 

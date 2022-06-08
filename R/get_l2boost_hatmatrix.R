@@ -5,7 +5,11 @@
 #' @param params a list containing the hyperparameters of the boosting method.
 #' @param xgboost logical, specifies whether xgboost should be used to fit the model.
 #'
-#' @return a list containing the hat matrix and the fitted treatment model.
+#' @return a list containing the following the following components: \tabular{ll}{
+#' \code{weight} \tab the hat matrix. \cr
+#' \tab \cr
+#' \code{treeboost_A2} \tab the fitted boosting model. \cr
+#' }
 #' @export
 #'
 #' @examples
@@ -16,16 +20,16 @@
 #' Data_A1 <- Data[c(1:50), ]
 #' Data_A2 <- Data[-c(1:50), ]
 #' params_xgboost <- list("nrounds" = 10, "eta" = 0.3, "max_depth" = 2, "subsample" = 1,
-#' "colsample_bytree" = 1)
-#' hat_matrix_xgboost <- get_l2boost_hat_matrix(Data_A1 = Data_A1, Data_A2 = Data_A2,
-#' params = params_xgboost, xgboost = TRUE)
+#'   "colsample_bytree" = 1)
+#' hat_matrix_xgboost <- get_l2boost_hatmatrix(Data_A1 = Data_A1, Data_A2 = Data_A2,
+#'   params = params_xgboost, xgboost = TRUE)
 #' params_vanilla <- list("nrounds" = 10, "eta" = 0.3, "max_depth" = 2, "subsample" = 1,
-#' "colsample_bytree" = 1)
-#' hat_matrix_vanilla <- get_l2boost_hat_matrix(Data_A1 = Data_A1, Data_A2 = Data_A2,
-#' params = params_vanilla, xgboost = FALSE)
+#'   "colsample_bytree" = 1)
+#' hat_matrix_vanilla <- get_l2boost_hatmatrix(Data_A1 = Data_A1, Data_A2 = Data_A2,
+#'   params = params_vanilla, xgboost = FALSE)
 #' mean((Data_A1$D - hat_matrix_xgboost$weight %*% Data_A1$D)^2)
 #' mean((Data_A1$D - hat_matrix_vanilla$weight %*% Data_A1$D)^2)
-get_l2boost_hat_matrix <- function(Data_A1,
+get_l2boost_hatmatrix <- function(Data_A1,
                                    Data_A2,
                                    params,
                                    xgboost) {
@@ -58,11 +62,11 @@ get_l2boost_hat_matrix <- function(Data_A1,
   }
 
 
-  l2boost_hat_matrix <- matrix(0, n_A1, n_A1)
+  l2boost_hatmatrix <- matrix(0, n_A1, n_A1)
   f_A2 <- rep(0, n_A2)
   for (iter in seq_len(params$nrounds)) {
     if (xgboost == TRUE) {
-      leafs_iter_A1 <- nodes_A1[, iter]
+      leaves_iter_A1 <- nodes_A1[, iter]
     } else {
       Data_A2$U <- Data_A2$D - f_A2
       # creates a subsample for each tree with number of observations and variables specified by the hyperparameters
@@ -74,17 +78,17 @@ get_l2boost_hat_matrix <- function(Data_A1,
           maxdepth = params$max_depth))
       predictions_U_A2 <- stats::predict(tree_A2, newdata = Data_A2, type = "vector")
       f_A2 <- f_A2 + params$eta * predictions_U_A2
-      leafs_iter_A1 <- stats::predict(tree_A2, newdata = Data_A1, type = "vector")
+      leaves_iter_A1 <- stats::predict(tree_A2, newdata = Data_A1, type = "vector")
     }
 
 
     # calculates the hat matrix
-    tree_hat_matrix <- get_hat_matrix_of_tree(leafs_iter_A1)
-    l2boost_hat_matrix <- l2boost_hat_matrix + params$eta *
-      Rfast::mat.mult(tree_hat_matrix, diag(n_A1) - l2boost_hat_matrix)
+    tree_hatmatrix <- get_tree_hatmatrix(leaves_iter_A1)
+    l2boost_hatmatrix <- l2boost_hatmatrix + params$eta *
+      Rfast::mat.mult(tree_hatmatrix, diag(n_A1) - l2boost_hatmatrix)
   }
   return(list(
-    "weight" = l2boost_hat_matrix,
+    "weight" = l2boost_hatmatrix,
     "treeboost_A2" = l2boost_A2
   ))
 }

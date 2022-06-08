@@ -28,7 +28,7 @@
 #'
 #' @examples
 #' NULL
-tsci_second_stage_stats <- function(D_rep,
+tsci_secondstage_stats <- function(D_rep,
                                     Cov_rep,
                                     weight,
                                     n,

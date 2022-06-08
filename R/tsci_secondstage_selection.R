@@ -82,13 +82,13 @@
 #' Data_A2 <- Data[-c(1:50), ]
 #' params_xgboost <- list("nrounds" = 10, "eta" = 0.3, "max_depth" = 2, "subsample" = 1,
 #' "colsample_bytree" = 1)
-#' hat_matrix_xgboost <- get_l2boost_hat_matrix(Data_A1 = Data_A1, Data_A2 = Data_A2,
+#' hatmatrix_xgboost <- get_l2boost_hatmatrix(Data_A1 = Data_A1, Data_A2 = Data_A2,
 #' params = params_xgboost, xgboost = TRUE)
 #' Cov_aug <- cbind(vio_space, X)
-#' tsci_second_stage_selection(Y = Y, D = D, Cov_aug = Cov_aug, A1_ind = c(1:50),
-#'   weight = hat_matrix_xgboost$weight, Q = Q, rm_ind = rm_ind, intercept = TRUE,
+#' tsci_secondstage_selection(Y = Y, D = D, Cov_aug = Cov_aug, A1_ind = c(1:50),
+#'   weight = hatmatrix_xgboost$weight, Q = Q, rm_ind = rm_ind, intercept = TRUE,
 #'   layer = TRUE, str_thol = 20, alpha = 0.05, method = "BO")
-tsci_second_stage_selection <- function(Y,
+tsci_secondstage_selection <- function(Y,
                                         D,
                                         Cov_aug,
                                         A1_ind,
@@ -169,7 +169,7 @@ tsci_second_stage_selection <- function(Y,
         A[[index]] <- t(diag(n_A1) - weight) %*% P_perp[[index]]
       }
       SigmaSqY[index] <- mean(eps_hat[[index]]^2)
-      stat_outputs <- tsci_second_stage_stats(D_rep,
+      stat_outputs <- tsci_secondstage_stats(D_rep,
                                    Cov_rep,
                                    weight,
                                    n,
@@ -193,7 +193,7 @@ tsci_second_stage_selection <- function(Y,
         A[[index]] <- t(diag(n_A1) - weight) %*% P_perp[[index]]
       }
       SigmaSqY[index] <- mean(eps_hat[[index]]^2)
-      stat_outputs <- tsci_second_stage_stats(D_rep,
+      stat_outputs <- tsci_secondstage_stats(D_rep,
                                    Cov_rep[, -rm_ind[[index]]],
                                    weight,
                                    n,

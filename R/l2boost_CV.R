@@ -6,7 +6,7 @@
 #' @param xgboost logical, specifies whether xgboost should be used to fit the model.
 #'
 #'
-#' @return a list containting the hyperparameter values chosen by cv and the cv mse.
+#' @return a list containing the hyperparameter values chosen by cv and the cv mse.
 #' @export
 #'
 #' @examples
@@ -20,9 +20,9 @@
 #' X <- rnorm(100)
 #' D <- 2 * Z + X + rnorm(100)
 #' Data <- data.frame("D" = D, "Z" = Z, "X" = X)
-#' cv_fit <- l2boost_CV(Data_A2 = Data, params_grid = params_grid, nfolds = 10, xgboost = TRUE)
+#' cv_fit <- l2boost_cv(Data_A2 = Data, params_grid = params_grid, nfolds = 10, xgboost = TRUE)
 #' cv_fit$params_A2
-l2boost_CV <- function(Data_A2,
+l2boost_cv <- function(Data_A2,
                        params_grid,
                        nfolds,
                        xgboost) {

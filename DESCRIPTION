@@ -17,4 +17,6 @@ Imports:
     xgboost,
     rpart,
     Rfast,
-    stats
+    stats,
+    ranger,
+    Matrix

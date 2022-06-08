@@ -8,8 +8,8 @@
 #'
 #' @examples
 #' leaves <- c("A", "B", "B", "C", "B", "B", "A")
-#' get_hat_matrix_of_tree(leaves)
-get_hat_matrix_of_tree <- function(leaves) {
+#' get_tree_hatmatrix(leaves)
+get_tree_hatmatrix <- function(leaves) {
   n <- length(leaves)
   # initialize weight matrix for a single tree
   weight.mat <- matrix(0, n, n)
