@@ -3,4 +3,6 @@
 export(get_hat_matrix_of_tree)
 export(get_l2boost_hat_matrix)
 export(l2boost_CV)
+export(tsci_boosting)
+export(tsci_second_stage_selection)
 export(tsci_second_stage_stats)

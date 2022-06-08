@@ -7,16 +7,16 @@
 l2boost_CV(Data_A2, params_grid, nfolds, xgboost)
 }
 \arguments{
-\item{Data_A2}{A data frame containing the subset of observations used for fitting the treatment model.}
+\item{Data_A2}{a data frame containing the subset of observations used for fitting the treatment model.}
 
-\item{params_grid}{A data frame containing the combination of hyperparameter values.}
+\item{params_grid}{a data frame containing the combination of hyperparameter values.}
 
 \item{nfolds}{numeric, the number of folds for the cross validation.}
 
 \item{xgboost}{logical, specifies whether xgboost should be used to fit the model.}
 }
 \value{
-A list containting the hyperparameter values chosen by cv and the cv mse.
+a list containting the hyperparameter values chosen by cv and the cv mse.
 }
 \description{
 Performs hyperparameter selection by cross-validation.

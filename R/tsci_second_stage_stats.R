@@ -1,14 +1,14 @@
 #' Computes the necessary statistics for TSCI.
 #'
-#' @param D_rep A vector denoting the treatment representation.
-#' @param Cov_rep A matrix denoting the augmented instruments-covariates representation.
-#' @param weight A matrix, the hat matrix obtained in the first stage.
+#' @param D_rep a vector denoting the treatment representation.
+#' @param Cov_rep a matrix denoting the augmented instruments-covariates representation.
+#' @param weight a matrix, the hat matrix obtained in the first stage.
 #' @param n numeric, the full sample size.
-#' @param eps_hat A vector containing the estimated noise of the outcome model.
-#' @param delta_hat A vector containing the estimated noise of the treatment model.
+#' @param eps_hat a vector containing the estimated noise of the outcome model.
+#' @param delta_hat a vector containing the estimated noise of the treatment model.
 #' @param str_thol numeric, the minimal value of the threshold of IV strength test.
 #'
-#' @return A list containing the following the following components: \tabular{ll}{
+#' @return a list containing the following the following components: \tabular{ll}{
 #' \code{sd} \tab the estimated standard error of the treatment parameter estimate. \cr
 #' \tab \cr
 #' \code{D_resid} \tab BLANK. \cr

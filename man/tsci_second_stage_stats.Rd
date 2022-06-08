@@ -15,22 +15,22 @@ tsci_second_stage_stats(
 )
 }
 \arguments{
-\item{D_rep}{A vector denoting the treatment representation.}
+\item{D_rep}{a vector denoting the treatment representation.}
 
-\item{Cov_rep}{A matrix denoting the augmented instruments-covariates representation.}
+\item{Cov_rep}{a matrix denoting the augmented instruments-covariates representation.}
 
-\item{weight}{A matrix, the hat matrix obtained in the first stage.}
+\item{weight}{a matrix, the hat matrix obtained in the first stage.}
 
 \item{n}{numeric, the full sample size.}
 
-\item{eps_hat}{A vector containing the estimated noise of the outcome model.}
+\item{eps_hat}{a vector containing the estimated noise of the outcome model.}
 
-\item{delta_hat}{A vector containing the estimated noise of the treatment model.}
+\item{delta_hat}{a vector containing the estimated noise of the treatment model.}
 
 \item{str_thol}{numeric, the minimal value of the threshold of IV strength test.}
 }
 \value{
-A list containing the following the following components: \tabular{ll}{
+a list containing the following the following components: \tabular{ll}{
 \code{sd} \tab the estimated standard error of the treatment parameter estimate. \cr
 \tab \cr
 \code{D_resid} \tab BLANK. \cr

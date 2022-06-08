@@ -7,16 +7,16 @@
 get_l2boost_hat_matrix(Data_A1, Data_A2, params, xgboost)
 }
 \arguments{
-\item{Data_A1}{A data frame containing the subset of observations used for fitting the outcome model.}
+\item{Data_A1}{a data frame containing the subset of observations used for fitting the outcome model.}
 
-\item{Data_A2}{A data frame containing the subset of observations used for fitting the treatment model.}
+\item{Data_A2}{a data frame containing the subset of observations used for fitting the treatment model.}
 
-\item{params}{A list containing the hyperparameters of the boosting method.}
+\item{params}{a list containing the hyperparameters of the boosting method.}
 
 \item{xgboost}{logical, specifies whether xgboost should be used to fit the model.}
 }
 \value{
-A list containing the hat matrix and the fitted treatment model.
+a list containing the hat matrix and the fitted treatment model.
 }
 \description{
 Calculates the hat matrix of the boosting fit.

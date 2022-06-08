@@ -1,12 +1,12 @@
 #' Performs hyperparameter selection by cross-validation.
 #'
-#' @param Data_A2 A data frame containing the subset of observations used for fitting the treatment model.
-#' @param params_grid A data frame containing the combination of hyperparameter values.
+#' @param Data_A2 a data frame containing the subset of observations used for fitting the treatment model.
+#' @param params_grid a data frame containing the combination of hyperparameter values.
 #' @param nfolds numeric, the number of folds for the cross validation.
 #' @param xgboost logical, specifies whether xgboost should be used to fit the model.
 #'
 #'
-#' @return A list containting the hyperparameter values chosen by cv and the cv mse.
+#' @return a list containting the hyperparameter values chosen by cv and the cv mse.
 #' @export
 #'
 #' @examples

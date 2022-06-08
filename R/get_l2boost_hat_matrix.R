@@ -1,11 +1,11 @@
 #' Calculates the hat matrix of the boosting fit.
 #'
-#' @param Data_A1 A data frame containing the subset of observations used for fitting the outcome model.
-#' @param Data_A2 A data frame containing the subset of observations used for fitting the treatment model.
-#' @param params A list containing the hyperparameters of the boosting method.
+#' @param Data_A1 a data frame containing the subset of observations used for fitting the outcome model.
+#' @param Data_A2 a data frame containing the subset of observations used for fitting the treatment model.
+#' @param params a list containing the hyperparameters of the boosting method.
 #' @param xgboost logical, specifies whether xgboost should be used to fit the model.
 #'
-#' @return A list containing the hat matrix and the fitted treatment model.
+#' @return a list containing the hat matrix and the fitted treatment model.
 #' @export
 #'
 #' @examples
