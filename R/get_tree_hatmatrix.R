@@ -4,7 +4,7 @@
 #' Entries with the same values are assumed to belong in the same leaf.
 #'
 #' @return A n x n continuous vector. Hat matrix of the tree.
-#' @export
+#' @noRd
 #'
 #' @examples
 #' leaves <- c("A", "B", "B", "C", "B", "B", "A")

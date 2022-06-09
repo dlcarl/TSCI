@@ -1,12 +1,12 @@
-#' Two stage curvature identification with boosting
+#' Two Stage Curvature Identification with Boosting.
+#' @description This function implements Two Stage Curvature Identification with the Boosting. It tests the IV strength and chooses the best violation form, and also constructs the confidence interval for the treatment effect with the selected violation form.
 #'
-#' @param Y the outcome vector.
-#' @param D the treatment vector.
-#' @param Z the instrumental variable vector.
-#' @param X the baseline covariates.
-#' @param intercept logical, if \code{TRUE} an intercept is included in the outcome model.
-#' @param vio_space list or matrix containing the violation space.
-#' @param layer logical, if \code{TRUE} violation space selection is performed.
+#' @param Y outcome with dimension n by 1
+#' @param D treatment with dimension n by 1
+#' @param Z instrument variable with dimension n by 1
+#' @param X baseline covariates with dimension n by p
+#' @param vio.space a matrix or a list. If a matrix, then each column corresponds to a violation form of Z; If a list, then each element corresponds to a violation form of Z and must be a matrix of n rows, e.g. (Z^3,Z^2); If NULL, then default by the n by 3 matrix (Z^3, Z^2, Z). Violation form selection will be performed according to provided violation forms, for example, null violation space vs Z vs (Z^2, Z) vs (Z^3, Z^2, Z) in the default case
+#' @param intercept logic, including the intercept or not in the outcome model, default by TRUE
 #' @param split_prop numeric, proportion of observations used to fit the outcome model.
 #' @param nrounds numeric, hyperparameter of the boosting algorithm. Specifies the number of boosting iterations.
 #' @param eta numeric, hyperparameter of the boosting algorithm. Specifies the learning rate.
@@ -16,77 +16,94 @@
 #' @param early_stopping logical, hyperparameter of the boosting algorithm. If \code{TRUE} early stopping will be applied.
 #' @param nfolds numeric, the number of folds for the k-fold cross validation.
 #' @param l2boost_save logical, specifies if the fitted boosting model should be returned.
-#' @param str_thol numeric, the minimal value of the threshold of IV strength test.
-#' @param alpha numeric, specifies the desired significance level.
-#' @param xgboost logical, specifies whether xgboost should be used to calculate the hat matrix.
-#' @param alternative_bias_adjustment logical, if \code{TRUE} a slightly
-#' different bias adjustment is used.
+#' @param str.thol minimal value of the threshold of IV strength test, default by 10
+#' @param alpha the significance level, default by 0.05
 #' @param multi_splitting logical, if \code{TRUE} multi-splitting will be performed.
 #' @param nsplits numeric, number of times the data will be split.
 #' @param mult_split_method method to for inference if multi-splitting is performed. Either 'Chernozhukov' or 'Meinshausen'.
+#' @param ncores numeric, the number of cores used if multi_splitting is \code{TRUE}. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.
 #'
-#' @return a list containing at least the following the following components: \tabular{ll}{
-#' \code{Coef_vec} \tab a named vector containing the coefficients for all tested violation spaces. \cr
-#' \tab \cr
-#' \code{sd_vec} \tab a named vector containing the standard errors of the coefficients
-#' for all tested violation spaces. \cr
-#' \tab \cr
-#' \code{Coef_robust} \tab a named vector containing the coefficients of the selected violation space. \cr
-#' \tab \cr
-#' \code{sd_robust} \tab a named vector containing the standard errors of the coefficients
-#' of the selected violation space. \cr
-#' \tab \cr
-#' \code{CI_robust} \tab a named vector containing the confidence intervals of the coefficients
-#' of the selected violation space. \cr
-#' \tab \cr
-#' \code{iv_str} \tab a named vector containing the estimated instrumental variable strengths
-#' of all tested violation spaces. \cr
-#' \tab \cr
-#' \code{iv_str} \tab a named vector containing the estimated necessary instrumental variable strengths
-#' of all tested violation spaces. \cr
-#' \code{SigmaSqD} \tab the estimated variance of the treatment model. \cr
-#' \tab \cr
-#' \code{SigmaSqY} \tab a named vector containing the estimated variances of the treatment model
-#' of all tested violation spaces. \cr
-#' \tab \cr
-#' \code{SigmaSqY.Qmax} \tab the estimated variance of the treatment model
-#' of the largest considered violation space. \cr
-#' \tab \cr
-#' \code{trace_T} \tab the trace of the M matrix. \cr
-#' \tab \cr
-#' \code{explained_iv} \tab a named vector containing the numerators of the estimated standard errors of the coefficients
-#' of the selected violation space. \cr
-#' \tab \cr
-#' \code{Qmax} \tab the number of the largest considered violation space \cr
-#' \tab \cr
-#' \code{q_comp} \tab the number of the selected violation space \cr
-#' \tab \cr
-#' \code{q_robust} \tab the number of the selected violation space by the robust approach. \cr
-#' \tab \cr
-#' \code{invalidity} \tab logical, if \code{TRUE} the hypothesis of a valid instrument is rejected. \cr
-#' \tab \cr
-#' \code{run_OLS} \tab logical, if \code{TRUE} the instrument is weak even if it's assumed to be valid. \cr
-#' \tab \cr
-#' \code{run_OLS} \tab logical, if \code{TRUE} the instrument is weak for all tested non empty violation spaces. \cr
-#' \tab \cr
-#' \code{mse_cv} \tab the cross-validation mean squared error of the first stage.
+#' @return
+#' \describe{
+#'     \item{\code{Coef_all}}{a series of point estimators of treatment effect corresponding to different violation spaces and the OLS.}
+#'     \item{\code{sd_all}}{standard errors of Coef_all.}
+#'     \item{\code{CI_all}}{confidence intervals for the treatment effect corresponding to different violation spaces and the OLS.}
+#'     \item{\code{Coef_robust}}{the point estimators corresponding to the violation space selected by the robust comparison.}
+#'     \item{\code{sd_robust}}{the standard errors of Coef_robust.}
+#'     \item{\code{CI_robust}}{confidence intervals for the treatment effect with the violation space selected by the robust comparison.}
+#'     \item{\code{iv_str}}{IV strength corresponding to different violation spaces.}
+#'     \item{\code{iv_thol}}{the threshold of IV strength test corresponding to different violation spaces.}
+#'     \item{\code{Qmax}}{the index of largest violation space selected by IV strength test. If -1, the IV strength test fails for null violation space and run OLS. If 0, the IV Strength test fails for the null violation space and run TSRF only for null violation space. In other cases, violation space selection is performed.}
+#'     \item{\code{q_hat}}{the index of estimated violation space corresponding to Qmax.}
+#'     \item{\code{invalidity}}{invalidity of TSLS. If TRUE, the IV is invalid; Otherwise, the IV is valid.}
+#'     \item{\code{treatment_model}}{the fitted treatment model. Will only be returned if \code{l2boost_save} is \code{TRUE} and \code{multi_splitting} is \code{FALSE}.}
 #' }
 #' @export
 #'
 #' @examples
-#' n <- 100
-#' Z <- rnorm(n)
-#' X <- rnorm(n)
-#' D <- Z + 2 * Z^2 + X + rnorm(n)
-#' Y <- D + Z + X + rnorm(n)
-#' tsci_boosting(Y = Y, D = D, Z = Z, X = X)
+#' \dontrun{
+#' # dimension
+#' p = 10
+#' # sample size
+#' n = 1000
+#' # interaction value
+#' inter.val = 1
+#' # the IV strength
+#' a = 1
+#' # violation strength
+#' tau = 1
+#' f = function(x){a*(1*sin(2*pi*x) + 1.5*cos(2*pi*x))}
+#' rho1=0.5
+#' # function to generate covariance matrix
+#' A1gen=function(rho,p){
+#'   A1=matrix(0,p,p)
+#'   for(i in 1:p){
+#'     for(j in 1:p){
+#'       A1[i,j]=rho^(abs(i-j))
+#'     }
+#'   }
+#'   A1
+#' }
+#' Cov=(A1gen(rho1,p+1))
+#' mu=rep(0,p+1)
+#' # true effect
+#' beta=1
+#' alpha=as.matrix(rep(-0.3,p))
+#' gamma=as.matrix(rep(0.2,p))
+#' inter=as.matrix(c(rep(inter.val,5),rep(0,p-5)))
+#'
+#'
+#' # generate the data
+#' mu.error=rep(0,2)
+#' Cov.error=matrix(c(1,0.5,0.5,1),2,2)
+#' Error=mvrnorm(n, mu.error, Cov.error)
+#' W.original=mvrnorm(n, mu, Cov)
+#' W=pnorm(W.original)
+#' # instrument variable
+#' Z=W[,1]
+#' # baseline covariates
+#' X=W[,-1]
+#' # generate the treatment variable D
+#' D=f(Z)+X%*%alpha+Z*X%*%inter+Error[,1]
+#' # generate the outcome variable Y
+#' Y=D*beta+tau*Z+X%*%gamma+Error[,2]
+#'
+#'
+#' # Two Stage Random Forest
+#' output.BO = tsci_boosting(Y,D,Z,X)
+#' # point estimates
+#' output.BO$Coef_robust
+#' # standard errors
+#' output.BO$sd_robust
+#' # confidence intervals
+#' output.BO$CI_robust
+#' }
 tsci_boosting <- function(Y,
                           D,
                           Z,
                           X,
-                          intercept = TRUE,
                           vio_space = NULL,
-                          layer = TRUE,
+                          intercept = TRUE,
                           split_prop = 2 / 3,
                           nrounds = NULL,
                           eta = NULL,
@@ -98,20 +115,17 @@ tsci_boosting <- function(Y,
                           l2boost_save = TRUE,
                           str_thol = 20,
                           alpha = 0.05,
-                          xgboost = TRUE,
-                          alternative_bias_adjustment = FALSE,
                           multi_splitting = FALSE,
                           nsplits = NULL,
-                          mult_split_method = "Meinshausen") {
-  # reformat data
-  Y <- as.matrix(Y)
-  D <- as.matrix(D)
-  Z <- as.matrix(Z)
-  X <- as.matrix(X)
-
-  # constants
-  n <- NROW(X)
-  p <- NCOL(X)
+                          mult_split_method = "Meinshausen",
+                          ncores = 1) {
+  if (!is.null(vio_space)) {
+    if (class(vio_space)[1] != "matrix" & class(vio_space)[1] != "list") {
+      stop("The violation space must be input as matrix or list")
+    }
+  }
+  Y = as.matrix(Y); D = as.matrix(D); Z = as.matrix(Z); X = as.matrix(X);
+  n = nrow(X); p = ncol(X)
 
   # define defaults for the hyperparameters
   if (is.null(nrounds)) nrounds <- 50
@@ -128,53 +142,6 @@ tsci_boosting <- function(Y,
            Choose either 'Chernozhukov' or 'Meinshausen'.")
     }
   }
-
-  # define the vio_space as polynomials if not specified
-  if (is.null(vio_space)) {
-    Q <- 4
-    vio_space <- matrix(NA, n, 0)
-    for (q in 1:(Q - 1)) {
-      vio_space <- cbind(Z^q, vio_space)
-    }
-    # the indices to remove to identify violation space
-    rm_ind <- rep(list(NA), Q - 1)
-    for (i in 1:(Q - 1)) {
-      rm_ind[[i]] <- 1:(Q - i)
-    }
-  }
-
-  if (!is.null(vio_space)) {
-    if (class(vio_space)[1] == "list") {
-      vio_space <- lapply(vio_space, as.matrix)
-      Q <- length(vio_space) + 1
-      v_len <- sapply(vio_space, dim)[2, ]
-      # the indices to remove to identify violation space
-      rm_ind <- rep(list(NA), Q - 1)
-      for (i in 1:(Q - 1)) {
-        rm_ind[[i]] <- 1:sum(v_len[1:(Q - i)])
-      }
-      # merge the list of violation space to a matrix
-      vio_space <- Reduce(cbind, vio_space)
-    } else if (class(vio_space)[1] == "matrix") {
-      Q <- ncol(vio_space) + 1
-      rm_ind <- rep(list(NA), Q - 1)
-      for (i in 1:(Q - 1)) {
-        rm_ind[[i]] <- 1:(Q - i)
-      }
-    }
-  }
-
-  # define the augmentation of covariates,
-  # which is the combination of violation space and baseline covariates
-  Cov_aug <- cbind(vio_space, X)
-
-  # Treatment model fitting
-  W <- as.matrix(cbind(Z, X))
-  D <- as.matrix(D)
-  n <- NROW(W)
-  p <- NCOL(W)
-  Data <- data.frame(cbind(D, W))
-  names(Data) <- c("D", paste("W", seq_len(p), sep = ""))
   # grid search
   params_grid <- expand.grid(
     nrounds = nrounds,
@@ -185,195 +152,64 @@ tsci_boosting <- function(Y,
     early_stopping = early_stopping
   )
 
+  # Treatment model fitting
+  W <- as.matrix(cbind(Z, X))
+  D <- as.matrix(D)
+  n <- NROW(W)
+  p <- NCOL(W)
+  df_treatment <- data.frame(cbind(D, W))
+  names(df_treatment) <- c("D", paste("W", seq_len(p), sep = ""))
+
   # split the data into two parts A1 and A2
   # use A2 to train and use A1 to predict
   n_A1 <- round(split_prop * n)
   n_A2 <- n - n_A1
   A1_ind <- seq_len(n_A1)
-  Data_A1 <- Data[A1_ind, ]
-  Data_A2 <- Data[-A1_ind, ]
+  df_treatment_A1 <- df_treatment[A1_ind, ]
+  df_treatment_A2 <- df_treatment[-A1_ind, ]
 
   # perform cross validation to select boosting hyperparameters
-  treeboost_CV <- l2boost_cv(
-    Data_A2 = Data_A2,
+  treeboost_CV <- get_l2boost_parameters(
+    df_treatment_A2 = df_treatment_A2,
     params_grid = params_grid,
-    nfolds = nfolds,
-    xgboost = xgboost
+    nfolds = nfolds
   )
 
-
+  # Selection
   if (multi_splitting == TRUE) {
-    # initialize matrices
-    Coef_matrix <- sd_matrix <- matrix(NA, nrow = nsplits, ncol = 2 * Q)
-    iv_str_matrix <- iv_thol_matrix <- SigmaSqY_matrix <- trace_T_matrix <-
-      explained_iv_matrix <- matrix(NA, nrow = nsplits, ncol = Q)
-    Coef_robust_matrix <- sd_robust_matrix <- matrix(NA, nrow = nsplits, ncol = 4)
-    SigmaSqD_matrix <- SigmaSqY_Qmax_matrix <- Qmax_matrix <- q_comp_matrix <-
-      q_robust_matrix <- invalidity_matrix <- run_OLS_matrix <- weak_iv_matrix <-
-      matrix(NA, nrow = nsplits, ncol = 1)
+    outputs <- multi_split(df_treatment = df_treatment,
+                           Y = Y,
+                           D = D,
+                           Z = Z,
+                           X = X,
+                           vio_space = vio_space,
+                           intercept = intercept,
+                           str_thol = str_thol,
+                           alpha = alpha,
+                           params = treeboost_CV$params_A2,
+                           function_hatmatrix = get_l2boost_hatmatrix,
+                           split_prop = split_prop,
+                           nsplits = nsplits,
+                           ncores = ncores,
+                           mult_split_method = mult_split_method)
 
-    for (s in seq_len(nsplits)) {
-      # split the data into two parts A1 and A2
-      # use A2 to train and use A1 to predict
-      n_A1 <- round(split_prop * n)
-      n_A2 <- n - n_A1
-      A1_ind <- sample(seq_len(n), n_A1)
-      Data_A1 <- Data[A1_ind, ]
-      Data_A2 <- Data[-A1_ind, ]
-
-      # refit model on whole training set A2 and calculate weight matrix for A1
-      treeboost <- get_l2boost_hatmatrix(
-        Data_A1 = Data_A1,
-        Data_A2 = Data_A2,
-        params = treeboost_CV$params,
-        xgboost = xgboost
-      )
-
-      # Selection of violation space and estimation of treatment effect
-      outputs <- tsci_secondstage_selection(Y,
-        D,
-        Cov_aug,
-        A1_ind,
-        weight = treeboost$weight,
-        Q = Q,
-        rm_ind = rm_ind,
-        intercept = intercept,
-        layer = layer,
-        str_thol = str_thol,
-        alpha = alpha,
-        method = "BO",
-        alternative_bias_adjustment = alternative_bias_adjustment
-      )
-
-      Coef_matrix[s, ] <- outputs$Coef_vec
-      sd_matrix[s, ] <- outputs$sd_vec
-      Coef_robust_matrix[s, ] <- outputs$Coef_robust
-      sd_robust_matrix[s, ] <- outputs$sd_robust
-      iv_str_matrix[s, ] <- outputs$iv_str
-      iv_thol_matrix[s, ] <- outputs$iv_thol
-      SigmaSqD_matrix[s, ] <- outputs$SigmaSqD
-      SigmaSqY_matrix[s, ] <- outputs$SigmaSqY
-      SigmaSqY_Qmax_matrix[s, ] <- outputs$SigmaSqY_Qmax
-      trace_T_matrix[s, ] <- outputs$trace_T
-      explained_iv_matrix[s, ] <- outputs$explained_iv
-      Qmax_matrix[s, ] <- outputs$Qmax
-      q_comp_matrix[s, ] <- outputs$q_comp
-      q_robust_matrix[s, ] <- outputs$q_robust
-      invalidity_matrix[s, ] <- outputs$invalidity
-      run_OLS_matrix[s, ] <- outputs$run_OLS
-      weak_iv_matrix[s, ] <- outputs$weak_iv
-    }
-    if (mult_split_method == "Meinshausen") {
-      outputs$sd_vec[] <- NA
-      outputs$sd_robust[] <- NA
-      CI_Coef_vec <- sapply(seq_len(NCOL(Coef_matrix)),
-        FUN = function(j) {
-          beta <- Coef_matrix[, j]
-          se <- sd_matrix[, j]
-          lower <- stats::median(beta + -1 * stats::qnorm(1 - alpha / 4) * se)
-          upper <- stats::median(beta + 1 * stats::qnorm(1 - alpha / 4) * se)
-          return(c(lower, upper))
-        }
-      )
-      rownames(CI_Coef_vec) <- c("lower", "upper")
-      colnames(CI_Coef_vec) <- names(outputs$Coef_vec)
-      outputs$CI_Coef_vec <- CI_Coef_vec
-      CI_robust <- sapply(seq_len(NCOL(Coef_robust_matrix)),
-        FUN = function(j) {
-          beta <- Coef_robust_matrix[, j]
-          se <- sd_robust_matrix[, j]
-          lower <- stats::median(beta + -1 * stats::qnorm(1 - alpha / 4) * se)
-          upper <- stats::median(beta + 1 * stats::qnorm(1 - alpha / 4) * se)
-          return(c(lower, upper))
-        }
-      )
-      outputs$CI_robust[] <- CI_robust
-    } else if (mult_split_method == "Chernozhukov") {
-      sd_vec <- sapply(seq_len(NCOL(Coef_matrix)),
-        FUN = function(j) {
-          stats::median(sqrt(sd_matrix[, j]^2 +
-            (Coef_matrix[, j] - stats::median(Coef_matrix[, j]))^2))
-        }
-      )
-      outputs$sd_vec[] <- sd_vec
-      sd_robust <- sapply(seq_len(NCOL(Coef_robust_matrix)),
-        FUN = function(j) {
-          stats::median(sqrt(sd_robust_matrix[, j]^2 +
-            (Coef_robust_matrix[, j] - stats::median(Coef_robust_matrix[, j]))^2))
-        }
-      )
-      outputs$sd_robust[] <- sd_robust
-      CI_robust <- sapply(seq_len(NCOL(Coef_robust_matrix)),
-        FUN = function(j) {
-          lower <- stats::median(Coef_robust_matrix[, j]) -
-            stats::qnorm(1 - alpha / 2) * sd_robust[j]
-          upper <- stats::median(Coef_robust_matrix[, j]) +
-            stats::qnorm(1 - alpha / 2) * sd_robust[j]
-          return(c(lower, upper))
-        }
-      )
-      outputs$CI_robust[] <- CI_robust
-    } else {
-      outputs$sd_vec[] <- NA
-      outputs$sd_robust[] <- NA
-      outputs$CI_robust[] <- NA
-    }
-    outputs$Coef_vec[] <- apply(Coef_matrix, 2, stats::median)
-    outputs$Coef_robust[] <- apply(Coef_robust_matrix, 2, stats::median)
-    outputs$iv_str[] <- apply(iv_str_matrix, 2, stats::median)
-    outputs$iv_thol[] <- apply(iv_thol_matrix, 2, stats::median)
-    outputs$SigmaSqD[] <- apply(SigmaSqD_matrix, 2, stats::median)
-    outputs$SigmaSqY[] <- apply(SigmaSqY_matrix, 2, stats::median)
-    outputs$SigmaSqY_Qmax[] <- apply(SigmaSqY_Qmax_matrix, 2, stats::median)
-    outputs$trace_T[] <- apply(trace_T_matrix, 2, stats::median)
-    outputs$explained_iv[] <- apply(explained_iv_matrix, 2, stats::median)
-    outputs$Qmax[] <- apply(Qmax_matrix, 2, stats::median)
-    outputs$q_comp[] <- apply(q_comp_matrix, 2, stats::median)
-    outputs$q_robust[] <- apply(q_robust_matrix, 2, stats::median)
-    outputs$run_OLS[] <- apply(run_OLS_matrix, 2, stats::median)
-    outputs$weak_iv[] <- apply(weak_iv_matrix, 2, stats::median)
   } else {
-    # refit model on whole training set A2 and calculate weight matrix for A1
-    treeboost <- get_l2boost_hatmatrix(
-      Data_A1 = Data_A1,
-      Data_A2 = Data_A2,
-      params = treeboost_CV$params,
-      xgboost = xgboost
-    )
-
-    # Selection of violation space and estimation of treatment effect
-    outputs <- tsci_secondstage_selection(Y,
-      D,
-      Cov_aug,
-      A1_ind,
-      weight = treeboost$weight,
-      Q = Q,
-      rm_ind = rm_ind,
-      intercept = intercept,
-      layer = layer,
-      str_thol = str_thol,
-      alpha = alpha,
-      method = "BO",
-      alternative_bias_adjustment = alternative_bias_adjustment
-    )
+    outputs <- single_split(df_treatment = df_treatment,
+                            Y = Y,
+                            D = D,
+                            Z = Z,
+                            X = X,
+                            vio_space = vio_space,
+                            A1_ind = A1_ind,
+                            intercept = intercept,
+                            str_thol = str_thol,
+                            alpha = alpha,
+                            params = treeboost_CV$params_A2,
+                            function_hatmatrix = get_l2boost_hatmatrix,
+                            save_model = l2boost_save)
   }
-
 
   # Return output
-  if (l2boost_save == TRUE) {
-    outputs <- append(
-      outputs,
-      list(
-        "mse_cv" = treeboost_CV$MSE_CV_A2,
-        "l2boost" = treeboost$treeboost_A2
-      )
-    )
-  } else {
-    outputs <- append(
-      outputs,
-      list("mse_cv" = treeboost_CV$MSE_CV_A2)
-    )
-  }
-
+    outputs <- append(outputs, list("mse_cv" = treeboost_CV$MSE_CV_A2))
   return(outputs)
 }

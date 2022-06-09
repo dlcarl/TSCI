@@ -60,7 +60,7 @@
 #' \code{run_OLS} \tab logical, if \code{TRUE} the instrument is weak for all tested non empty violation spaces. \cr
 #' \tab \cr
 #' }
-#' @export
+#' @noRd
 #'
 #' @examples
 #' n <- 100
@@ -88,19 +88,19 @@
 #' tsci_secondstage_selection(Y = Y, D = D, Cov_aug = Cov_aug, A1_ind = c(1:50),
 #'   weight = hatmatrix_xgboost$weight, Q = Q, rm_ind = rm_ind, intercept = TRUE,
 #'   layer = TRUE, str_thol = 20, alpha = 0.05, method = "BO")
-tsci_secondstage_selection <- function(Y,
-                                        D,
-                                        Cov_aug,
-                                        A1_ind,
-                                        weight,
-                                        Q,
-                                        rm_ind,
-                                        intercept,
-                                        layer,
-                                        str_thol,
-                                        alpha,
-                                        method,
-                                        alternative_bias_adjustment = FALSE) {
+tsci_secondstage_selection_alternative <- function(Y,
+                                       D,
+                                       Cov_aug,
+                                       A1_ind,
+                                       weight,
+                                       Q,
+                                       rm_ind,
+                                       intercept,
+                                       layer,
+                                       str_thol,
+                                       alpha,
+                                       method,
+                                       alternative_bias_adjustment = FALSE) {
   Y <- as.matrix(Y)
   D <- as.matrix(D)
   Cov_aug <- as.matrix(Cov_aug)
@@ -170,12 +170,12 @@ tsci_secondstage_selection <- function(Y,
       }
       SigmaSqY[index] <- mean(eps_hat[[index]]^2)
       stat_outputs <- tsci_secondstage_stats(D_rep,
-                                   Cov_rep,
-                                   weight,
-                                   n,
-                                   eps_hat[[index]],
-                                   delta_hat,
-                                   str_thol = str_thol)
+                                             Cov_rep,
+                                             weight,
+                                             n,
+                                             eps_hat[[index]],
+                                             delta_hat,
+                                             str_thol = str_thol)
     } else {
       if (intercept) {
         reg_ml <- stats::lm(Y_rep ~ D_rep + Cov_rep[, -rm_ind[[index]]])
@@ -194,12 +194,12 @@ tsci_secondstage_selection <- function(Y,
       }
       SigmaSqY[index] <- mean(eps_hat[[index]]^2)
       stat_outputs <- tsci_secondstage_stats(D_rep,
-                                   Cov_rep[, -rm_ind[[index]]],
-                                   weight,
-                                   n,
-                                   eps_hat[[index]],
-                                   delta_hat,
-                                   str_thol = str_thol)
+                                             Cov_rep[, -rm_ind[[index]]],
+                                             weight,
+                                             n,
+                                             eps_hat[[index]],
+                                             delta_hat,
+                                             str_thol = str_thol)
     }
     # the statistics
     sd_vec[index] <- stat_outputs$sd
@@ -283,8 +283,8 @@ tsci_secondstage_selection <- function(Y,
                                     (D_RSS[q1 + 1]^2) +
                                     sum((weight %*% D_resid[[q2 + 1]])^2 * eps_Qmax^2) /
                                     (D_RSS[q2 + 1]^2) -
-        2 * sum(eps_Qmax^2 * (weight %*% D_resid[[q1 + 1]]) *
-                  (weight %*% D_resid[[q2 + 1]])) / (D_RSS[q1 + 1] * D_RSS[q2 + 1]))
+                                    2 * sum(eps_Qmax^2 * (weight %*% D_resid[[q1 + 1]]) *
+                                              (weight %*% D_resid[[q2 + 1]])) / (D_RSS[q1 + 1] * D_RSS[q2 + 1]))
     }
   }
   # compute beta difference matrix, use Qmax

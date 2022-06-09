@@ -2,16 +2,15 @@
 % Please edit documentation in R/tsci_boosting.R
 \name{tsci_boosting}
 \alias{tsci_boosting}
-\title{Two stage curvature identification with boosting}
+\title{Two Stage Curvature Identification with Boosting.}
 \usage{
 tsci_boosting(
   Y,
   D,
   Z,
   X,
-  intercept = TRUE,
   vio_space = NULL,
-  layer = TRUE,
+  intercept = TRUE,
   split_prop = 2/3,
   nrounds = NULL,
   eta = NULL,
@@ -23,27 +22,22 @@ tsci_boosting(
   l2boost_save = TRUE,
   str_thol = 20,
   alpha = 0.05,
-  xgboost = TRUE,
-  alternative_bias_adjustment = FALSE,
   multi_splitting = FALSE,
   nsplits = NULL,
-  mult_split_method = "Meinshausen"
+  mult_split_method = "Meinshausen",
+  ncores = 1
 )
 }
 \arguments{
-\item{Y}{the outcome vector.}
+\item{Y}{outcome with dimension n by 1}
 
-\item{D}{the treatment vector.}
+\item{D}{treatment with dimension n by 1}
 
-\item{Z}{the instrumental variable vector.}
+\item{Z}{instrument variable with dimension n by 1}
 
-\item{X}{the baseline covariates.}
+\item{X}{baseline covariates with dimension n by p}
 
-\item{intercept}{logical, if \code{TRUE} an intercept is included in the outcome model.}
-
-\item{vio_space}{list or matrix containing the violation space.}
-
-\item{layer}{logical, if \code{TRUE} violation space selection is performed.}
+\item{intercept}{logic, including the intercept or not in the outcome model, default by TRUE}
 
 \item{split_prop}{numeric, proportion of observations used to fit the outcome model.}
 
@@ -63,77 +57,95 @@ tsci_boosting(
 
 \item{l2boost_save}{logical, specifies if the fitted boosting model should be returned.}
 
-\item{str_thol}{numeric, the minimal value of the threshold of IV strength test.}
-
-\item{alpha}{numeric, specifies the desired significance level.}
-
-\item{xgboost}{logical, specifies whether xgboost should be used to calculate the hat matrix.}
-
-\item{alternative_bias_adjustment}{logical, if \code{TRUE} a slightly
-different bias adjustment is used.}
+\item{alpha}{the significance level, default by 0.05}
 
 \item{multi_splitting}{logical, if \code{TRUE} multi-splitting will be performed.}
 
 \item{nsplits}{numeric, number of times the data will be split.}
 
 \item{mult_split_method}{method to for inference if multi-splitting is performed. Either 'Chernozhukov' or 'Meinshausen'.}
+
+\item{ncores}{numeric, the number of cores used if multi_splitting is \code{TRUE}. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.}
+
+\item{vio.space}{a matrix or a list. If a matrix, then each column corresponds to a violation form of Z; If a list, then each element corresponds to a violation form of Z and must be a matrix of n rows, e.g. (Z^3,Z^2); If NULL, then default by the n by 3 matrix (Z^3, Z^2, Z). Violation form selection will be performed according to provided violation forms, for example, null violation space vs Z vs (Z^2, Z) vs (Z^3, Z^2, Z) in the default case}
+
+\item{str.thol}{minimal value of the threshold of IV strength test, default by 10}
 }
 \value{
-a list containing at least the following the following components: \tabular{ll}{
-\code{Coef_vec} \tab a named vector containing the coefficients for all tested violation spaces. \cr
-\tab \cr
-\code{sd_vec} \tab a named vector containing the standard errors of the coefficients
-for all tested violation spaces. \cr
-\tab \cr
-\code{Coef_robust} \tab a named vector containing the coefficients of the selected violation space. \cr
-\tab \cr
-\code{sd_robust} \tab a named vector containing the standard errors of the coefficients
-of the selected violation space. \cr
-\tab \cr
-\code{CI_robust} \tab a named vector containing the confidence intervals of the coefficients
-of the selected violation space. \cr
-\tab \cr
-\code{iv_str} \tab a named vector containing the estimated instrumental variable strengths
-of all tested violation spaces. \cr
-\tab \cr
-\code{iv_str} \tab a named vector containing the estimated necessary instrumental variable strengths
-of all tested violation spaces. \cr
-\code{SigmaSqD} \tab the estimated variance of the treatment model. \cr
-\tab \cr
-\code{SigmaSqY} \tab a named vector containing the estimated variances of the treatment model
-of all tested violation spaces. \cr
-\tab \cr
-\code{SigmaSqY.Qmax} \tab the estimated variance of the treatment model
-of the largest considered violation space. \cr
-\tab \cr
-\code{trace_T} \tab the trace of the M matrix. \cr
-\tab \cr
-\code{explained_iv} \tab a named vector containing the numerators of the estimated standard errors of the coefficients
-of the selected violation space. \cr
-\tab \cr
-\code{Qmax} \tab the number of the largest considered violation space \cr
-\tab \cr
-\code{q_comp} \tab the number of the selected violation space \cr
-\tab \cr
-\code{q_robust} \tab the number of the selected violation space by the robust approach. \cr
-\tab \cr
-\code{invalidity} \tab logical, if \code{TRUE} the hypothesis of a valid instrument is rejected. \cr
-\tab \cr
-\code{run_OLS} \tab logical, if \code{TRUE} the instrument is weak even if it's assumed to be valid. \cr
-\tab \cr
-\code{run_OLS} \tab logical, if \code{TRUE} the instrument is weak for all tested non empty violation spaces. \cr
-\tab \cr
-\code{mse_cv} \tab the cross-validation mean squared error of the first stage.
+\describe{
+\item{\code{Coef_all}}{a series of point estimators of treatment effect corresponding to different violation spaces and the OLS.}
+\item{\code{sd_all}}{standard errors of Coef_all.}
+\item{\code{CI_all}}{confidence intervals for the treatment effect corresponding to different violation spaces and the OLS.}
+\item{\code{Coef_robust}}{the point estimators corresponding to the violation space selected by the robust comparison.}
+\item{\code{sd_robust}}{the standard errors of Coef_robust.}
+\item{\code{CI_robust}}{confidence intervals for the treatment effect with the violation space selected by the robust comparison.}
+\item{\code{iv_str}}{IV strength corresponding to different violation spaces.}
+\item{\code{iv_thol}}{the threshold of IV strength test corresponding to different violation spaces.}
+\item{\code{Qmax}}{the index of largest violation space selected by IV strength test. If -1, the IV strength test fails for null violation space and run OLS. If 0, the IV Strength test fails for the null violation space and run TSRF only for null violation space. In other cases, violation space selection is performed.}
+\item{\code{q_hat}}{the index of estimated violation space corresponding to Qmax.}
+\item{\code{invalidity}}{invalidity of TSLS. If TRUE, the IV is invalid; Otherwise, the IV is valid.}
+\item{\code{treatment_model}}{the fitted treatment model. Will only be returned if \code{l2boost_save} is \code{TRUE} and \code{multi_splitting} is \code{FALSE}.}
 }
 }
 \description{
-Two stage curvature identification with boosting
+This function implements Two Stage Curvature Identification with the Boosting. It tests the IV strength and chooses the best violation form, and also constructs the confidence interval for the treatment effect with the selected violation form.
 }
 \examples{
-n <- 100
-Z <- rnorm(n)
-X <- rnorm(n)
-D <- Z + 2 * Z^2 + X + rnorm(n)
-Y <- D + Z + X + rnorm(n)
-tsci_boosting(Y = Y, D = D, Z = Z, X = X)
+\dontrun{
+# dimension
+p = 10
+# sample size
+n = 100
+# interaction value
+inter.val = 1
+# the IV strength
+a = 1
+# violation strength
+tau = 1
+f = function(x){a*(1*sin(2*pi*x) + 1.5*cos(2*pi*x))}
+rho1=0.5
+# function to generate covariance matrix
+A1gen=function(rho,p){
+  A1=matrix(0,p,p)
+  for(i in 1:p){
+    for(j in 1:p){
+      A1[i,j]=rho^(abs(i-j))
+    }
+  }
+  A1
+}
+Cov=(A1gen(rho1,p+1))
+mu=rep(0,p+1)
+# true effect
+beta=1
+alpha=as.matrix(rep(-0.3,p))
+gamma=as.matrix(rep(0.2,p))
+inter=as.matrix(c(rep(inter.val,5),rep(0,p-5)))
+
+
+# generate the data
+mu.error=rep(0,2)
+Cov.error=matrix(c(1,0.5,0.5,1),2,2)
+Error=mvrnorm(n, mu.error, Cov.error)
+W.original=mvrnorm(n, mu, Cov)
+W=pnorm(W.original)
+# instrument variable
+Z=W[,1]
+# baseline covariates
+X=W[,-1]
+# generate the treatment variable D
+D=f(Z)+X\%*\%alpha+Z*X\%*\%inter+Error[,1]
+# generate the outcome variable Y
+Y=D*beta+tau*Z+X\%*\%gamma+Error[,2]
+
+
+# Two Stage Random Forest
+output.BO = tsci_boosting(Y,D,Z,X)
+# point estimates
+output.BO$Coef_robust
+# standard errors
+output.BO$sd_robust
+# confidence intervals
+output.BO$CI_robust
+}
 }
