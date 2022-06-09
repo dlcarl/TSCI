@@ -48,7 +48,7 @@ multi_split <- function(df_treatment,
   n <- NROW(df_treatment)
   n_A1 <- round(split_prop * n)
   # splits data nsplits times and performs TSCI for each split.
-  list_outputs <- parallel::mclapply(seq_len(n),
+  list_outputs <- parallel::mclapply(seq_len(nsplits),
     FUN = function(iter) {
       A1_ind <- sample(seq_len(n), n_A1)
       single_split(

@@ -20,7 +20,7 @@ tsci_boosting(
   early_stopping = NULL,
   nfolds = 10,
   l2boost_save = TRUE,
-  str_thol = 20,
+  str_thol = 10,
   alpha = 0.05,
   multi_splitting = FALSE,
   nsplits = NULL,
@@ -36,6 +36,8 @@ tsci_boosting(
 \item{Z}{instrument variable with dimension n by 1}
 
 \item{X}{baseline covariates with dimension n by p}
+
+\item{vio_space}{a matrix or a list. If a matrix, then each column corresponds to a violation form of Z; If a list, then each element corresponds to a violation form of Z and must be a matrix of n rows, e.g. (Z^3,Z^2); If NULL, then default by the n by 3 matrix (Z^3, Z^2, Z). Violation form selection will be performed according to provided violation forms, for example, null violation space vs Z vs (Z^2, Z) vs (Z^3, Z^2, Z) in the default case}
 
 \item{intercept}{logic, including the intercept or not in the outcome model, default by TRUE}
 
@@ -57,6 +59,8 @@ tsci_boosting(
 
 \item{l2boost_save}{logical, specifies if the fitted boosting model should be returned.}
 
+\item{str_thol}{minimal value of the threshold of IV strength test, default by 10}
+
 \item{alpha}{the significance level, default by 0.05}
 
 \item{multi_splitting}{logical, if \code{TRUE} multi-splitting will be performed.}
@@ -66,10 +70,6 @@ tsci_boosting(
 \item{mult_split_method}{method to for inference if multi-splitting is performed. Either 'Chernozhukov' or 'Meinshausen'.}
 
 \item{ncores}{numeric, the number of cores used if multi_splitting is \code{TRUE}. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.}
-
-\item{vio.space}{a matrix or a list. If a matrix, then each column corresponds to a violation form of Z; If a list, then each element corresponds to a violation form of Z and must be a matrix of n rows, e.g. (Z^3,Z^2); If NULL, then default by the n by 3 matrix (Z^3, Z^2, Z). Violation form selection will be performed according to provided violation forms, for example, null violation space vs Z vs (Z^2, Z) vs (Z^3, Z^2, Z) in the default case}
-
-\item{str.thol}{minimal value of the threshold of IV strength test, default by 10}
 }
 \value{
 \describe{
@@ -95,7 +95,7 @@ This function implements Two Stage Curvature Identification with the Boosting. I
 # dimension
 p = 10
 # sample size
-n = 100
+n = 1000
 # interaction value
 inter.val = 1
 # the IV strength

@@ -1,5 +1,5 @@
-#' @title Violation Space Selection of Random Forest
-#' @description Select violation space for Random Forest and construct confidence intervals
+#' @title Violation Space Selection
+#' @description Selects violation space. It allows for user specific hat matrices (\code{weight}). Otherwise call \code{tsci_boosting} or \code{tsci_forest}.
 #'
 #' @param Y outcome with dimension n by 1
 #' @param D treatment with dimension n by 1
@@ -13,6 +13,7 @@
 #' @param alpha the significance level
 #'
 #' @return
+#' \describe{
 #'     \item{\code{Coef_all}}{a series of point estimators of treatment effect corresponding to different violation spaces and the OLS}
 #'     \item{\code{sd_all}}{standard errors of Coef_all}
 #'     \item{\code{CI_all}}{confidence intervals for the treatment effect corresponding to different violation spaces and the OLS}
@@ -24,18 +25,27 @@
 #'     \item{\code{Qmax}}{the index of largest violation space selected by IV strength test. If -1, the IV strength test fails for null violation space and run OLS. If 0, the IV Strength test fails for the first violation space and run TSRF only for null violation space. In other cases, violation space selection is performed}
 #'     \item{\code{q_hat}}{the index of estimated violation space corresponding to Qmax}
 #'     \item{\code{invalidity}}{invalidity of TSLS. If TRUE, the IV is invalid; Otherwise, the IV is valid}
-#' @noRd
-#'
+#' }
+#' @export
+#' @examples
+#' n <- 100
+#' Z <- rnorm(n)
+#' X <- rnorm(n)
+#' D <- Z + X + rnorm(n)
+#' Y <- D + X + rnorm(n) # no violation
+#' A1_ind <- seq_len(n)
+#' weight <- X %*% chol(chol2inv(t(X) %*% X)) %*% t(X)
+#' tsci_secondstage(Y = Y, D = D, Z = Z, X = X, A1_ind = A1_ind, weight = weight)
 tsci_secondstage <- function(Y,
                              D,
                              Z,
                              X,
-                             vio_space,
+                             vio_space = NULL,
                              A1_ind,
                              weight,
-                             intercept,
-                             str_thol,
-                             alpha) {
+                             intercept = TRUE,
+                             str_thol = 10,
+                             alpha = 0.05) {
   Y <- as.matrix(Y)
   D <- as.matrix(D)
   Z <- as.matrix(Z)

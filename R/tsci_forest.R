@@ -13,7 +13,7 @@
 #' @param max_depth maximal tree depth in Random Forests, default by 0, which refers to unlimited depth.
 #' @param min_node_size minimal size of each leaf node in Random Forests, default by the set {5, 10, 15}.
 #' @param forest_save logical, specifies if the fitted random forest model should be returned.
-#' @param str.thol minimal value of the threshold of IV strength test, default by 10.
+#' @param str_thol minimal value of the threshold of IV strength test, default by 10.
 #' @param alpha the significance level, default by 0.05.
 #' @param multi_splitting logical, if \code{TRUE} multi-splitting will be performed.
 #' @param nsplits numeric, number of times the data will be split.

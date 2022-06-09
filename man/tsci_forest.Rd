@@ -50,6 +50,8 @@ tsci_forest(
 
 \item{forest_save}{logical, specifies if the fitted random forest model should be returned.}
 
+\item{str_thol}{minimal value of the threshold of IV strength test, default by 10.}
+
 \item{alpha}{the significance level, default by 0.05.}
 
 \item{multi_splitting}{logical, if \code{TRUE} multi-splitting will be performed.}
@@ -59,8 +61,6 @@ tsci_forest(
 \item{mult_split_method}{method to for inference if multi-splitting is performed. Either 'Chernozhukov' or 'Meinshausen'.}
 
 \item{ncores}{numeric, the number of cores used if multi_splitting is \code{TRUE}. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.}
-
-\item{str.thol}{minimal value of the threshold of IV strength test, default by 10.}
 }
 \value{
 \describe{
@@ -86,7 +86,7 @@ This function implements Two Stage Curvature Identification with the Random Fore
 # dimension
 p = 10
 # sample size
-n = 100
+n = 1000
 # interaction value
 inter.val = 1
 # the IV strength

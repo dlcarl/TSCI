@@ -2,3 +2,4 @@
 
 export(tsci_boosting)
 export(tsci_forest)
+export(tsci_secondstage)

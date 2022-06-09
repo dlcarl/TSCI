@@ -5,7 +5,7 @@
 #' @param D treatment with dimension n by 1
 #' @param Z instrument variable with dimension n by 1
 #' @param X baseline covariates with dimension n by p
-#' @param vio.space a matrix or a list. If a matrix, then each column corresponds to a violation form of Z; If a list, then each element corresponds to a violation form of Z and must be a matrix of n rows, e.g. (Z^3,Z^2); If NULL, then default by the n by 3 matrix (Z^3, Z^2, Z). Violation form selection will be performed according to provided violation forms, for example, null violation space vs Z vs (Z^2, Z) vs (Z^3, Z^2, Z) in the default case
+#' @param vio_space a matrix or a list. If a matrix, then each column corresponds to a violation form of Z; If a list, then each element corresponds to a violation form of Z and must be a matrix of n rows, e.g. (Z^3,Z^2); If NULL, then default by the n by 3 matrix (Z^3, Z^2, Z). Violation form selection will be performed according to provided violation forms, for example, null violation space vs Z vs (Z^2, Z) vs (Z^3, Z^2, Z) in the default case
 #' @param intercept logic, including the intercept or not in the outcome model, default by TRUE
 #' @param split_prop numeric, proportion of observations used to fit the outcome model.
 #' @param nrounds numeric, hyperparameter of the boosting algorithm. Specifies the number of boosting iterations.
@@ -16,7 +16,7 @@
 #' @param early_stopping logical, hyperparameter of the boosting algorithm. If \code{TRUE} early stopping will be applied.
 #' @param nfolds numeric, the number of folds for the k-fold cross validation.
 #' @param l2boost_save logical, specifies if the fitted boosting model should be returned.
-#' @param str.thol minimal value of the threshold of IV strength test, default by 10
+#' @param str_thol minimal value of the threshold of IV strength test, default by 10
 #' @param alpha the significance level, default by 0.05
 #' @param multi_splitting logical, if \code{TRUE} multi-splitting will be performed.
 #' @param nsplits numeric, number of times the data will be split.
@@ -113,7 +113,7 @@ tsci_boosting <- function(Y,
                           early_stopping = NULL,
                           nfolds = 10,
                           l2boost_save = TRUE,
-                          str_thol = 20,
+                          str_thol = 10,
                           alpha = 0.05,
                           multi_splitting = FALSE,
                           nsplits = NULL,
