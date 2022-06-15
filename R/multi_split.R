@@ -6,6 +6,7 @@
 #' @param Z instrument variable with dimension n by 1.
 #' @param X baseline covariates with dimension n by p.
 #' @param vio_space vio_space a matrix or a list. If a matrix, then each column corresponds to a violation form of Z; If a list, then each element corresponds to a violation form of Z and must be a matrix of n rows, e.g. (Z^3,Z^2); If NULL, then default by the n by 3 matrix (Z^3, Z^2, Z). Violation form selection will be performed according to provided violation forms, for example, null violation space vs Z vs (Z^2, Z) vs (Z^3, Z^2, Z) in the default case.
+#' @param A1_ind the indices of samples in A1 in the first split.
 #' @param intercept logical, including the intercept or not in the outcome model, default by TRUE.
 #' @param str_thol minimal value of the threshold of IV strength test, default by 10.
 #' @param alpha the significance level, default by 0.05.
@@ -36,6 +37,7 @@ multi_split <- function(df_treatment,
                         Z,
                         X,
                         vio_space,
+                        A1_ind,
                         intercept,
                         str_thol,
                         alpha,
@@ -50,7 +52,9 @@ multi_split <- function(df_treatment,
   # splits data nsplits times and performs TSCI for each split.
   list_outputs <- parallel::mclapply(seq_len(nsplits),
     FUN = function(iter) {
-      A1_ind <- sample(seq_len(n), n_A1)
+      if (iter > 1) {
+        A1_ind <- sample(seq_len(n), n_A1)
+      }
       single_split(
         df_treatment = df_treatment,
         Y = Y,

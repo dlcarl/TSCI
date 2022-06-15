@@ -19,9 +19,8 @@ tsci_forest(
   forest_save = TRUE,
   str_thol = 10,
   alpha = 0.05,
-  multi_splitting = FALSE,
-  nsplits = NULL,
-  mult_split_method = "FWER",
+  nsplits = 1,
+  mult_split_method = NULL,
   ncores = 1
 )
 }
@@ -54,13 +53,11 @@ tsci_forest(
 
 \item{alpha}{the significance level, default by 0.05.}
 
-\item{multi_splitting}{logical, if \code{TRUE} multi-splitting will be performed.}
-
 \item{nsplits}{numeric, number of times the data will be split.}
 
 \item{mult_split_method}{method to for inference if multi-splitting is performed. Either 'DML' or 'FWER'.}
 
-\item{ncores}{numeric, the number of cores used if multi_splitting is \code{TRUE}. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.}
+\item{ncores}{numeric, the number of cores used. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.}
 }
 \value{
 \describe{

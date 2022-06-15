@@ -18,7 +18,6 @@
 #' @param l2boost_save logical, specifies if the fitted boosting model should be returned.
 #' @param str_thol minimal value of the threshold of IV strength test, default by 10
 #' @param alpha the significance level, default by 0.05
-#' @param multi_splitting logical, if \code{TRUE} multi-splitting will be performed.
 #' @param nsplits numeric, number of times the data will be split.
 #' @param mult_split_method method to for inference if multi-splitting is performed. Either 'DML' or 'FWER'.
 #' @param ncores numeric, the number of cores used if multi_splitting is \code{TRUE}. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.
@@ -115,13 +114,17 @@ tsci_boosting <- function(Y,
                           l2boost_save = TRUE,
                           str_thol = 10,
                           alpha = 0.05,
-                          multi_splitting = FALSE,
                           nsplits = NULL,
-                          mult_split_method = "FWER",
+                          mult_split_method = NULL,
                           ncores = 1) {
   if (!is.null(vio_space)) {
     if (class(vio_space)[1] != "matrix" & class(vio_space)[1] != "list") {
       stop("The violation space must be input as matrix or list")
+    }
+  }
+  if (!is.null(mult_split_method)) {
+    if (!(mult_split_method %in% c("FWER", "DML"))) {
+      stop("No valid multi-splitting inference method selected. Choose either 'DML' or 'FWER'.")
     }
   }
   Y = as.matrix(Y); D = as.matrix(D); Z = as.matrix(Z); X = as.matrix(X);
@@ -134,14 +137,9 @@ tsci_boosting <- function(Y,
   if (is.null(subsample)) subsample <- c(1)
   if (is.null(colsample_bytree)) colsample_bytree <- c(1)
   if (is.null(early_stopping)) early_stopping <- TRUE
-  if (multi_splitting == TRUE) {
-    split_prop <- 0.5
-    if (is.null(nsplits)) nsplits <- 50
-    if (!(mult_split_method %in% c("FWER", "DML"))) {
-      stop("No valid multi-splitting inference method selected.
-           Choose either 'DML' or 'FWER'.")
-    }
-  }
+  if (is.null(nsplits)) nsplits <- 1
+  if (is.null(mult_split_method))  mult_split_method <- "DML"
+
   # grid search
   params_grid <- expand.grid(
     nrounds = nrounds,
@@ -176,38 +174,22 @@ tsci_boosting <- function(Y,
   )
 
   # Selection
-  if (multi_splitting == TRUE) {
-    outputs <- multi_split(df_treatment = df_treatment,
-                           Y = Y,
-                           D = D,
-                           Z = Z,
-                           X = X,
-                           vio_space = vio_space,
-                           intercept = intercept,
-                           str_thol = str_thol,
-                           alpha = alpha,
-                           params = treeboost_CV$params_A2,
-                           function_hatmatrix = get_l2boost_hatmatrix,
-                           split_prop = split_prop,
-                           nsplits = nsplits,
-                           ncores = ncores,
-                           mult_split_method = mult_split_method)
-
-  } else {
-    outputs <- single_split(df_treatment = df_treatment,
-                            Y = Y,
-                            D = D,
-                            Z = Z,
-                            X = X,
-                            vio_space = vio_space,
-                            A1_ind = A1_ind,
-                            intercept = intercept,
-                            str_thol = str_thol,
-                            alpha = alpha,
-                            params = treeboost_CV$params_A2,
-                            function_hatmatrix = get_l2boost_hatmatrix,
-                            save_model = l2boost_save)
-  }
+  outputs <- multi_split(df_treatment = df_treatment,
+                         Y = Y,
+                         D = D,
+                         Z = Z,
+                         X = X,
+                         vio_space = vio_space,
+                         A1_ind = A1_ind,
+                         intercept = intercept,
+                         str_thol = str_thol,
+                         alpha = alpha,
+                         params = treeboost_CV$params_A2,
+                         function_hatmatrix = get_l2boost_hatmatrix,
+                         split_prop = split_prop,
+                         nsplits = nsplits,
+                         ncores = ncores,
+                         mult_split_method = mult_split_method)
 
   # Return output
     outputs <- append(outputs, list("mse_cv" = treeboost_CV$MSE_CV_A2))

@@ -22,9 +22,8 @@ tsci_boosting(
   l2boost_save = TRUE,
   str_thol = 10,
   alpha = 0.05,
-  multi_splitting = FALSE,
   nsplits = NULL,
-  mult_split_method = "FWER",
+  mult_split_method = NULL,
   ncores = 1
 )
 }
@@ -62,8 +61,6 @@ tsci_boosting(
 \item{str_thol}{minimal value of the threshold of IV strength test, default by 10}
 
 \item{alpha}{the significance level, default by 0.05}
-
-\item{multi_splitting}{logical, if \code{TRUE} multi-splitting will be performed.}
 
 \item{nsplits}{numeric, number of times the data will be split.}
 

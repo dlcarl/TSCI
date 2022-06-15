@@ -15,10 +15,9 @@
 #' @param forest_save logical, specifies if the fitted random forest model should be returned.
 #' @param str_thol minimal value of the threshold of IV strength test, default by 10.
 #' @param alpha the significance level, default by 0.05.
-#' @param multi_splitting logical, if \code{TRUE} multi-splitting will be performed.
 #' @param nsplits numeric, number of times the data will be split.
 #' @param mult_split_method method to for inference if multi-splitting is performed. Either 'DML' or 'FWER'.
-#' @param ncores numeric, the number of cores used if multi_splitting is \code{TRUE}. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.
+#' @param ncores numeric, the number of cores used. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.
 #'
 #' @return
 #' \describe{
@@ -109,13 +108,17 @@ tsci_forest <- function(Y,
                         forest_save = TRUE,
                         str_thol = 10,
                         alpha = 0.05,
-                        multi_splitting = FALSE,
-                        nsplits = NULL,
-                        mult_split_method = "FWER",
+                        nsplits = 1,
+                        mult_split_method = NULL,
                         ncores = 1) {
   if (!is.null(vio_space)) {
     if (class(vio_space)[1] != "matrix" & class(vio_space)[1] != "list") {
       stop("The violation space must be input as matrix or list")
+    }
+  }
+  if (!is.null(mult_split_method)) {
+    if (!(mult_split_method %in% c("FWER", "DML"))) {
+      stop("No valid multi-splitting inference method selected. Choose either 'DML' or 'FWER'.")
     }
   }
   Y = as.matrix(Y); D = as.matrix(D); Z = as.matrix(Z); X = as.matrix(X);
@@ -126,13 +129,9 @@ tsci_forest <- function(Y,
   if (is.null(mtry)) mtry <- seq(round((p + 1) / 3), round(2 * (p + 1) / 3), by=1)
   if (is.null(max_depth)) max_depth <- 0
   if (is.null(min_node_size)) min_node_size <- c(5, 10, 20)
-  if (multi_splitting == TRUE) {
-    split_prop <- 0.5
-    if (is.null(nsplits)) nsplits <- 50
-    if (!(mult_split_method %in% c("FWER", "DML"))) {
-      stop("No valid multi-splitting inference method selected. Choose either 'DML' or 'FWER'.")
-    }
-  }
+  if (is.null(nsplits)) nsplits <- 1
+  if (is.null(mult_split_method))  mult_split_method <- "DML"
+
   # grid search
   params_grid <- expand.grid(
     num_trees = num_trees,
@@ -160,38 +159,22 @@ tsci_forest <- function(Y,
   # Hyperparameter selection
   forest_OOB <- get_forest_parameters(df_treatment_A2 = df_treatment_A2, params_grid = params_grid)
 
-  if (multi_splitting == TRUE) {
-    outputs <- multi_split(df_treatment = df_treatment,
-                           Y = Y,
-                           D = D,
-                           Z = Z,
-                           X = X,
-                           vio_space = vio_space,
-                           intercept = intercept,
-                           str_thol = str_thol,
-                           alpha = alpha,
-                           params = forest_OOB$params_A2,
-                           function_hatmatrix = get_forest_hatmatrix,
-                           split_prop = split_prop,
-                           nsplits = nsplits,
-                           ncores = ncores,
-                           mult_split_method = mult_split_method)
-
-  } else {
-    outputs <- single_split(df_treatment = df_treatment,
-                            Y = Y,
-                            D = D,
-                            Z = Z,
-                            X = X,
-                            vio_space = vio_space,
-                            A1_ind = A1_ind,
-                            intercept = intercept,
-                            str_thol = str_thol,
-                            alpha = alpha,
-                            params = forest_OOB$params_A2,
-                            function_hatmatrix = get_forest_hatmatrix,
-                            save_model = forest_save)
-  }
+  outputs <- multi_split(df_treatment = df_treatment,
+                         Y = Y,
+                         D = D,
+                         Z = Z,
+                         X = X,
+                         vio_space = vio_space,
+                         A1_ind = A1_ind,
+                         intercept = intercept,
+                         str_thol = str_thol,
+                         alpha = alpha,
+                         params = forest_OOB$params_A2,
+                         function_hatmatrix = get_forest_hatmatrix,
+                         split_prop = split_prop,
+                         nsplits = nsplits,
+                         ncores = ncores,
+                         mult_split_method = mult_split_method)
 
   # Return output
   outputs <- append(outputs, list("mse_cv" = forest_OOB$MSE_CV_A2))
