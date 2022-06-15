@@ -12,12 +12,13 @@
 #' @param mtry number of covariates to possibly split at in each node of the tree in Random Forests, default by a sequence from round((p+1)/3) to round(2(p+1)/3).
 #' @param max_depth maximal tree depth in Random Forests, default by 0, which refers to unlimited depth.
 #' @param min_node_size minimal size of each leaf node in Random Forests, default by the set {5, 10, 15}.
-#' @param forest_save logical, specifies if the fitted random forest model should be returned.
 #' @param str_thol minimal value of the threshold of IV strength test, default by 10.
 #' @param alpha the significance level, default by 0.05.
+#' @param parallel One out of \code{"no"}, \code{"multicore"}, or \code{"snow"} specifying the parallelization method used.
 #' @param nsplits numeric, number of times the data will be split.
 #' @param mult_split_method method to for inference if multi-splitting is performed. Either 'DML' or 'FWER'.
 #' @param ncores numeric, the number of cores used. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.
+#' @param cl Either an parallel or snow cluster or \code{NULL}.
 #'
 #' @return
 #' \describe{
@@ -32,12 +33,10 @@
 #'     \item{\code{Qmax}}{the index of largest violation space selected by IV strength test. If -1, the IV strength test fails for null violation space and run OLS. If 0, the IV Strength test fails for the null violation space and run TSRF only for null violation space. In other cases, violation space selection is performed.}
 #'     \item{\code{q_hat}}{the index of estimated violation space corresponding to Qmax.}
 #'     \item{\code{invalidity}}{invalidity of TSLS. If TRUE, the IV is invalid; Otherwise, the IV is valid.}
-#'     \item{\code{treatment_model}}{the fitted treatment model. Will only be returned if \code{forest_save} is \code{TRUE} and \code{multi_splitting} is \code{FALSE}.}
 #' }
 #' @export
 #'
 #' @examples
-#' \dontrun{
 #' # dimension
 #' p = 10
 #' # sample size
@@ -72,8 +71,8 @@
 #' # generate the data
 #' mu.error=rep(0,2)
 #' Cov.error=matrix(c(1,0.5,0.5,1),2,2)
-#' Error=mvrnorm(n, mu.error, Cov.error)
-#' W.original=mvrnorm(n, mu, Cov)
+#' Error=MASS::mvrnorm(n, mu.error, Cov.error)
+#' W.original=MASS::mvrnorm(n, mu, Cov)
 #' W=pnorm(W.original)
 #' # instrument variable
 #' Z=W[,1]
@@ -93,7 +92,6 @@
 #' output.RF$sd_robust
 #' # confidence intervals
 #' output.RF$CI_robust
-#' }
 tsci_forest <- function(Y,
                         D,
                         Z,
@@ -105,12 +103,13 @@ tsci_forest <- function(Y,
                         mtry = NULL,
                         max_depth = NULL,
                         min_node_size = NULL,
-                        forest_save = TRUE,
                         str_thol = 10,
                         alpha = 0.05,
+                        parallel = "no",
                         nsplits = 1,
                         mult_split_method = NULL,
-                        ncores = 1) {
+                        ncores = 1,
+                        cl = NULL) {
   if (!is.null(vio_space)) {
     if (class(vio_space)[1] != "matrix" & class(vio_space)[1] != "list") {
       stop("The violation space must be input as matrix or list")
@@ -123,6 +122,8 @@ tsci_forest <- function(Y,
   }
   Y = as.matrix(Y); D = as.matrix(D); Z = as.matrix(Z); X = as.matrix(X);
   n = nrow(X); p = ncol(X)
+
+  do_parallel <- parallelization_setup(parallel = parallel, ncpus = ncores, cl = cl)
 
   # default value for hyper-parameters
   if (is.null(num_trees)) num_trees <- 200
@@ -172,9 +173,12 @@ tsci_forest <- function(Y,
                          params = forest_OOB$params_A2,
                          function_hatmatrix = get_forest_hatmatrix,
                          split_prop = split_prop,
+                         parallel = parallel,
+                         do_parallel = do_parallel,
                          nsplits = nsplits,
                          ncores = ncores,
-                         mult_split_method = mult_split_method)
+                         mult_split_method = mult_split_method,
+                         cl = cl)
 
   # Return output
   outputs <- append(outputs, list("mse_cv" = forest_OOB$MSE_CV_A2))

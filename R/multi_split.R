@@ -14,8 +14,11 @@
 #' @param function_hatmatrix a function to get the hat matrix of the treatment model.
 #' @param split_prop numeric, proportion of observations used to fit the outcome model.
 #' @param nsplits numeric, number of times the data will be split.
+#' @param parallel character, one out of \code{"no"}, \code{"multicore"}, or \code{"snow"} specifying the parallelization method used.
+#' @param do_parallel logical, specifies if parallel computing should be performed.
 #' @param ncores numeric, the number of cores used if multi_splitting is \code{TRUE}. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.
 #' @param mult_split_method method to for inference if multi-splitting is performed. Either 'DML' or 'FWER'.
+#' @param cl Either an parallel or snow cluster or \code{NULL}.
 #'
 #' @return
 #'     \item{\code{Coef_all}}{the median over the multiple data splits of a series of point estimators of treatment effect corresponding to different violation spaces and the OLS}
@@ -44,62 +47,103 @@ multi_split <- function(df_treatment,
                         params,
                         function_hatmatrix,
                         split_prop,
+                        parallel,
+                        do_parallel,
                         nsplits,
                         ncores,
-                        mult_split_method) {
-  n <- NROW(df_treatment)
-  n_A1 <- round(split_prop * n)
-  # splits data nsplits times and performs TSCI for each split.
-  list_outputs <- parallel::mclapply(seq_len(nsplits),
-    FUN = function(iter) {
-      if (iter > 1) {
-        A1_ind <- sample(seq_len(n), n_A1)
-      }
-      single_split(
+                        mult_split_method,
+                        cl) {
+
+  if (is.null(vio_space)) {
+    Q <- 4
+  }
+
+  if (!is.null(vio_space)) {
+    if (class(vio_space)[1] == "list") {
+      Q <- length(vio_space) + 1
+    } else if (class(vio_space)[1] == "matrix") {
+      Q <- ncol(vio_space) + 1
+    }
+  }
+
+  tsci_parallel <- local({
+    df_treatment
+    Y
+    D
+    Z
+    X
+    vio_space
+    A1_ind
+    intercept
+    str_thol
+    alpha
+    params
+    function_hatmatrix
+    ncores
+    Q
+    function(colnames.cluster) {
+      tryCatch_WEM(tsci_fit(
         df_treatment = df_treatment,
         Y = Y,
         D = D,
         Z = Z,
         X = X,
         vio_space = vio_space,
-        A1_ind = A1_ind,
         intercept = intercept,
         str_thol = str_thol,
+        split_prop = split_prop,
         alpha = alpha,
         params = params,
-        function_hatmatrix = function_hatmatrix,
-        save_model = FALSE
-      )
-    }, mc.cores = ncores
-  )
+        function_hatmatrix = function_hatmatrix
+      ), tsci_fit_NA_return(Q = Q))}
+  })
+
+  if (do_parallel) {
+    if (parallel == "multicore") {
+      list_outputs <- parallel::mclapply(seq_len(nsplits), tsci_parallel, mc.cores = ncores)
+    } else if (parallel == "snow") {
+      if (is.null(cl)) {
+        cl <- parallel::makePSOCKcluster(rep("localhost", ncores))
+        # export the namespace of dmlalg in order for the use the functions
+        # of the package TSML on the workers
+        parallel::clusterExport(cl, varlist = getNamespaceExports("TSML"))
+        if (RNGkind()[1L] == "L'Ecuyer-CMRG")
+          parallel::clusterSetRNGStream(cl)
+        list_outputs <- parallel::parLapply(cl, seq_len(nsplits), tsci_parallel)
+        parallel::stopCluster(cl)
+        cl <- NULL # overwrite object which is responsible for the connection
+      } else list_outputs <- parallel::parLapply(cl, seq_len(nsplits), tsci_parallel)
+    }
+  } else list_outputs <- lapply(seq_len(nsplits), tsci_parallel)
+
   Coef_all_matrix <-
-    matrix(unlist(lapply(list_outputs, FUN = function(x) x$Coef_all), use.names = FALSE),
-           ncol = length(list_outputs[[1]]$Coef_all), byrow = TRUE)
-  colnames(Coef_all_matrix) <- names(list_outputs[[1]]$Coef_all)
-  sd_all_matrix <- matrix(unlist(lapply(list_outputs, FUN = function(x) x$sd_all),
-                                 use.names = FALSE), ncol = length(list_outputs[[1]]$sd_all), byrow = TRUE)
-  colnames(sd_all_matrix) <- names(list_outputs[[1]]$sd_all)
-  Coef_robust_matrix <- matrix(unlist(lapply(list_outputs, FUN = function(x) x$Coef_robust),
-                                      use.names = FALSE), ncol = length(list_outputs[[1]]$Coef_robust), byrow = TRUE)
-  colnames(Coef_robust_matrix) <- names(list_outputs[[1]]$Coef_robust)
-  sd_robust_matrix <- matrix(unlist(lapply(list_outputs, FUN = function(x) x$sd_robust),
-                                    use.names = FALSE), ncol = length(list_outputs[[1]]$sd_robust), byrow = TRUE)
-  colnames(sd_robust_matrix) <- names(list_outputs[[1]]$sd_robust)
-  iv_str_matrix <- matrix(unlist(lapply(list_outputs, FUN = function(x) x$iv_str),
-                                 use.names = FALSE), ncol = length(list_outputs[[1]]$iv_str), byrow = TRUE)
-  colnames(iv_str_matrix) <- names(list_outputs[[1]]$iv_str)
-  iv_thol_matrix <- matrix(unlist(lapply(list_outputs, FUN = function(x) x$iv_thol),
-                                  use.names = FALSE), ncol = length(list_outputs[[1]]$iv_thol), byrow = TRUE)
-  colnames(iv_thol_matrix) <- names(list_outputs[[1]]$iv_thol)
-  Qmax_matrix <- matrix(unlist(lapply(list_outputs, FUN = function(x) x$Qmax),
-                               use.names = FALSE), ncol = length(list_outputs[[1]]$Qmax), byrow = TRUE)
-  colnames(Qmax_matrix) <- names(list_outputs[[1]]$Qmax)
-  q_hat_matrix <- matrix(unlist(lapply(list_outputs, FUN = function(x) x$q_hat),
-                                use.names = FALSE), ncol = length(list_outputs[[1]]$q_hat), byrow = TRUE)
-  colnames(q_hat_matrix) <- names(list_outputs[[1]]$q_hat)
-  invalidity_matrix <- matrix(unlist(lapply(list_outputs, FUN = function(x) x$invalidity),
-                                     use.names = FALSE), ncol = length(list_outputs[[1]]$invalidity), byrow = TRUE)
-  colnames(invalidity_matrix) <- names(list_outputs[[1]]$invalidity)
+    matrix(unlist(lapply(list_outputs, FUN = function(x) x$value$Coef_all), use.names = FALSE),
+           ncol = length(list_outputs[[1]]$value$Coef_all), byrow = TRUE)
+  colnames(Coef_all_matrix) <- names(list_outputs[[1]]$value$Coef_all)
+  sd_all_matrix <- matrix(unlist(lapply(list_outputs, FUN = function(x) x$value$sd_all),
+                                 use.names = FALSE), ncol = length(list_outputs[[1]]$value$sd_all), byrow = TRUE)
+  colnames(sd_all_matrix) <- names(list_outputs[[1]]$value$sd_all)
+  Coef_robust_matrix <- matrix(unlist(lapply(list_outputs, FUN = function(x) x$value$Coef_robust),
+                                      use.names = FALSE), ncol = length(list_outputs[[1]]$value$Coef_robust), byrow = TRUE)
+  colnames(Coef_robust_matrix) <- names(list_outputs[[1]]$value$Coef_robust)
+  sd_robust_matrix <- matrix(unlist(lapply(list_outputs, FUN = function(x) x$value$sd_robust),
+                                    use.names = FALSE), ncol = length(list_outputs[[1]]$value$sd_robust), byrow = TRUE)
+  colnames(sd_robust_matrix) <- names(list_outputs[[1]]$value$sd_robust)
+  iv_str_matrix <- matrix(unlist(lapply(list_outputs, FUN = function(x) x$value$iv_str),
+                                 use.names = FALSE), ncol = length(list_outputs[[1]]$value$iv_str), byrow = TRUE)
+  colnames(iv_str_matrix) <- names(list_outputs[[1]]$value$iv_str)
+  iv_thol_matrix <- matrix(unlist(lapply(list_outputs, FUN = function(x) x$value$iv_thol),
+                                  use.names = FALSE), ncol = length(list_outputs[[1]]$value$iv_thol), byrow = TRUE)
+  colnames(iv_thol_matrix) <- names(list_outputs[[1]]$value$iv_thol)
+  Qmax_matrix <- matrix(unlist(lapply(list_outputs, FUN = function(x) x$value$Qmax),
+                               use.names = FALSE), ncol = length(list_outputs[[1]]$value$Qmax), byrow = TRUE)
+  colnames(Qmax_matrix) <- names(list_outputs[[1]]$value$Qmax)
+  q_hat_matrix <- matrix(unlist(lapply(list_outputs, FUN = function(x) x$value$q_hat),
+                                use.names = FALSE), ncol = length(list_outputs[[1]]$value$q_hat), byrow = TRUE)
+  colnames(q_hat_matrix) <- names(list_outputs[[1]]$value$q_hat)
+  invalidity_matrix <- matrix(unlist(lapply(list_outputs, FUN = function(x) x$value$invalidity),
+                                     use.names = FALSE), ncol = length(list_outputs[[1]]$value$invalidity), byrow = TRUE)
+  colnames(invalidity_matrix) <- names(list_outputs[[1]]$value$invalidity)
 
   Coef_all <- apply(Coef_all_matrix, 2, FUN = stats::median)
   Coef_robust <- apply(Coef_robust_matrix, 2, FUN = stats::median)

@@ -1,4 +1,6 @@
-#' TSCI with single data splitting.
+#' Two Stage Curvature Identification
+#'
+#' @description \code{tsci_fit} performs two stage curvature identification for pre-selected treatment model hyperparameters. The function randomly splits the data in two sets \code{A1} and \code{A2}. \code{A2} is used to fit the treatment model given the hyperparameters. \code{A1} is used to fit the outcome model, identify the violation space and to estimate the treatment effect.
 #'
 #' @param df_treatment a data frame containing the subset of observations of the treatment model.
 #' @param Y outcome vector with dimension n by 1.
@@ -7,7 +9,7 @@
 #' @param X baseline covariates with dimension n by p.
 #' @param vio_space vio_space a matrix or a list. If a matrix, then each column corresponds to a violation form of Z; If a list, then each element corresponds to a violation form of Z and must be a matrix of n rows, e.g. (Z^3,Z^2); If NULL, then default by the n by 3 matrix (Z^3, Z^2, Z). Violation form selection will be performed according to provided violation forms, for example, null violation space vs Z vs (Z^2, Z) vs (Z^3, Z^2, Z) in the default case.
 #' @param intercept logical, including the intercept or not in the outcome model, default by TRUE.
-#' @param A1_ind the indices of samples in A1, used for constructing the point estimator and the confidence interval.
+#' @param split_prop split_prop numeric, proportion of observations used to fit the outcome model.
 #' @param str_thol minimal value of the threshold of IV strength test, default by 10.
 #' @param alpha the significance level, default by 0.05.
 #' @param params a list containing the hyperparameters of the treatment model fitting method.
@@ -27,19 +29,22 @@
 #'     \item{\code{invalidity}}{invalidity of TSLS. If TRUE, the IV is invalid; Otherwise, the IV is valid}
 #' @noRd
 #'
-single_split <- function(df_treatment,
-                         Y,
-                         D,
-                         Z,
-                         X,
-                         vio_space,
-                         A1_ind,
-                         intercept,
-                         str_thol,
-                         alpha,
-                         params,
-                         function_hatmatrix) {
-  # split sample
+tsci_fit <- function(df_treatment,
+                     Y,
+                     D,
+                     Z,
+                     X,
+                     vio_space,
+                     intercept,
+                     str_thol,
+                     split_prop,
+                     alpha,
+                     params,
+                     function_hatmatrix) {
+  # split data
+  n <- NROW(df_treatment)
+  n_A1 <- round(split_prop * n)
+  A1_ind <- sample(seq_len(n), n_A1)
   df_treatment_A1 <- df_treatment[A1_ind, ]
   df_treatment_A2 <- df_treatment[-A1_ind, ]
 
