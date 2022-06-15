@@ -14,7 +14,7 @@
 #' @param split_prop numeric, proportion of observations used to fit the outcome model.
 #' @param nsplits numeric, number of times the data will be split.
 #' @param ncores numeric, the number of cores used if multi_splitting is \code{TRUE}. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.
-#' @param mult_split_method method to for inference if multi-splitting is performed. Either 'Chernozhukov' or 'Meinshausen'.
+#' @param mult_split_method method to for inference if multi-splitting is performed. Either 'DML' or 'FWER'.
 #'
 #' @return
 #'     \item{\code{Coef_all}}{the median over the multiple data splits of a series of point estimators of treatment effect corresponding to different violation spaces and the OLS}
@@ -68,8 +68,9 @@ multi_split <- function(df_treatment,
       )
     }, mc.cores = ncores
   )
-  Coef_all_matrix <- matrix(unlist(lapply(list_outputs, FUN = function(x) x$Coef_all),
-                                   use.names = FALSE), ncol = length(list_outputs[[1]]$Coef_all), byrow = TRUE)
+  Coef_all_matrix <-
+    matrix(unlist(lapply(list_outputs, FUN = function(x) x$Coef_all), use.names = FALSE),
+           ncol = length(list_outputs[[1]]$Coef_all), byrow = TRUE)
   colnames(Coef_all_matrix) <- names(list_outputs[[1]]$Coef_all)
   sd_all_matrix <- matrix(unlist(lapply(list_outputs, FUN = function(x) x$sd_all),
                                  use.names = FALSE), ncol = length(list_outputs[[1]]$sd_all), byrow = TRUE)
@@ -104,12 +105,12 @@ multi_split <- function(df_treatment,
   q_hat <- apply(q_hat_matrix, 2, FUN = stats::median)
   invalidity <- apply(invalidity_matrix, 2, FUN = stats::median)
 
-  if (mult_split_method == "Meinshausen") {
+  if (mult_split_method == "FWER") {
     CI_all <- sapply(seq_len(NCOL(Coef_all_matrix)),
       FUN = function(j) {
         beta <- Coef_all_matrix[, j]
         se <- sd_all_matrix[, j]
-        lower <- stats::median(beta + -1 * stats::qnorm(1 - alpha / 4) * se)
+        lower <- stats::median(beta - 1 * stats::qnorm(1 - alpha / 4) * se)
         upper <- stats::median(beta + 1 * stats::qnorm(1 - alpha / 4) * se)
         return(c(lower, upper))
       }
@@ -121,7 +122,7 @@ multi_split <- function(df_treatment,
       FUN = function(j) {
         beta <- Coef_robust_matrix[, j]
         se <- sd_robust_matrix[, j]
-        lower <- stats::median(beta + -1 * stats::qnorm(1 - alpha / 4) * se)
+        lower <- stats::median(beta - 1 * stats::qnorm(1 - alpha / 4) * se)
         upper <- stats::median(beta + 1 * stats::qnorm(1 - alpha / 4) * se)
         return(c(lower, upper))
       }
@@ -134,7 +135,7 @@ multi_split <- function(df_treatment,
     names(sd_all) <- colnames(sd_all_matrix)
     sd_robust <- rep("NA", times = NCOL(sd_robust_matrix))
     names(sd_robust) <- colnames(sd_robust_matrix)
-  } else if (mult_split_method == "Chernozhukov") {
+  } else if (mult_split_method == "DML") {
     sd_all <- sapply(seq_len(NCOL(sd_all_matrix)),
       FUN = function(j) {
         stats::median(sqrt(sd_all_matrix[, j]^2 +

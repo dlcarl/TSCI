@@ -20,7 +20,7 @@
 #' @param alpha the significance level, default by 0.05
 #' @param multi_splitting logical, if \code{TRUE} multi-splitting will be performed.
 #' @param nsplits numeric, number of times the data will be split.
-#' @param mult_split_method method to for inference if multi-splitting is performed. Either 'Chernozhukov' or 'Meinshausen'.
+#' @param mult_split_method method to for inference if multi-splitting is performed. Either 'DML' or 'FWER'.
 #' @param ncores numeric, the number of cores used if multi_splitting is \code{TRUE}. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.
 #'
 #' @return
@@ -117,7 +117,7 @@ tsci_boosting <- function(Y,
                           alpha = 0.05,
                           multi_splitting = FALSE,
                           nsplits = NULL,
-                          mult_split_method = "Meinshausen",
+                          mult_split_method = "FWER",
                           ncores = 1) {
   if (!is.null(vio_space)) {
     if (class(vio_space)[1] != "matrix" & class(vio_space)[1] != "list") {
@@ -137,9 +137,9 @@ tsci_boosting <- function(Y,
   if (multi_splitting == TRUE) {
     split_prop <- 0.5
     if (is.null(nsplits)) nsplits <- 50
-    if (!(mult_split_method %in% c("Meinshausen", "Chernozhukov"))) {
+    if (!(mult_split_method %in% c("FWER", "DML"))) {
       stop("No valid multi-splitting inference method selected.
-           Choose either 'Chernozhukov' or 'Meinshausen'.")
+           Choose either 'DML' or 'FWER'.")
     }
   }
   # grid search
