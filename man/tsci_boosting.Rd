@@ -67,7 +67,7 @@ tsci_boosting(
 
 \item{mult_split_method}{method to for inference if multi-splitting is performed. Either 'DML' or 'FWER'.}
 
-\item{ncores}{numeric, the number of cores used if multi_splitting is \code{TRUE}. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.}
+\item{ncores}{numeric, the number of cores used if tsci_multisplitting is \code{TRUE}. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.}
 
 \item{cl}{Either an parallel or snow cluster or \code{NULL}.}
 }

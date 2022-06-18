@@ -34,25 +34,25 @@
 #'     \item{\code{invalidity}}{the median over the multiple data splits of invalidity of TSLS. If TRUE, the IV is invalid; Otherwise, the IV is valid}
 #' @noRd
 #'
-multi_split <- function(df_treatment,
-                        Y,
-                        D,
-                        Z,
-                        X,
-                        vio_space,
-                        A1_ind,
-                        intercept,
-                        str_thol,
-                        alpha,
-                        params,
-                        function_hatmatrix,
-                        split_prop,
-                        parallel,
-                        do_parallel,
-                        nsplits,
-                        ncores,
-                        mult_split_method,
-                        cl) {
+tsci_multisplit <- function(df_treatment,
+                            Y,
+                            D,
+                            Z,
+                            X,
+                            vio_space,
+                            A1_ind,
+                            intercept,
+                            str_thol,
+                            alpha,
+                            params,
+                            function_hatmatrix,
+                            split_prop,
+                            parallel,
+                            do_parallel,
+                            nsplits,
+                            ncores,
+                            mult_split_method,
+                            cl) {
 
   list_vio_space <- check_vio_space(Z, vio_space)
 

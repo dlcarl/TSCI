@@ -20,7 +20,7 @@
 #' @param parallel One out of \code{"no"}, \code{"multicore"}, or \code{"snow"} specifying the parallelization method used.
 #' @param nsplits numeric, number of times the data will be split.
 #' @param mult_split_method method to for inference if multi-splitting is performed. Either 'DML' or 'FWER'.
-#' @param ncores numeric, the number of cores used if multi_splitting is \code{TRUE}. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.
+#' @param ncores numeric, the number of cores used if tsci_multisplitting is \code{TRUE}. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.
 #' @param cl Either an parallel or snow cluster or \code{NULL}.
 #'
 #' @return
@@ -175,25 +175,25 @@ tsci_boosting <- function(Y,
   )
 
   # Selection
-  outputs <- multi_split(df_treatment = df_treatment,
-                         Y = Y,
-                         D = D,
-                         Z = Z,
-                         X = X,
-                         vio_space = vio_space,
-                         A1_ind = A1_ind,
-                         intercept = intercept,
-                         str_thol = str_thol,
-                         alpha = alpha,
-                         params = treeboost_CV$params_A2,
-                         function_hatmatrix = get_l2boost_hatmatrix,
-                         split_prop = split_prop,
-                         parallel = parallel,
-                         do_parallel = do_parallel,
-                         nsplits = nsplits,
-                         ncores = ncores,
-                         mult_split_method = mult_split_method,
-                         cl = cl)
+  outputs <- tsci_multisplit(df_treatment = df_treatment,
+                             Y = Y,
+                             D = D,
+                             Z = Z,
+                             X = X,
+                             vio_space = vio_space,
+                             A1_ind = A1_ind,
+                             intercept = intercept,
+                             str_thol = str_thol,
+                             alpha = alpha,
+                             params = treeboost_CV$params_A2,
+                             function_hatmatrix = get_l2boost_hatmatrix,
+                             split_prop = split_prop,
+                             parallel = parallel,
+                             do_parallel = do_parallel,
+                             nsplits = nsplits,
+                             ncores = ncores,
+                             mult_split_method = mult_split_method,
+                             cl = cl)
 
   # Return output
   outputs <- append(outputs, list("mse" = treeboost_CV$mse))
