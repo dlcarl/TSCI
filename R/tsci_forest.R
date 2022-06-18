@@ -181,6 +181,6 @@ tsci_forest <- function(Y,
                          cl = cl)
 
   # Return output
-  outputs <- append(outputs, list("mse_cv" = forest_OOB$MSE_CV_A2))
+  outputs <- append(outputs, list("mse" = forest_OOB$mse))
   return(outputs)
 }

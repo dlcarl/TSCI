@@ -54,17 +54,7 @@ multi_split <- function(df_treatment,
                         mult_split_method,
                         cl) {
 
-  if (is.null(vio_space)) {
-    Q <- 4
-  }
-
-  if (!is.null(vio_space)) {
-    if (class(vio_space)[1] == "list") {
-      Q <- length(vio_space) + 1
-    } else if (class(vio_space)[1] == "matrix") {
-      Q <- ncol(vio_space) + 1
-    }
-  }
+  list_vio_space <- check_vio_space(Z, vio_space)
 
   tsci_parallel <- local({
     df_treatment
@@ -72,7 +62,7 @@ multi_split <- function(df_treatment,
     D
     Z
     X
-    vio_space
+    list_vio_space
     A1_ind
     intercept
     str_thol
@@ -80,7 +70,6 @@ multi_split <- function(df_treatment,
     params
     function_hatmatrix
     ncores
-    Q
     function(colnames.cluster) {
       tryCatch_WEM(tsci_fit(
         df_treatment = df_treatment,
@@ -88,14 +77,14 @@ multi_split <- function(df_treatment,
         D = D,
         Z = Z,
         X = X,
-        vio_space = vio_space,
+        list_vio_space = list_vio_space,
         intercept = intercept,
         str_thol = str_thol,
         split_prop = split_prop,
         alpha = alpha,
         params = params,
         function_hatmatrix = function_hatmatrix
-      ), tsci_fit_NA_return(Q = Q))}
+      ), tsci_fit_NA_return(Q = list_vio_space$Q))}
   })
 
   if (do_parallel) {
@@ -116,5 +105,5 @@ multi_split <- function(df_treatment,
     }
   } else list_outputs <- lapply(seq_len(nsplits), tsci_parallel)
 
-  aggregate_output(output_list = list_outputs, alpha = alpha, Q = Q, mult_split_method = mult_split_method)
+  aggregate_output(output_list = list_outputs, alpha = alpha, Q = list_vio_space$Q, mult_split_method = mult_split_method)
 }

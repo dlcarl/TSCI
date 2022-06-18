@@ -196,6 +196,6 @@ tsci_boosting <- function(Y,
                          cl = cl)
 
   # Return output
-    outputs <- append(outputs, list("mse_cv" = treeboost_CV$MSE_CV_A2))
+  outputs <- append(outputs, list("mse" = treeboost_CV$mse))
   return(outputs)
 }

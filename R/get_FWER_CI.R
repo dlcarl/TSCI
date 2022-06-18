@@ -9,17 +9,11 @@
 #'
 #' @return A list with two elements. \code{CI} and \code{p_value}.
 #' @noRd
-#' @importFrom stats qnorm pnorm quantile
+#' @importFrom stats qnorm quantile
 get_FWER_CI <- function(Coef, SE, level, gamma = 0.5) {
   alpha <- 1 - level
   beta_min <- min(Coef - qnorm(1 - alpha / 2) / gamma * SE)
   beta_max <- max(Coef + qnorm(1 - alpha / 2) / gamma * SE)
-
-  p_val <- function(Coef, SE, beta_test) {
-    diff_norm <- abs(Coef - beta_test) / SE
-    p_val <- 2 * pnorm(diff_norm, lower.tail = FALSE)
-    return(p_val)
-  }
 
   beta_range <- seq(beta_min, beta_max, length.out = 10^4)
   p_val_med <- sapply(beta_range, FUN = function(beta_test) quantile(p_val(Coef, SE, beta_test), probs = gamma, names = FALSE))

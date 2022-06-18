@@ -20,7 +20,7 @@ tsci_fit_NA_return <- function(Q) {
   iv_str <- iv_thol <- rep(NA, Q)
   names(iv_str) <- names(iv_thol) <- paste("q", seq(0, Q - 1), sep = "")
   Qmax <- q_comp <- q_robust <- rep(NA, Q + 1)
-  names(Qmax) <- names(q_comp) <- names(q_robust) <- paste("q", seq(-1, Q - 1), sep = "")
+  names(Qmax) <- names(q_comp) <- names(q_robust) <- c("OLS", paste("q", seq(0, Q - 1), sep = ""))
   invalidity <- rep(NA, 2)
   names(invalidity) <- c("valid", "invalid")
 

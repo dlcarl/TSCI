@@ -4,7 +4,6 @@
 #' @param D_rep transformed treatment of dimension n_A1 by 1 corresponding to a violation space
 #' @param Cov_rep transformed augmented covariates (vio_space, X) of dimension n_A1 by (p+ncol(vio_space)) corresponding to a violation space
 #' @param weight n_A1 by n_A1 weight matrix
-#' @param n full sample size
 #' @param eps_hat residuals in the outcome model
 #' @param delta_hat residuals in Random Forest corresponding to samples in A1
 #' @param str_thol the minimal value of the threshold of IV strength test
@@ -19,7 +18,7 @@
 #'
 #' @importFrom stats resid lm rnorm quantile
 #'
-tsci_secondstage_stats <- function(D_rep, Cov_rep, weight, n, eps_hat, delta_hat, str_thol) {
+tsci_secondstage_stats <- function(D_rep, Cov_rep, weight, eps_hat, delta_hat, str_thol) {
   n_A1 <- length(D_rep)
   # compute the trace of M_{RF}(V)
   # the trace of M_{RF}(V) matrix can be computed as RSS of regressing each column of weight matrix on Cov.rep
@@ -40,11 +39,7 @@ tsci_secondstage_stats <- function(D_rep, Cov_rep, weight, n, eps_hat, delta_hat
   boot_vec <- rep(NA, 300)
   delta_cent <- delta_hat - mean(delta_hat)
   for (i in seq_len(300)) {
-    delta <- rep(NA, n_A1)
-    for (j in seq_len(n_A1)) {
-      U_j <- rnorm(1)
-      delta[j] <- delta_cent[j] * U_j
-    }
+    delta <- delta_cent * rnorm(n_A1)
 
     delta_rep <- weight %*% delta
     delta_resid <- resid(lm(as.matrix(delta_rep) ~ Cov_rep))

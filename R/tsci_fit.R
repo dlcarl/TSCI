@@ -34,7 +34,7 @@ tsci_fit <- function(df_treatment,
                      D,
                      Z,
                      X,
-                     vio_space,
+                     list_vio_space,
                      intercept,
                      str_thol,
                      split_prop,
@@ -55,15 +55,37 @@ tsci_fit <- function(df_treatment,
     params = params
   )
 
+  Y <- as.matrix(Y)
+  D <- as.matrix(D)
+  Z <- as.matrix(Z)
+  X <- as.matrix(X)
+  n <- length(Y)
+  n_A1 <- length(A1_ind)
+
+  if (nrow(model_treatment$weight) != ncol(model_treatment$weight)) {
+    stop("Transformation matrix must be a square matrix")
+  }
+  if (nrow(model_treatment$weight) != n_A1) {
+    stop("The samples to construct transformation matrix must be the same as samples in A1")
+  }
+
+  Y_A1 <- Y[A1_ind]
+  D_A1 <- D[A1_ind]
+  X_A1 <- X[A1_ind]
+
+  vio_space <- list_vio_space$vio_space[A1_ind, ]
+  rm_ind <- list_vio_space$rm_ind
+  Q <- list_vio_space$Q
+
 
   # estimate treatment effect on outcome using TSCI.
-  outputs <- tsci_secondstage(
-    Y = Y,
-    D = D,
-    Z = Z,
-    X = X,
+  outputs <- tsci_selection(
+    Y_A1 = Y_A1,
+    D_A1 = D_A1,
+    X_A1 = X_A1,
     vio_space = vio_space,
-    A1_ind = A1_ind,
+    rm_ind = rm_ind,
+    Q = Q,
     weight = model_treatment$weight,
     intercept = intercept,
     str_thol = str_thol,
