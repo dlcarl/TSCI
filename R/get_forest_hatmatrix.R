@@ -10,6 +10,8 @@
 #' \code{forest_A2} \tab the fitted random forest model. \cr
 #' }
 #' @noRd
+#' @importFrom ranger ranger
+#' @importFrom stats predict
 #'
 #' @examples
 #' Z <- rnorm(100)
@@ -23,14 +25,14 @@
 #'   params = params_forest)
 #' mean((df_treatment_A1$D - hat_matrix_forest$weight %*% df_treatment_A1$D)^2)
 get_forest_hatmatrix <- function(df_treatment_A1, df_treatment_A2, params) {
-  forest_A2 <- ranger::ranger(D ~ .,
-    data = df_treatment_A2,
-    num.trees = params$num_trees,
-    mtry = params$mtry,
-    max.depth = params$max_depth,
-    min.node.size = params$min_node_size
+  forest_A2 <- ranger(D ~ .,
+                      data = df_treatment_A2,
+                      num.trees = params$num_trees,
+                      mtry = params$mtry,
+                      max.depth = params$max_depth,
+                      min.node.size = params$min_node_size
   )
-  leaves <- stats::predict(forest_A2, data = df_treatment_A1, type = "terminalNodes")$predictions
+  leaves <- predict(forest_A2, data = df_treatment_A1, type = "terminalNodes")$predictions
   n_A1 <- NROW(leaves)
   num_trees <- NCOL(leaves)
   forest_hatmatrix <- matrix(0, n_A1, n_A1)

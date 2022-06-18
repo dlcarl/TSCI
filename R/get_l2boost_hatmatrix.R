@@ -10,6 +10,9 @@
 #' \code{model} \tab the fitted boosting model. \cr
 #' }
 #' @noRd
+#' @importFrom xgboost xgb.DMatrix xgb.train
+#' @importFrom stats predict
+#' @importFrom Rfast mat.mult
 #'
 #' @examples
 #' Z <- rnorm(100)
@@ -30,9 +33,9 @@ get_l2boost_hatmatrix <- function(df_treatment_A1,
   n_A1 <- NROW(df_treatment_A1)
   n_A2 <- NROW(df_treatment_A2)
 
-  xgbD_A1 <- xgboost::xgb.DMatrix(as.matrix(df_treatment_A1[, -1]))
-  xgbD_A2 <- xgboost::xgb.DMatrix(as.matrix(df_treatment_A2[, -1]), label = df_treatment_A2[, 1])
-  l2boost_A2 <- xgboost::xgb.train(
+  xgbD_A1 <- xgb.DMatrix(as.matrix(df_treatment_A1[, -1]))
+  xgbD_A2 <- xgb.DMatrix(as.matrix(df_treatment_A2[, -1]), label = df_treatment_A2[, 1])
+  l2boost_A2 <- xgb.train(
     nrounds = params$nrounds,
     params = list(
       eta = params$eta,
@@ -41,7 +44,7 @@ get_l2boost_hatmatrix <- function(df_treatment_A1,
       colsample_bytree = params$colsample_bytree,
       lambda = 0
     ), data = xgbD_A2)
-  nodes_A1 <- stats::predict(l2boost_A2, newdata = xgbD_A1, predleaf = TRUE)
+  nodes_A1 <- predict(l2boost_A2, newdata = xgbD_A1, predleaf = TRUE)
 
 
   l2boost_hatmatrix <- matrix(0, n_A1, n_A1)
@@ -51,7 +54,7 @@ get_l2boost_hatmatrix <- function(df_treatment_A1,
     # calculates the hat matrix
     tree_hatmatrix <- get_tree_hatmatrix(leaves_iter_A1)
     l2boost_hatmatrix <- l2boost_hatmatrix + params$eta *
-      Rfast::mat.mult(tree_hatmatrix, diag(n_A1) - l2boost_hatmatrix)
+      mat.mult(tree_hatmatrix, diag(n_A1) - l2boost_hatmatrix)
   }
   return(list(
     "weight" = l2boost_hatmatrix,

@@ -8,6 +8,8 @@
 #' @return a list containing the hyperparameter values chosen by cv and the cv mse.
 #' @noRd
 #'
+#' @importFrom xgboost xgb.DMatrix xgb.cv
+#'
 #' @examples
 #' params_grid <- expand.grid(nrounds = 50,
 #' eta = 0.3,
@@ -24,14 +26,14 @@
 get_l2boost_parameters <- function(df_treatment_A2, params_grid, nfolds) {
   n_A2 <- NROW(df_treatment_A2)
   # Position of column containing the residuals at each iteration of the boosting algorithm
-  xgbD_A2 <- xgboost::xgb.DMatrix(as.matrix(df_treatment_A2[, -1]), label = df_treatment_A2[, 1])
+  xgbD_A2 <- xgb.DMatrix(as.matrix(df_treatment_A2[, -1]), label = df_treatment_A2[, 1])
 
   MSE_CV_A2 <- Inf
   params_A2 <- NULL
 
 
   for (i in seq_len(NROW(params_grid))) {
-    temp_A2 <- xgboost::xgb.cv(
+    temp_A2 <- xgb.cv(
       params = list(
         eta = params_grid$eta[i],
         max_depth = params_grid$max_depth[i],

@@ -17,6 +17,8 @@
 #'     \item{\code{diag_M}}{diagonal of matrix M_{RF}(V) corresponding to a violation space}
 #' @noRd
 #'
+#' @importFrom stats resid lm rnorm quantile
+#'
 tsci_secondstage_stats <- function(D_rep, Cov_rep, weight, n, eps_hat, delta_hat, str_thol) {
   n_A1 <- length(D_rep)
   # compute the trace of M_{RF}(V)
@@ -24,11 +26,11 @@ tsci_secondstage_stats <- function(D_rep, Cov_rep, weight, n, eps_hat, delta_hat
   SigmaSqD <- mean(delta_hat^2)
   diag_M <- rep(NA, n_A1)
   for (j in seq_len(n_A1)) {
-    diag_M[j] <- sum(stats::resid(stats::lm(weight[, j] ~ Cov_rep))^2)
+    diag_M[j] <- sum(resid(lm(weight[, j] ~ Cov_rep))^2)
   }
   trace_M <- sum(diag_M)
   D_rep2 <- weight %*% D_rep
-  D_resid <- stats::resid(stats::lm(D_rep ~ Cov_rep))
+  D_resid <- resid(lm(D_rep ~ Cov_rep))
   D_RSS <- sum(D_resid^2)
   iv_str <- D_RSS / SigmaSqD
   # this is the numerator of the variance of betaHat
@@ -40,15 +42,15 @@ tsci_secondstage_stats <- function(D_rep, Cov_rep, weight, n, eps_hat, delta_hat
   for (i in seq_len(300)) {
     delta <- rep(NA, n_A1)
     for (j in seq_len(n_A1)) {
-      U_j <- stats::rnorm(1)
+      U_j <- rnorm(1)
       delta[j] <- delta_cent[j] * U_j
     }
 
     delta_rep <- weight %*% delta
-    delta_resid <- stats::resid(stats::lm(as.matrix(delta_rep) ~ Cov_rep))
+    delta_resid <- resid(lm(as.matrix(delta_rep) ~ Cov_rep))
     boot_vec[i] <- sum(delta_resid^2) + 2 * sum(D_rep2 * delta_resid)
   }
-  iv_thol <- stats::quantile(boot_vec, 0.975) /
+  iv_thol <- quantile(boot_vec, 0.975) /
     SigmaSqD + max(2 * trace_M, str_thol)
   returnList <- list(
     sd = sd,

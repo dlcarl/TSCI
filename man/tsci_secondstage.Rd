@@ -65,4 +65,5 @@ Y <- D + X + rnorm(n) # no violation
 A1_ind <- seq_len(n)
 weight <- X \%*\% chol(chol2inv(t(X) \%*\% X)) \%*\% t(X)
 tsci_secondstage(Y = Y, D = D, Z = Z, X = X, A1_ind = A1_ind, weight = weight)
+
 }

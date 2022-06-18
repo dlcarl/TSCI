@@ -36,6 +36,8 @@
 #' A1_ind <- seq_len(n)
 #' weight <- X %*% chol(chol2inv(t(X) %*% X)) %*% t(X)
 #' tsci_secondstage(Y = Y, D = D, Z = Z, X = X, A1_ind = A1_ind, weight = weight)
+#'
+#' @importFrom stats coef lm qnorm quantile resid rnorm
 tsci_secondstage <- function(Y,
                              D,
                              Z,
@@ -128,14 +130,14 @@ tsci_secondstage <- function(Y,
   for (index in seq_len(Q)) {
     if (index == Q) {
       if (intercept) {
-        reg_ml <- stats::lm(Y_rep ~ D_rep + Cov_rep)
-        betaHat <- stats::coef(reg_ml)[2]
+        reg_ml <- lm(Y_rep ~ D_rep + Cov_rep)
+        betaHat <- coef(reg_ml)[2]
       } else {
-        reg_ml <- stats::lm(Y_rep ~ D_rep + Cov_rep - 1)
-        betaHat <- stats::coef(reg_ml)[1]
+        reg_ml <- lm(Y_rep ~ D_rep + Cov_rep - 1)
+        betaHat <- coef(reg_ml)[1]
       }
       Coef_all[index] <- betaHat
-      eps_hat[[index]] <- stats::resid(stats::lm(Y_A1 - D_A1 * betaHat ~ Cov_aug_A1))
+      eps_hat[[index]] <- resid(lm(Y_A1 - D_A1 * betaHat ~ Cov_aug_A1))
       stat_outputs <- tsci_secondstage_stats(D_rep,
         Cov_rep,
         weight,
@@ -146,15 +148,15 @@ tsci_secondstage <- function(Y,
       )
     } else {
       if (intercept) {
-        reg_ml <- stats::lm(Y_rep ~ D_rep + Cov_rep[, -rm_ind[[index]]])
-        betaHat <- stats::coef(reg_ml)[2]
+        reg_ml <- lm(Y_rep ~ D_rep + Cov_rep[, -rm_ind[[index]]])
+        betaHat <- coef(reg_ml)[2]
       } else {
-        reg_ml <- stats::lm(Y_rep ~ D_rep + Cov_rep[, -rm_ind[[index]]] - 1)
-        betaHat <- stats::coef(reg_ml)[1]
+        reg_ml <- lm(Y_rep ~ D_rep + Cov_rep[, -rm_ind[[index]]] - 1)
+        betaHat <- coef(reg_ml)[1]
       }
       Coef_all[index] <- betaHat
       eps_hat[[index]] <-
-        stats::resid(stats::lm(Y_A1 - D_A1 * betaHat ~ Cov_aug_A1[, -rm_ind[[index]]]))
+        resid(lm(Y_A1 - D_A1 * betaHat ~ Cov_aug_A1[, -rm_ind[[index]]]))
       stat_outputs <- tsci_secondstage_stats(D_rep,
         Cov_rep[, -rm_ind[[index]]],
         weight,
@@ -229,7 +231,7 @@ tsci_secondstage <- function(Y,
       diff_mat <- matrix(0, Qmax, Qmax)
       eps <- rep(NA, n_A1)
       for (j in 1:n_A1) {
-        U_j <- stats::rnorm(1)
+        U_j <- rnorm(1)
         eps[j] <- eps_Qmax_cent[j] * U_j
       }
       eps_rep <- weight %*% eps
@@ -242,7 +244,7 @@ tsci_secondstage <- function(Y,
       diff_mat <- abs(diff_mat) / sqrt(H)
       max_val[i] <- max(diff_mat, na.rm = TRUE)
     }
-    z_alpha <- 1.01 * stats::quantile(max_val, 0.975)
+    z_alpha <- 1.01 * quantile(max_val, 0.975)
     diff_thol <- z_alpha * sqrt(H)
     # comparison matrix
     C_alpha <- ifelse(beta_diff <= diff_thol, 0, 1)
@@ -269,10 +271,10 @@ tsci_secondstage <- function(Y,
   }
 
   # OLS estimator
-  OLS <- summary(stats::lm(Y ~ D + X))$coefficients
+  OLS <- summary(lm(Y ~ D + X))$coefficients
   Coef_OLS <- OLS[2, 1]
   sd_OLS <- OLS[2, 2]
-  CI_OLS <- c(Coef_OLS + stats::qnorm(alpha / 2) * sd_OLS, Coef_OLS + stats::qnorm(1 - alpha / 2) * sd_OLS)
+  CI_OLS <- c(Coef_OLS + qnorm(alpha / 2) * sd_OLS, Coef_OLS + qnorm(1 - alpha / 2) * sd_OLS)
   names(CI_OLS) <- c("lower", "upper")
   # add OLS to Coef_all
   Coef_all <- c(Coef_all[(Q + 1):(2 * Q)], Coef_OLS)
@@ -281,7 +283,7 @@ tsci_secondstage <- function(Y,
   names(sd_all) <- c(Coef_names[(Q + 1):(2 * Q)], "OLS")
 
   # confidence intervals for all violation spaces
-  CI_all <- rbind(Coef_all + stats::qnorm(alpha / 2) * sd_all, Coef_all + stats::qnorm(1 - alpha / 2) * sd_all)
+  CI_all <- rbind(Coef_all + qnorm(alpha / 2) * sd_all, Coef_all + qnorm(1 - alpha / 2) * sd_all)
   rownames(CI_all) <- c("lower", "upper")
 
 
@@ -309,8 +311,8 @@ tsci_secondstage <- function(Y,
   }
 
   CI_robust <- rbind(
-    Coef_robust + stats::qnorm(alpha / 2) * sd_robust,
-    Coef_robust + stats::qnorm(1 - alpha / 2) * sd_robust
+    Coef_robust + qnorm(alpha / 2) * sd_robust,
+    Coef_robust + qnorm(1 - alpha / 2) * sd_robust
   )
   rownames(CI_robust) <- c("lower", "upper")
 
