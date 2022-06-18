@@ -314,6 +314,19 @@ tsci_secondstage <- function(Y,
   )
   rownames(CI_robust) <- c("lower", "upper")
 
+  # change format of Qmax, q_hat and q_robust. Only temporary. Will change structure of code.
+  max_Q <- comp_q <- robust_q <- rep(0, Q + 1)
+  names(max_Q) <- names(comp_q) <- names(robust_q) <- paste("q", seq(-1, Q - 1), sep = "")
+  max_Q[Qmax + 2] <- 1
+  if(length(q_hat) == 2) {
+    comp_q[q_hat[1] + 2] <- 1
+    robust_q[q_hat[2]+ 2] <- 1
+  } else {
+    comp_q[q_hat + 2] <- 1
+    robust_q[q_hat + 2] <- 1
+  }
+
+
 
   returnList <- list(
     Coef_all = Coef_all,
@@ -324,8 +337,9 @@ tsci_secondstage <- function(Y,
     CI_robust = CI_robust,
     iv_str = iv_str,
     iv_thol = iv_thol,
-    Qmax = Qmax,
-    q_hat = q_hat,
+    Qmax = max_Q,
+    q_comp = comp_q,
+    q_robust = robust_q,
     invalidity = invalidity
   )
   returnList

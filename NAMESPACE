@@ -3,3 +3,7 @@
 export(tsci_boosting)
 export(tsci_forest)
 export(tsci_secondstage)
+importFrom(stats,median)
+importFrom(stats,pnorm)
+importFrom(stats,qnorm)
+importFrom(stats,quantile)

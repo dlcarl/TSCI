@@ -137,7 +137,7 @@ D=f(Z)+X\%*\%alpha+Z*X\%*\%inter+Error[,1]
 Y=D*beta+tau*Z+X\%*\%gamma+Error[,2]
 
 
-# Two Stage Random Forest
+# Two Stage Boosting
 output.BO = tsci_boosting(Y,D,Z,X)
 # point estimates
 output.BO$Coef_robust
