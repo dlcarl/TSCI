@@ -16,6 +16,7 @@ tsci_forest(
   mtry = NULL,
   max_depth = NULL,
   min_node_size = NULL,
+  self_predict = FALSE,
   str_thol = 10,
   alpha = 0.05,
   parallel = "no",
@@ -47,6 +48,8 @@ tsci_forest(
 \item{max_depth}{maximal tree depth in Random Forests, default by 0, which refers to unlimited depth.}
 
 \item{min_node_size}{minimal size of each leaf node in Random Forests, default by the set {5, 10, 15}.}
+
+\item{self_predict}{logic, if \code{FALSE} it sets the diagonal of the hat matrix of each tree to zero and rescales the off-diagonal elements accordingly.}
 
 \item{str_thol}{minimal value of the threshold of IV strength test, default by 10.}
 

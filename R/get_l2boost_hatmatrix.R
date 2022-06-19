@@ -28,8 +28,7 @@
 #' mean((df_treatment_A1$D - hat_matrix$weight %*% df_treatment_A1$D)^2)
 get_l2boost_hatmatrix <- function(df_treatment_A1,
                                    df_treatment_A2,
-                                   params,
-                                   xgboost) {
+                                   params) {
   n_A1 <- NROW(df_treatment_A1)
   n_A2 <- NROW(df_treatment_A2)
 

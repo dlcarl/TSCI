@@ -30,7 +30,8 @@ get_forest_parameters <- function(df_treatment_A2, params_grid) {
                       num.trees = params_grid$num_trees[i],
                       mtry = params_grid$mtry[i],
                       max.depth = params_grid$max_depth[i],
-                      min.node.size = params_grid$min_node_size[i]
+                      min.node.size = params_grid$min_node_size[i],
+                      importance = "impurity"
     )
     if (temp_A2$prediction.error <= MSE_oob_A2) {
       forest_A2 <- temp_A2

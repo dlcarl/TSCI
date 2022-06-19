@@ -30,7 +30,8 @@ get_forest_hatmatrix <- function(df_treatment_A1, df_treatment_A2, params) {
                       num.trees = params$num_trees,
                       mtry = params$mtry,
                       max.depth = params$max_depth,
-                      min.node.size = params$min_node_size
+                      min.node.size = params$min_node_size,
+                      importance = "impurity"
   )
   leaves <- predict(forest_A2, data = df_treatment_A1, type = "terminalNodes")$predictions
   n_A1 <- NROW(leaves)
@@ -38,6 +39,14 @@ get_forest_hatmatrix <- function(df_treatment_A1, df_treatment_A2, params) {
   forest_hatmatrix <- matrix(0, n_A1, n_A1)
   for (j in seq_len(num_trees)) {
     tree_hatmatrix <- get_tree_hatmatrix(leaves = leaves[, j]) # weight matrix for single tree
+    if (params$self_predict == FALSE) {
+      diag(tree_hatmatrix) <- 0
+      tree_hatmatrix <-
+        apply(tree_hatmatrix, 1,
+              FUN = function(row_weights) {if (sum(row_weights) > 0) {
+                return(row_weights / sum(row_weights))} else {
+                  return(row_weights)}})
+    }
     forest_hatmatrix <- forest_hatmatrix + tree_hatmatrix / num_trees
   }
   #forest_hatmatrix <- Matrix::Matrix(forest_hatmatrix, sparse = T) # sparse matrix to save memory

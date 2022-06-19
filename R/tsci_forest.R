@@ -12,6 +12,7 @@
 #' @param mtry number of covariates to possibly split at in each node of the tree in Random Forests, default by a sequence from round((p+1)/3) to round(2(p+1)/3).
 #' @param max_depth maximal tree depth in Random Forests, default by 0, which refers to unlimited depth.
 #' @param min_node_size minimal size of each leaf node in Random Forests, default by the set {5, 10, 15}.
+#' @param self_predict logic, if \code{FALSE} it sets the diagonal of the hat matrix of each tree to zero and rescales the off-diagonal elements accordingly.
 #' @param str_thol minimal value of the threshold of IV strength test, default by 10.
 #' @param alpha the significance level, default by 0.05.
 #' @param parallel One out of \code{"no"}, \code{"multicore"}, or \code{"snow"} specifying the parallelization method used.
@@ -103,6 +104,7 @@ tsci_forest <- function(Y,
                         mtry = NULL,
                         max_depth = NULL,
                         min_node_size = NULL,
+                        self_predict = FALSE,
                         str_thol = 10,
                         alpha = 0.05,
                         parallel = "no",
@@ -138,7 +140,8 @@ tsci_forest <- function(Y,
     num_trees = num_trees,
     mtry = mtry,
     max_depth = max_depth,
-    min_node_size = min_node_size
+    min_node_size = min_node_size,
+    self_predict = self_predict
   )
 
   # Treatment model fitting
