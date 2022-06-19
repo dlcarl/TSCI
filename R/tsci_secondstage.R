@@ -5,9 +5,9 @@
 #' @param D treatment with dimension n by 1
 #' @param Z instrument variable with dimension n by 1
 #' @param X baseline covariates with dimension n by p
-#' @param vio_space a matrix or a list. If a matrix, then each column corresponds to a violation form of Z; If a list, then each element corresponds to a violation form of Z and must be a matrix of n rows, e.g. (Z^3,Z^2); If NULL, then default by the n by 3 matrix (Z^3, Z^2, Z). Violation space selection will be performed according to provided violation space, for example, null violation space vs Z vs (Z^2, Z) vs (Z^3, Z^2, Z) in the default case
 #' @param A1_ind the indices of samples in A1
 #' @param weight n_A1 by n_A1 weight matrix
+#' @param vio_space a matrix or a list. If a matrix, then each column corresponds to a violation form of Z; If a list, then each element corresponds to a violation form of Z and must be a matrix of n rows, e.g. (Z^3,Z^2); If NULL, then default by the n by 3 matrix (Z^3, Z^2, Z). Violation space selection will be performed according to provided violation space, for example, null violation space vs Z vs (Z^2, Z) vs (Z^3, Z^2, Z) in the default case
 #' @param intercept logic, to include intercept in the outcome model or not
 #' @param str_thol the minimal value of the threshold of IV strength test
 #' @param alpha the significance level
@@ -42,9 +42,9 @@ tsci_secondstage <- function(Y,
                              D,
                              Z,
                              X,
-                             vio_space = NULL,
                              A1_ind,
                              weight,
+                             vio_space = NULL,
                              intercept = TRUE,
                              str_thol = 10,
                              alpha = 0.05) {

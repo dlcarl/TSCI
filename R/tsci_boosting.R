@@ -102,18 +102,18 @@ tsci_boosting <- function(Y,
                           vio_space = NULL,
                           intercept = TRUE,
                           split_prop = 2 / 3,
-                          nrounds = NULL,
-                          eta = NULL,
-                          max_depth = NULL,
-                          subsample = NULL,
-                          colsample_bytree = NULL,
-                          early_stopping = NULL,
-                          nfolds = 10,
+                          nrounds = 50,
+                          eta = 0.3,
+                          max_depth = 6,
+                          subsample = 1,
+                          colsample_bytree = 1,
+                          early_stopping = TRUE,
+                          nfolds = 5,
                           str_thol = 10,
                           alpha = 0.05,
                           parallel = "no",
-                          nsplits = NULL,
-                          mult_split_method = NULL,
+                          nsplits = 1,
+                          mult_split_method = "DML",
                           ncores = 1,
                           cl = NULL) {
   if (!is.null(vio_space)) {
@@ -130,16 +130,6 @@ tsci_boosting <- function(Y,
   n = nrow(X); p = ncol(X)
 
   do_parallel <- parallelization_setup(parallel = parallel, ncpus = ncores, cl = cl)
-
-  # define defaults for the hyperparameters
-  if (is.null(nrounds)) nrounds <- 50
-  if (is.null(eta)) eta <- 0.3
-  if (is.null(max_depth)) max_depth <- 6
-  if (is.null(subsample)) subsample <- c(1)
-  if (is.null(colsample_bytree)) colsample_bytree <- c(1)
-  if (is.null(early_stopping)) early_stopping <- TRUE
-  if (is.null(nsplits)) nsplits <- 1
-  if (is.null(mult_split_method))  mult_split_method <- "DML"
 
   # grid search
   params_grid <- expand.grid(

@@ -100,16 +100,16 @@ tsci_forest <- function(Y,
                         intercept = TRUE,
                         vio_space = NULL,
                         split_prop = 2 / 3,
-                        num_trees = NULL,
-                        mtry = NULL,
-                        max_depth = NULL,
-                        min_node_size = NULL,
-                        self_predict = FALSE,
+                        num_trees = 200,
+                        mtry = seq(round((p + 1) / 3), round(2 * (p + 1) / 3), by=1),
+                        max_depth = 0,
+                        min_node_size = c(5, 10, 20),
+                        self_predict = TRUE,
                         str_thol = 10,
                         alpha = 0.05,
                         parallel = "no",
                         nsplits = 1,
-                        mult_split_method = NULL,
+                        mult_split_method = "DML",
                         ncores = 1,
                         cl = NULL) {
   if (!is.null(vio_space)) {
@@ -126,14 +126,6 @@ tsci_forest <- function(Y,
   n = nrow(X); p = ncol(X)
 
   do_parallel <- parallelization_setup(parallel = parallel, ncpus = ncores, cl = cl)
-
-  # default value for hyper-parameters
-  if (is.null(num_trees)) num_trees <- 200
-  if (is.null(mtry)) mtry <- seq(round((p + 1) / 3), round(2 * (p + 1) / 3), by=1)
-  if (is.null(max_depth)) max_depth <- 0
-  if (is.null(min_node_size)) min_node_size <- c(5, 10, 20)
-  if (is.null(nsplits)) nsplits <- 1
-  if (is.null(mult_split_method))  mult_split_method <- "DML"
 
   # grid search
   params_grid <- expand.grid(
