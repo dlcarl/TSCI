@@ -14,7 +14,7 @@
 #' @param subsample numeric, hyperparameter of the boosting algorithm. Specifies proportion of observations used to fit each tree.
 #' @param colsample_bytree numeric, hyperparameter of the boosting algorithm. Specifies proportion of variables used to fit each tree.
 #' @param early_stopping logical, hyperparameter of the boosting algorithm. If \code{TRUE} early stopping will be applied.
-#' @param nfolds numeric, the number of folds for the k-fold cross validation.
+#' @param nfolds numeric, the number of folds for the k-fold cross-validation.
 #' @param str_thol minimal value of the threshold of IV strength test, default by 10
 #' @param alpha the significance level, default by 0.05
 #' @param parallel One out of \code{"no"}, \code{"multicore"}, or \code{"snow"} specifying the parallelization method used.
@@ -138,7 +138,8 @@ tsci_boosting <- function(Y,
     max_depth = max_depth,
     subsample = subsample,
     colsample_bytree = colsample_bytree,
-    early_stopping = early_stopping
+    early_stopping = early_stopping,
+    lambda = 0
   )
 
   # Treatment model fitting
@@ -157,12 +158,13 @@ tsci_boosting <- function(Y,
   df_treatment_A1 <- df_treatment[A1_ind, ]
   df_treatment_A2 <- df_treatment[-A1_ind, ]
 
-  # perform cross validation to select boosting hyperparameters
+  # perform cross-validation to select boosting hyperparameters
+  tictoc::tic("hyperparameter tuning step")
   treeboost_CV <- get_l2boost_parameters(
     df_treatment_A2 = df_treatment_A2,
     params_grid = params_grid,
-    nfolds = nfolds
-  )
+    nfolds = nfolds)
+  tictoc::toc()
 
   # Selection
   outputs <- tsci_multisplit(df_treatment = df_treatment,

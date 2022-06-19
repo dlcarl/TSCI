@@ -41,7 +41,7 @@ get_l2boost_hatmatrix <- function(df_treatment_A1,
       max_depth = params$max_depth,
       subsample = params$subsample,
       colsample_bytree = params$colsample_bytree,
-      lambda = 0
+      lambda = params$lambda
     ), data = xgbD_A2)
   nodes_A1 <- predict(l2boost_A2, newdata = xgbD_A1, predleaf = TRUE)
 

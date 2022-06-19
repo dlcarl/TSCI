@@ -53,7 +53,6 @@ tsci_multisplit <- function(df_treatment,
                             ncores,
                             mult_split_method,
                             cl) {
-
   list_vio_space <- check_vio_space(Z, vio_space)
 
   tsci_parallel <- local({

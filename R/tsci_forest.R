@@ -153,7 +153,10 @@ tsci_forest <- function(Y,
   df_treatment_A2 <- df_treatment[-A1_ind, ]
 
   # Hyperparameter selection
+  tictoc::tic("hyperparameter tuning step")
   forest_OOB <- get_forest_parameters(df_treatment_A2 = df_treatment_A2, params_grid = params_grid)
+  tictoc::toc()
+
 
   outputs <- tsci_multisplit(df_treatment = df_treatment,
                              Y = Y,

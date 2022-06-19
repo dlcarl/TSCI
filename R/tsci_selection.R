@@ -156,21 +156,22 @@ tsci_selection <- function(Y_A1,
       beta_diff[q + 1, (q + 1):(Qmax)] <- abs(Coef_Qmax[q + 1] - Coef_Qmax[(q + 2):(Qmax + 1)]) # use bias-corrected estimator
     }
     # bootstrap for the quantile of the differences
-    max_val <- rep(NA, 300)
-    eps_Qmax_cent <- eps_Qmax - mean(eps_Qmax)
-    for (i in seq_len(300)) {
-      diff_mat <- matrix(0, Qmax, Qmax)
-      eps <- eps_Qmax_cent * rnorm(n_A1)
-      eps_rep <- weight %*% eps
-      for (q1 in seq_len(Qmax) - 1) {
-        for (q2 in (q1 + 1):(Qmax)) {
-          diff_mat[q1 + 1, q2] <- sum(D_resid[[q2 + 1]] * eps_rep) /
-            (D_RSS[q2 + 1]) - sum(D_resid[[q1 + 1]] * eps_rep) / (D_RSS[q1 + 1])
-        }
-      }
-      diff_mat <- abs(diff_mat) / sqrt(H)
-      max_val[i] <- max(diff_mat, na.rm = TRUE)
-    }
+    B <- 300
+    eps_Qmax_cent <- as.vector(eps_Qmax - mean(eps_Qmax))
+    eps_rep_matrix <- weight %*% (eps_Qmax_cent * matrix(rnorm(n_A1 * B), ncol = B))
+    diff_mat <- matrix(0, Qmax, Qmax)
+    max_val <-
+      apply(eps_rep_matrix, 2,
+            FUN = function(eps_rep) {
+              for (q1 in seq_len(Qmax) - 1) {
+                for (q2 in (q1 + 1):(Qmax)) {
+                  diff_mat[q1 + 1, q2] <- sum(D_resid[[q2 + 1]] * eps_rep) /
+                    (D_RSS[q2 + 1]) - sum(D_resid[[q1 + 1]] * eps_rep) / (D_RSS[q1 + 1])
+                }
+              }
+              diff_mat <- abs(diff_mat) / sqrt(H)
+              max(diff_mat, na.rm = TRUE)
+            })
     z_alpha <- 1.01 * quantile(max_val, 0.975)
     diff_thol <- z_alpha * sqrt(H)
     # comparison matrix

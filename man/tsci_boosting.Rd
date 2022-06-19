@@ -55,7 +55,7 @@ tsci_boosting(
 
 \item{early_stopping}{logical, hyperparameter of the boosting algorithm. If \code{TRUE} early stopping will be applied.}
 
-\item{nfolds}{numeric, the number of folds for the k-fold cross validation.}
+\item{nfolds}{numeric, the number of folds for the k-fold cross-validation.}
 
 \item{str_thol}{minimal value of the threshold of IV strength test, default by 10}
 
