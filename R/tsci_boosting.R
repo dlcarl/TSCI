@@ -163,7 +163,7 @@ tsci_boosting <- function(Y,
   # use A2 to train and use A1 to predict
   n_A1 <- round(split_prop * n)
   n_A2 <- n - n_A1
-  A1_ind <- seq_len(n_A1)
+  A1_ind <- sample(seq_len(n), n_A1)
   df_treatment_A1 <- df_treatment[A1_ind, ]
   df_treatment_A2 <- df_treatment[-A1_ind, ]
 
