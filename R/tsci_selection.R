@@ -98,7 +98,7 @@ tsci_selection <- function(Y_A1,
       )
     }
     # the necessary statistics
-    output$sd_all[index] <- stat_outputs$sd
+    output$sd_all[index + 1] <- stat_outputs$sd
     output$iv_str[index] <- stat_outputs$iv_str
     output$iv_thol[index] <- stat_outputs$iv_thol
     D_resid[[index]] <- stat_outputs$D_resid
@@ -125,7 +125,7 @@ tsci_selection <- function(Y_A1,
 
   # Compute bias-corrected estimators
   for (i in seq_len(Q)) {
-    output$Coef_all[i] <- Coef_all[i] - sum(diag_M_list[[i]] * delta_hat * eps_hat[[i]]) / D_RSS[i]
+    output$Coef_all[i + 1] <- Coef_all[i] - sum(diag_M_list[[i]] * delta_hat * eps_hat[[i]]) / D_RSS[i]
   }
 
   # If IV test fails at q0 or q1, we do not need to do selection
@@ -204,8 +204,8 @@ tsci_selection <- function(Y_A1,
   Coef_OLS <- OLS[2, 1]
   sd_OLS <- OLS[2, 2]
   # add OLS to Coef_all
-  output$Coef_all[Q + 1] <- Coef_OLS
-  output$sd_all[Q + 1] <- sd_OLS
+  output$Coef_all[1] <- Coef_OLS
+  output$sd_all[1] <- sd_OLS
 
   # confidence intervals and p values for all violation spaces
   output$CI_all[] <-
@@ -222,24 +222,24 @@ tsci_selection <- function(Y_A1,
   output$q_robust[] <- 0
   if (Qmax >= 1) {
     q_robust <- min(q_comp + 1, Qmax)
-    output$Coef_robust[1] <- output$Coef_all[q_comp + 1]
-    output$Coef_robust[2] <- output$Coef_all[q_robust + 1]
-    output$sd_robust[1] <- output$sd_all[q_comp + 1]
-    output$sd_robust[2] <- output$sd_all[q_robust + 1]
+    output$Coef_robust[1] <- output$Coef_all[q_comp + 2]
+    output$Coef_robust[2] <- output$Coef_all[q_robust + 2]
+    output$sd_robust[1] <- output$sd_all[q_comp + 2]
+    output$sd_robust[2] <- output$sd_all[q_robust + 2]
   } else if (Qmax == 0) {
     q_comp <- 0
     q_robust <- 0
-    output$Coef_robust[1] <- output$Coef_all[q_comp + 1]
-    output$Coef_robust[2] <- output$Coef_all[q_robust + 1]
-    output$sd_robust[1] <- output$sd_all[q_comp + 1]
-    output$sd_robust[2] <- output$sd_all[q_robust + 1]
+    output$Coef_robust[1] <- output$Coef_all[q_comp + 2]
+    output$Coef_robust[2] <- output$Coef_all[q_robust + 2]
+    output$sd_robust[1] <- output$sd_all[q_comp + 2]
+    output$sd_robust[2] <- output$sd_all[q_robust + 2]
   } else if (Qmax == -1) {
     q_comp <- -1
     q_robust <- -1
-    output$Coef_robust[1] <- output$Coef_all[Q + 1]
-    output$Coef_robust[2] <- output$Coef_all[Q + 1]
-    output$sd_robust[1] <- output$sd_all[Q + 1]
-    output$sd_robust[2] <- output$sd_all[Q + 1]
+    output$Coef_robust[1] <- output$Coef_all[Q + 2]
+    output$Coef_robust[2] <- output$Coef_all[Q + 2]
+    output$sd_robust[1] <- output$sd_all[Q + 2]
+    output$sd_robust[2] <- output$sd_all[Q + 2]
   }
   output$Qmax[Qmax + 2] <- 1
   output$q_comp[q_comp + 2] <- 1

@@ -8,7 +8,7 @@
 #'
 tsci_fit_NA_return <- function(Q) {
   Coef_all <- sd_all <- pval_all <- rep(NA, Q + 1)
-  names(Coef_all) <- names(sd_all) <- names(pval_all) <- c(paste("TSCI-Cor-q", seq(0, Q - 1), sep = ""), "OLS")
+  names(Coef_all) <- names(sd_all) <- names(pval_all) <- c("OLS", paste("TSCI-Cor-q", seq(0, Q - 1), sep = ""))
   CI_all <- matrix(NA, nrow = 2, ncol = Q + 1)
   rownames(CI_all) <- c("lower", "upper")
   colnames(CI_all) <- names(Coef_all)

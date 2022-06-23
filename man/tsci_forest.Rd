@@ -2,13 +2,13 @@
 % Please edit documentation in R/tsci_forest.R
 \name{tsci_forest}
 \alias{tsci_forest}
-\title{Two Stage Curvature Identification with Random Forests.}
+\title{Two Stage Curvature Identification with Random Forests}
 \usage{
 tsci_forest(
   Y,
   D,
   Z,
-  X,
+  X = NULL,
   intercept = TRUE,
   vio_space = NULL,
   split_prop = 2/3,
@@ -19,124 +19,207 @@ tsci_forest(
   self_predict = TRUE,
   str_thol = 10,
   alpha = 0.05,
-  parallel = "no",
-  nsplits = 1,
   mult_split_method = "DML",
+  nsplits = 10,
+  parallel = "no",
   ncores = 1,
   cl = NULL
 )
 }
 \arguments{
-\item{Y}{outcome with dimension n by 1.}
+\item{Y}{observations of the outcome variable. Either a numeric vector of length n
+or a numeric matrix with dimension n by 1.}
 
-\item{D}{treatment with dimension n by 1.}
+\item{D}{observations of the treatment variable. Either a numeric vector of length n
+or a numeric matrix with dimension n by 1.}
 
-\item{Z}{instrument variable with dimension n by 1.}
+\item{Z}{observations of the instrumental variable(s). Either a numeric vector of length n
+or a numeric matrix with dimension n by s.}
 
-\item{X}{baseline covariates with dimension n by p.}
+\item{X}{observations of baseline covariate(s). Either a numeric vector of length n
+or a numeric matrix with dimension n by p or \code{NULL}
+(if no covariates should be included).}
 
-\item{intercept}{logic, including the intercept or not in the outcome model, default by TRUE.}
+\item{intercept}{logical. If \code{TRUE} an intercept is included in the outcome model.}
 
-\item{vio_space}{a matrix or a list. If a matrix, then each column corresponds to a violation form of Z; If a list, then each element corresponds to a violation form of Z and must be a matrix of n rows, e.g. (Z^3,Z^2); If NULL, then default by the n by 3 matrix (Z^3, Z^2, Z). Violation form selection will be performed according to provided violation forms, for example, null violation space vs Z vs (Z^2, Z) vs (Z^3, Z^2, Z) in the default case.}
+\item{vio_space}{either a numeric matrix with dimension n by q or a list with
+numeric vectors of length n and/or numeric matrices with n rows as elements to
+specify the violation space candidates or \code{NULL}.
+If a matrix or a list, then the violation space candidates (in form of matrices)
+are defined sequentially starting with an empty violation matrix and subsequently
+adding the next column of the matrix or element of the list to the current violation matrix.
+If \code{NULL}, then the violation space candidates are the spaces of polynomials up to the 3-th order.
+See Details for more information.}
 
-\item{split_prop}{numeric, proportion of observations used to fit the outcome model.}
+\item{split_prop}{proportion of observations used to fit the outcome model. Has to be a value in (0, 1).}
 
-\item{num_trees}{number of trees in Random Forests, default by 200.}
+\item{num_trees}{number of trees in random forests.
+Can either be a single integer value or a vector containing multiple integer values to try.}
 
-\item{mtry}{number of covariates to possibly split at in each node of the tree in Random Forests, default by a sequence from round((p+1)/3) to round(2(p+1)/3).}
+\item{mtry}{number of covariates to possibly split at in each node of the tree in random forests.
+Can either be a single numeric value or a vector containing multiple numeric values to try. The values have to be in (0, 1].}
 
-\item{max_depth}{maximal tree depth in Random Forests, default by 0, which refers to unlimited depth.}
+\item{max_depth}{maximal tree depth in random forests.
+Can either be a single integer value or a vector containing multiple integer values to try.
+0 correspond to unlimited depth.}
 
-\item{min_node_size}{minimal size of each leaf node in Random Forests, default by the set {5, 10, 15}.}
+\item{min_node_size}{minimal size of each leaf node in random forests.
+Can either be a single integer value or a vector containing multiple integer values to try.}
 
-\item{self_predict}{logic, if \code{FALSE} it sets the diagonal of the hat matrix of each tree to zero and rescales the off-diagonal elements accordingly.}
+\item{self_predict}{logical, if \code{FALSE} it sets the diagonal of the hat matrix
+of each tree to zero to avoid self prediction and rescales the off-diagonal elements accordingly.}
 
-\item{str_thol}{minimal value of the threshold of IV strength test, default by 10.}
+\item{str_thol}{minimal value of the threshold of IV strength test.}
 
-\item{alpha}{the significance level, default by 0.05.}
+\item{alpha}{the significance level.}
+
+\item{mult_split_method}{method to calculate the standard errors and p-values
+and to construct the confidence intervals if multi-splitting is performed.
+Either 'DML' or 'FWER'. See Details.}
+
+\item{nsplits}{number of times the data will be split. Has to be an integer larger or equal 1.}
 
 \item{parallel}{One out of \code{"no"}, \code{"multicore"}, or \code{"snow"} specifying the parallelization method used.}
 
-\item{nsplits}{numeric, number of times the data will be split.}
+\item{ncores}{the number of cores to use.}
 
-\item{mult_split_method}{method to for inference if multi-splitting is performed. Either 'DML' or 'FWER'.}
-
-\item{ncores}{numeric, the number of cores used. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.}
-
-\item{cl}{Either an parallel or snow cluster or \code{NULL}.}
+\item{cl}{either an parallel or snow cluster or \code{NULL}.}
 }
 \value{
+A list containing the following elements:
 \describe{
-\item{\code{Coef_all}}{a series of point estimators of treatment effect corresponding to different violation spaces and the OLS.}
+\item{\code{Coef_all}}{a series of point estimates of the treatment effect
+for the different violation space candidates and the OLS estimate.}
 \item{\code{sd_all}}{standard errors of Coef_all.}
-\item{\code{CI_all}}{confidence intervals for the treatment effect corresponding to different violation spaces and the OLS.}
-\item{\code{Coef_robust}}{the point estimators corresponding to the violation space selected by the robust comparison.}
+\item{\code{pvall_all}}{p-values of the treatment effect estimates for the
+different violation space candidates and for the OLS estimate.}
+\item{\code{CI_all}}{confidence intervals for the treatment effect for the
+different violation space candidates and for the OLS estimate.}
+\item{\code{Coef_robust}}{the point estimators of the treatment effect for
+the selected violation spaces.}
 \item{\code{sd_robust}}{the standard errors of Coef_robust.}
-\item{\code{CI_robust}}{confidence intervals for the treatment effect with the violation space selected by the robust comparison.}
-\item{\code{iv_str}}{IV strength corresponding to different violation spaces.}
-\item{\code{iv_thol}}{the threshold of IV strength test corresponding to different violation spaces.}
-\item{\code{Qmax}}{the index of largest violation space selected by IV strength test. If -1, the IV strength test fails for null violation space and run OLS. If 0, the IV Strength test fails for the null violation space and run TSRF only for null violation space. In other cases, violation space selection is performed.}
-\item{\code{q_hat}}{the index of estimated violation space corresponding to Qmax.}
-\item{\code{invalidity}}{invalidity of TSLS. If TRUE, the IV is invalid; Otherwise, the IV is valid.}
+\item{\code{pvall_all}}{p-values of the treatment effect estimates for the
+selected violation spaces.}
+\item{\code{CI_robust}}{confidence intervals for the treatment effect for
+the selected violation spaces.}
+\item{\code{iv_str}}{IV strength for the different violation space candidates.}
+\item{\code{iv_thol}}{the threshold for the different violation space candidates.}
+\item{\code{Qmax}}{a named vector containing the number of times the
+violation space candidates were the largest acceptable violation space by
+the IV strength test.
+The value of the element named "OLS" is the number of times the instrument
+was too weak even for the empty violation space.}
+\item{\code{q_comp}}{a named vector containing the number of times the
+violation space candidates were the selected violation space.
+The value of the element named "OLS" is the number of times the instrument
+was too weak even for the empty violation space.}
+\item{\code{q_robust}}{a named vector containing the number of times the
+violation space candidates were the selected violation space by the robust method.
+The value of the element named "OLS" is the number of times the instrument
+was too weak even for the empty violation space.}
+\item{\code{invalidity}}{a named vector containing the number of times
+the instrument was considered valid and invalid. The instrument is considered
+invalid if the selected violation space is larger than the empty space.}
+\item{\code{mse}}{the out-of-sample mean squared error of the treatment model.}
 }
 }
 \description{
-This function implements Two Stage Curvature Identification with the Random Forests. It tests the IV strength and chooses the best violation form, and also constructs the confidence interval for the treatment effect with the selected violation form.
+\code{tsci_forest} implements Two Stage Curvature Identification
+(Guo and Bühlmann 2022) with random forests. Through a data-dependent way it
+tests for the smallest sufficiently large violation space among a pre-specified
+sequence of nested violation space candidates. Point and uncertainty estimates
+of the treatment effect for all violation space candidates including the
+selected violation space will be returned amongst other relevant statistics.
+}
+\details{
+The treatment and outcome models are assumed to be of the following forms:
+\deqn{D_i = g(Z_i, X_i) + \delta_i}
+\deqn{Y_i = \beta * D_i + h(Z_i, X_i) + \epsilon_i}
+where \eqn{g(Z_i, X_i)} is estimated using a random forest and
+\eqn{h(Z_i X_i)} is approximated using the violation space candidates and by
+a linear combination of baseline covariates. The errors are allowed to be heteroscedastic.
+To avoid overfitting bias the data is randomly split into two subsets \eqn{A1} and \eqn{A2}
+where the proportion of number of observations in the two sets is specified by \code{split_prop}.
+\eqn{A2} is used to train the random forest and \eqn{A1} is used to fit the outcome model. \cr \cr
+The package \code{ranger} is used to fit the random forest. If any of \code{num_trees},
+\code{max_depth} or \code{min_node_size} has more than one value,
+the best parameter combination is chosen by minimizing the out-of-bag mean squared error. \cr \cr
+The violation space candidates are required to be in a nested sequence. The specification
+of suitable violation space candidates is a crucial step because a poor approximation
+of \eqn{h(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
+If \code{vio_space} is \code{NULL} the violation space candidates are chosen to be
+\eqn{{}, {Z1, Z2, ..., Zs}, {Z1, Z2, ..., Zs, Z1^2, Z2^2, ..., Z2^2}} and
+\eqn{{Z1, Z2, ..., Zs, Z1^2, Z2^2, ..., Z2^2, Z1^3, Z2^3, ..., Z2^3}} thus implicitly assuming
+that there are no interactions between the instruments and the covariates and
+between the instruments themselves in the outcome model. \cr \cr
+If \code{nsplits} is larger than 1, point estimates are aggregated by medians
+and standard errors, p-values and confidence intervals are obtained by the method
+specified by the parameter \code{mult_split_method}. 'DML' uses the approach by
+Chernozhukov et al. (2018). 'FWER' uses the approach by Meinshausen et al. (2009)
+and controls for the family-wise error rate. 'FWER' does not provide standard errors.
+For large sample sizes a large values for \code{nsplits} can lead to a high
+running time as for each split a new hat matrix must be calculated.
+The same parameter combination for the random forest is used for all n splits and
+is selected by a separate data split.
 }
 \examples{
 # dimension
-p = 10
+p <- 10
 # sample size
-n = 1000
+n <- 1000
 # interaction value
-inter.val = 1
+inter_val <- 1
 # the IV strength
-a = 1
+a <- 1
 # violation strength
-tau = 1
-f = function(x){a*(1*sin(2*pi*x) + 1.5*cos(2*pi*x))}
-rho1=0.5
-# function to generate covariance matrix
-A1gen=function(rho,p){
-  A1=matrix(0,p,p)
-  for(i in 1:p){
-    for(j in 1:p){
-      A1[i,j]=rho^(abs(i-j))
-    }
-  }
-  A1
-}
-Cov=(A1gen(rho1,p+1))
-mu=rep(0,p+1)
+tau <- 1
+f <- function(x) {a * (1 * sin(2 * pi * x) + 1.5 * cos(2 * pi * x))}
+rho <- 0.5
+Cov <- stats::toeplitz(rho^c(0 : p))
+mu <- rep(0, p + 1)
 # true effect
-beta=1
-alpha=as.matrix(rep(-0.3,p))
-gamma=as.matrix(rep(0.2,p))
-inter=as.matrix(c(rep(inter.val,5),rep(0,p-5)))
+beta <- 1
+alpha <- as.matrix(rep(-0.3, p))
+gamma <- as.matrix(rep(0.2, p))
+inter <- as.matrix(c(rep(inter_val, 5),rep(0, p - 5)))
 
 
 # generate the data
-mu.error=rep(0,2)
-Cov.error=matrix(c(1,0.5,0.5,1),2,2)
-Error=MASS::mvrnorm(n, mu.error, Cov.error)
-W.original=MASS::mvrnorm(n, mu, Cov)
-W=pnorm(W.original)
+mu_error <- rep(0,2)
+Cov_error <- matrix(c(1, 0.5, 0.5,1), 2, 2)
+Error <- MASS::mvrnorm(n, mu_error, Cov_error)
+W_original <- MASS::mvrnorm(n, mu, Cov)
+W <- pnorm(W_original)
 # instrument variable
-Z=W[,1]
+Z <- W[, 1]
 # baseline covariates
-X=W[,-1]
+X <- W[, -1]
 # generate the treatment variable D
-D=f(Z)+X\%*\%alpha+Z*X\%*\%inter+Error[,1]
+D <- f(Z) + X \%*\% alpha + Z * X \%*\% inter + Error[, 1]
 # generate the outcome variable Y
-Y=D*beta+tau*Z+X\%*\%gamma+Error[,2]
+Y <- D * beta + tau * Z + X \%*\% gamma + Error[, 2]
 
 
 # Two Stage Random Forest
-output.RF = tsci_forest(Y,D,Z,X)
+output_RF <- tsci_forest(Y, D, Z, X)
 # point estimates
-output.RF$Coef_robust
+output_RF$Coef_robust
 # standard errors
-output.RF$sd_robust
+output_RF$sd_robust
 # confidence intervals
-output.RF$CI_robust
+output_RF$CI_robust
+}
+\references{
+\itemize{
+\item{Zijian Guo, and Peter Bühlmann. Two Stage Curvature Identification with
+Machine Learning: Causal Inference with Possibly Invalid Instrumental Variables.
+\emph{arXiv:2203.12808}, 2022}
+\item{Nicolai Meinshausen, Lukas Meier, and Peter Bühlmann. P-values for high-dimensional
+regression. \emph{Journal of the American Statistical Association},
+104(488):1671-1681, 2009. 16, 18}
+\item{Victor Chernozhukov, Denis Chetverikov, Mert Demirer, Esther Duflo, Christian Hansen,
+Whitney Newey, and James Robins. Double/debiased machine learning for treatment
+and structural parameters: Double/debiased machine learning.
+\emph{The Econometrics Journal}, 21(1), 2018. 4, 16, 18}
+}
 }
