@@ -49,7 +49,6 @@ get_forest_hatmatrix <- function(df_treatment_A1, df_treatment_A2, params) {
     }
     forest_hatmatrix <- forest_hatmatrix + tree_hatmatrix / num_trees
   }
-  #forest_hatmatrix <- Matrix::Matrix(forest_hatmatrix, sparse = T) # sparse matrix to save memory
   return(list(
     "weight" = forest_hatmatrix,
     "model" = forest_A2

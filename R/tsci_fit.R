@@ -71,9 +71,9 @@ tsci_fit <- function(df_treatment,
     stop("The samples to construct transformation matrix must be the same as samples in A1")
   }
 
-  Y_A1 <- Y[A1_ind]
-  D_A1 <- D[A1_ind]
-  X_A1 <- X[A1_ind]
+  Y_A1 <- Y[A1_ind, ]
+  D_A1 <- D[A1_ind, ]
+  X_A1 <- X[A1_ind, ]
 
   vio_space <- list_vio_space$vio_space[A1_ind, ]
   rm_ind <- list_vio_space$rm_ind

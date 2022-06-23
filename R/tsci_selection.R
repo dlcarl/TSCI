@@ -40,11 +40,9 @@ tsci_selection <- function(Y_A1,
                            str_thol,
                            alpha) {
   Cov_aug_A1 <- cbind(vio_space, X_A1)
-
   Y_rep <- as.matrix(weight %*% Y_A1)
   D_rep <- as.matrix(weight %*% D_A1)
   Cov_rep <- as.matrix(weight %*% Cov_aug_A1)
-
   n_A1 <- NROW(Y_rep)
 
   # initialize output list
@@ -214,7 +212,7 @@ tsci_selection <- function(Y_A1,
     rbind(output$Coef_all + qnorm(alpha / 2) * output$sd_all,
           output$Coef_all + qnorm(1 - alpha / 2) * output$sd_all)
   output$pval_all[] <-
-    sapply(seq_len(length(output$CI_all)),
+    sapply(seq_len(length(output$Coef_all)),
       FUN = function(i) p_val(Coef = output$CI_all[i], SE = output$sd_all[i], beta_test = 0)
     )
 
@@ -252,7 +250,7 @@ tsci_selection <- function(Y_A1,
     output$Coef_robust + qnorm(1 - alpha / 2) * output$sd_robust
   )
   output$pval_robust[] <-
-    sapply(seq_len(length(output$CI_robust)),
+    sapply(seq_len(length(output$Coef_robust)),
       FUN = function(i) p_val(Coef = output$CI_robust[i], SE = output$sd_robust[i], beta_test = 0)
     )
 

@@ -52,7 +52,7 @@ tsci_secondstage <- function(Y,
   D <- as.matrix(D)
   Z <- as.matrix(Z)
   X <- as.matrix(X)
-  n <- length(Y)
+  n <- NROW(Y)
   n_A1 <- length(A1_ind)
 
   if (nrow(weight) != ncol(weight)) {
@@ -67,9 +67,9 @@ tsci_secondstage <- function(Y,
   rm_ind <- list_vio_space$rm_ind
   Q <- list_vio_space$Q
 
-  Y_A1 <- Y[A1_ind]
-  D_A1 <- D[A1_ind]
-  X_A1 <- X[A1_ind]
+  Y_A1 <- Y[A1_ind, ]
+  D_A1 <- D[A1_ind, ]
+  X_A1 <- X[A1_ind, ]
 
   outputs <- tsci_selection(
     Y_A1 = Y_A1,
