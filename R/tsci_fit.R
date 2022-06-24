@@ -52,20 +52,11 @@ tsci_fit <- function(df_treatment,
   n_A1 <- length(A1_ind)
 
   # fit treatment model and get hat matrix.
-  tictoc::tic("hat matrix step")
   model_treatment <- function_hatmatrix(
     df_treatment_A1 = df_treatment_A1,
     df_treatment_A2 = df_treatment_A2,
     params = params
   )
-  tictoc::toc()
-
-  if (nrow(model_treatment$weight) != ncol(model_treatment$weight)) {
-    stop("Transformation matrix must be a square matrix")
-  }
-  if (nrow(model_treatment$weight) != n_A1) {
-    stop("The samples to construct transformation matrix must be the same as samples in A1")
-  }
 
   Y_A1 <- Y[A1_ind, ]
   D_A1 <- D[A1_ind, ]
@@ -81,7 +72,6 @@ tsci_fit <- function(df_treatment,
 
 
   # estimate treatment effect on outcome using TSCI.
-  tictoc::tic("violation space selection step")
   outputs <- tsci_selection(
     Y = Y,
     D = D,
@@ -97,7 +87,6 @@ tsci_fit <- function(df_treatment,
     str_thol = str_thol,
     alpha = alpha
   )
-  tictoc::toc()
 
   return(outputs)
 }

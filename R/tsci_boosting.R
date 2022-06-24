@@ -347,12 +347,10 @@ tsci_boosting <- function(Y,
   df_treatment_A2 <- df_treatment[-A1_ind, ]
 
   # perform cross-validation to select boosting hyperparameters
-  tictoc::tic("hyperparameter tuning step")
   treeboost_CV <- get_l2boost_parameters(
     df_treatment_A2 = df_treatment_A2,
     params_grid = params_grid,
     nfolds = nfolds)
-  tictoc::toc()
 
   # Selection
   outputs <- tsci_multisplit(df_treatment = df_treatment,
