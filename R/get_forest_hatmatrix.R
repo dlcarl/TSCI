@@ -28,7 +28,7 @@ get_forest_hatmatrix <- function(df_treatment_A1, df_treatment_A2, params) {
   forest_A2 <- ranger(D ~ .,
                       data = df_treatment_A2,
                       num.trees = params$num_trees,
-                      mtry = params$mtry,
+                      mtry = params$mtry[[1]],
                       max.depth = params$max_depth,
                       min.node.size = params$min_node_size,
                       importance = "impurity"

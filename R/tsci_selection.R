@@ -1,9 +1,12 @@
 
 #' Violation Space Selection
 #'
-#' @param Y_A1 outcome with dimension n by 1
-#' @param D_A1 treatment with dimension n by 1
-#' @param X_A1 baseline covariates with dimension n by p
+#' @param Y outcome with dimension n by 1
+#' @param D treatment with dimension n by 1
+#' @param X baseline covariates with dimension n by p
+#' @param Y_A1 outcome with dimension n_A1 by 1
+#' @param D_A1 treatment with dimension n_A1 by 1
+#' @param X_A1 baseline covariates with dimension n_A1 by p
 #' @param vio_space the \code{matrix} of the largest violation space
 #' @param rm_ind a \code{list} containing the indices to remove to obtain the violation spaces to test for (including the null space).
 #' @param Q the number of violation spaces (including the null space).
@@ -29,7 +32,10 @@
 #'
 #' @importFrom stats coef lm qnorm quantile resid rnorm
 #'
-tsci_selection <- function(Y_A1,
+tsci_selection <- function(Y,
+                           D,
+                           X,
+                           Y_A1,
                            D_A1,
                            X_A1,
                            vio_space,
@@ -44,6 +50,7 @@ tsci_selection <- function(Y_A1,
   D_rep <- as.matrix(weight %*% D_A1)
   Cov_rep <- as.matrix(weight %*% Cov_aug_A1)
   n_A1 <- NROW(Y_rep)
+  p_outcome <- NCOL(Cov_aug_A1) # this is needed for a case distinction if there are no covariates.
 
   # initialize output list
   output <- tsci_fit_NA_return(Q = Q)
@@ -78,7 +85,26 @@ tsci_selection <- function(Y_A1,
         delta_hat,
         str_thol = str_thol
       )
-    } else {
+    } else if (length(rm_ind[[index]]) >= p_outcome) {
+      if (intercept) {
+        reg_ml <- lm(Y_rep ~ D_rep)
+        betaHat <- coef(reg_ml)[2]
+      } else {
+        reg_ml <- lm(Y_rep ~ D_rep - 1)
+        betaHat <- coef(reg_ml)[1]
+      }
+      Coef_all[index] <- betaHat
+      eps_hat[[index]] <-
+        Y_A1 - D_A1 * betaHat - mean(Y_A1 - D_A1 * betaHat)
+      stat_outputs <- tsci_secondstage_stats(D_rep,
+                                             matrix(1, nrow = n_A1),
+                                             weight,
+                                             eps_hat[[index]],
+                                             delta_hat,
+                                             str_thol = str_thol
+      )
+    }
+    else {
       if (intercept) {
         reg_ml <- lm(Y_rep ~ D_rep + Cov_rep[, -rm_ind[[index]]])
         betaHat <- coef(reg_ml)[2]
@@ -200,7 +226,11 @@ tsci_selection <- function(Y_A1,
   }
 
   # OLS estimator
-  OLS <- summary(lm(Y ~ D + X))$coefficients
+  if (is.null(X)) {
+    OLS <- summary(lm(Y ~ D))$coefficients
+  } else {
+    OLS <- summary(lm(Y ~ D + X))$coefficients
+  }
   Coef_OLS <- OLS[2, 1]
   sd_OLS <- OLS[2, 2]
   # add OLS to Coef_all
@@ -236,10 +266,10 @@ tsci_selection <- function(Y_A1,
   } else if (Qmax == -1) {
     q_comp <- -1
     q_robust <- -1
-    output$Coef_robust[1] <- output$Coef_all[Q + 2]
-    output$Coef_robust[2] <- output$Coef_all[Q + 2]
-    output$sd_robust[1] <- output$sd_all[Q + 2]
-    output$sd_robust[2] <- output$sd_all[Q + 2]
+    output$Coef_robust[1] <- output$Coef_all[1]
+    output$Coef_robust[2] <- output$Coef_all[1]
+    output$sd_robust[1] <- output$sd_all[1]
+    output$sd_robust[2] <- output$sd_all[1]
   }
   output$Qmax[Qmax + 2] <- 1
   output$q_comp[q_comp + 2] <- 1

@@ -13,7 +13,7 @@ tsci_forest(
   vio_space = NULL,
   split_prop = 2/3,
   num_trees = 200,
-  mtry = seq(round((p + 1)/3), round(2 * (p + 1)/3), by = 1),
+  mtry = list(function(p) round(sqrt(p))),
   max_depth = 0,
   min_node_size = c(5, 10, 20),
   self_predict = TRUE,
@@ -57,7 +57,9 @@ See Details for more information.}
 Can either be a single integer value or a vector containing multiple integer values to try.}
 
 \item{mtry}{number of covariates to possibly split at in each node of the tree in random forests.
-Can either be a single numeric value or a vector containing multiple numeric values to try. The values have to be in (0, 1].}
+Can either be a single numeric value, a vector containing multiple numeric values, a single to try.
+Can also be a list of single argument function(s) returning an integer, given the number of independent variables.
+The values have to be positive integers not larger than the number of independent variables in the treatment model.}
 
 \item{max_depth}{maximal tree depth in random forests.
 Can either be a single integer value or a vector containing multiple integer values to try.

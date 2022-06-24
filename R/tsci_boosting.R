@@ -201,18 +201,124 @@ tsci_boosting <- function(Y,
                           mult_split_method = "DML",
                           ncores = 1,
                           cl = NULL) {
-  if (!is.null(vio_space)) {
-    if (class(vio_space)[1] != "matrix" & class(vio_space)[1] != "list") {
-      stop("The violation space must be input as matrix or list")
-    }
+
+  # check that input is in the correct format
+  error_message <- NULL
+  if (!is.numeric(Y))
+    error_message <- paste(error_message, "Y is not numeric.", sep = "\n")
+  if (!is.numeric(D))
+    error_message <- paste(error_message, "D is not numeric.", sep = "\n")
+  if (!is.numeric(Z))
+    error_message <- paste(error_message, "Z is not numeric.", sep = "\n")
+  if (!is.numeric(X) & !is.null(X))
+    error_message <- paste(error_message, "X is not numeric.", sep = "\n")
+  if (!is.logical(intercept))
+    error_message <- paste(error_message, "intercept is neither TRUE nor FALSE.", sep = "\n")
+  if (!is.matrix(vio_space) & !is.list(vio_space) & !is.null(vio_space))
+    error_message <- paste(error_message, "vio_space is neither a matrix nor a list nor NULL", sep = "\n")
+  if (is.matrix(vio_space)) {
+    if (!is.numeric(vio_space))
+      error_message <- paste(error_message, "vio_space is not numeric", sep = "\n")
+  } else if (is.list(vio_space)) {
+    if (!is.numeric(unlist(vio_space)))
+      error_message <- paste(error_message, "vio_space is not numeric", sep = "\n")
   }
-  if (!is.null(mult_split_method)) {
-    if (!(mult_split_method %in% c("FWER", "DML"))) {
-      stop("No valid multi-splitting inference method selected. Choose either 'DML' or 'FWER'.")
-    }
+  if (!is.numeric(split_prop))
+    error_message <- paste(error_message, "split_prop is not numeric.", sep = "\n")
+  if (!is.numeric(nrounds))
+    error_message <- paste(error_message, "nrounds is not numeric.", sep = "\n")
+  if (!is.numeric(eta))
+    error_message <- paste(error_message, "eta is not numeric.", sep = "\n")
+  if (!is.numeric(max_depth))
+    error_message <- paste(error_message, "max_depth is not numeric.", sep = "\n")
+  if (!is.numeric(subsample))
+    error_message <- paste(error_message, "subsample is not numeric.", sep = "\n")
+  if (!is.numeric(colsample_bytree))
+    error_message <- paste(error_message, "colsample_bytree is not numeric.", sep = "\n")
+  if (!is.logical(early_stopping))
+    error_message <- paste(error_message, "early_stopping is neither TRUE nor FALSE", sep = "\n")
+  if (!is.numeric(nfolds))
+    error_message <- paste(error_message, "nfolds is not numeric.", sep = "\n")
+  if (!is.numeric(str_thol))
+    error_message <- paste(error_message, "str_thol is not numeric.", sep = "\n")
+  if (!is.numeric(alpha))
+    error_message <- paste(error_message, "alpha is not numeric.", sep = "\n")
+  if (!is.character(mult_split_method))
+    error_message <- paste(error_message, "mult_split_method is not character.", sep = "\n")
+  if (!is.numeric(nsplits))
+    error_message <- paste(error_message, "nsplits is not numeric.", sep = "\n")
+  if (!is.character(parallel))
+    error_message <- paste(error_message, "parallel is not character.", sep = "\n")
+  if (!is.numeric(ncores))
+    error_message <- paste(error_message, "ncores is not numeric.", sep = "\n")
+
+  if (!is.null(error_message))
+    stop(error_message)
+
+  # check if inputs are possible
+  p <- NCOL(Z) + ifelse(is.null(X), 0, NCOL(X))
+  if (length(unique(sapply(list(Y, D, Z), FUN = function(variable) NROW(variable)))) > 1)
+    error_message <- paste(error_message, "Y, D and Z have not the same amount of observations.", sep = "\n")
+  else {
+    n <- NROW(Y)
+    if (!is.null(X))
+      if(NROW(X) != n)
+        error_message <- paste(error_message, "X has not the same amount of observations as Y.", sep = "\n")
+    if (is.matrix(vio_space))
+      if (NROW(vio_space) != n)
+        error_message <- paste(error_message, "vio_space has not the same amount of observations as Y.", sep = "\n")
+    if (is.list(vio_space))
+      if (length(unique(sapply(vio_space, FUN = function(variable) NROW(variable)))) > 1)
+        error_message <- paste(error_message, "vio_space has not the same amount of observations as Y.", sep = "\n")
   }
-  Y = as.matrix(Y); D = as.matrix(D); Z = as.matrix(Z); X = as.matrix(X);
-  n = nrow(X); p = ncol(X)
+  if (any(is.na(Y)))
+    error_message <- paste(error_message, "There are NA's in Y.", sep = "\n")
+  if (any(is.na(D)))
+    error_message <- paste(error_message, "There are NA's in D.", sep = "\n")
+  if (any(is.na(Z)))
+    error_message <- paste(error_message, "There are NA's in Z.", sep = "\n")
+  if (!is.null(X))
+    if(any(is.na(X)))
+      error_message <- paste(error_message, "There are NA's in X.", sep = "\n")
+  if (is.matrix(vio_space))
+    if(any(is.na(vio_space)))
+      error_message <- paste(error_message, "There are NA's in vio_space.", sep = "\n")
+  if (is.list(vio_space))
+    if(any(is.na(unlist(vio_space))))
+      error_message <- paste(error_message, "There are NA's in vio_space.", sep = "\n")
+  if (split_prop <= 0 | split_prop >= 1)
+    error_message <- paste(error_message, "split_prop is not in (0, 1).", sep = "\n")
+  if (any(nrounds < 0))
+    error_message <- paste(error_message, "num_trees cannot be negative.", sep = "\n")
+  if (any(eta < 0))
+    error_message <- paste(error_message, "eta cannot be negative.", sep = "\n")
+  if (any(max_depth < 0))
+    error_message <- paste(error_message, "max_depth cannot be negative.", sep = "\n")
+  if (any(subsample < 0) | any(subsample > 1))
+    error_message <- paste(error_message, "subsample is not in [0, 1].", sep = "\n")
+  if (any(colsample_bytree < 0) | any(colsample_bytree > 1))
+    error_message <- paste(error_message, "colsample_bytree is not in [0, 1].", sep = "\n")
+  if (any(nfolds < 0))
+    error_message <- paste(error_message, "nfolds cannot be negative.", sep = "\n")
+  if (alpha > 0.5)
+    error_message <- paste(error_message, "alpha cannot be larget than 0.5.", sep = "\n")
+  if (!(mult_split_method %in% c("FWER", "DML")))
+    error_message <- paste(error_message, "No valid multi-splitting inference method
+                           selected. Choose either 'DML' or 'FWER'.", sep = "\n")
+  if (nsplits < 1)
+    error_message <- paste(error_message, "nsplits cannot be smaller than 1.", sep = "\n")
+  if (!(parallel %in% c("no", "multicore", "snow")))
+    error_message <- paste(error_message, "No valid parallelization method
+                           selected. Choose either 'no', 'multicore' or 'snow'.", sep = "\n")
+  if (ncores < 1)
+    error_message <- paste(error_message, "ncores cannot be smaller than 1.", sep = "\n")
+
+  if (!is.null(error_message))
+    stop(error_message)
+
+
+  Y = as.matrix(Y); D = as.matrix(D); Z = as.matrix(Z)
+  if (!is.null(X)) X <- as.matrix(X)
 
   do_parallel <- parallelization_setup(parallel = parallel, ncpus = ncores, cl = cl)
 
@@ -229,9 +335,6 @@ tsci_boosting <- function(Y,
 
   # Treatment model fitting
   W <- as.matrix(cbind(Z, X))
-  D <- as.matrix(D)
-  n <- NROW(W)
-  p <- NCOL(W)
   df_treatment <- data.frame(cbind(D, W))
   names(df_treatment) <- c("D", paste("W", seq_len(p), sep = ""))
 

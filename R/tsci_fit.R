@@ -48,10 +48,6 @@ tsci_fit <- function(df_treatment,
   A1_ind <- sample(seq_len(n), n_A1)
   df_treatment_A1 <- df_treatment[A1_ind, ]
   df_treatment_A2 <- df_treatment[-A1_ind, ]
-  Y <- as.matrix(Y)
-  D <- as.matrix(D)
-  Z <- as.matrix(Z)
-  X <- as.matrix(X)
   n <- length(Y)
   n_A1 <- length(A1_ind)
 
@@ -73,7 +69,11 @@ tsci_fit <- function(df_treatment,
 
   Y_A1 <- Y[A1_ind, ]
   D_A1 <- D[A1_ind, ]
-  X_A1 <- X[A1_ind, ]
+  if (is.null(X)){
+    X_A1 <- NULL
+  } else {
+    X_A1 <- X[A1_ind, ]
+  }
 
   vio_space <- list_vio_space$vio_space[A1_ind, ]
   rm_ind <- list_vio_space$rm_ind
@@ -83,6 +83,9 @@ tsci_fit <- function(df_treatment,
   # estimate treatment effect on outcome using TSCI.
   tictoc::tic("violation space selection step")
   outputs <- tsci_selection(
+    Y = Y,
+    D = D,
+    X = X,
     Y_A1 = Y_A1,
     D_A1 = D_A1,
     X_A1 = X_A1,
