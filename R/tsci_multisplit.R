@@ -92,8 +92,6 @@ tsci_multisplit <- function(df_treatment,
     } else if (parallel == "snow") {
       if (is.null(cl)) {
         cl <- parallel::makePSOCKcluster(rep("localhost", ncores))
-        # export the namespace of dmlalg in order for the use the functions
-        # of the package TSML on the workers
         parallel::clusterExport(cl, varlist = getNamespaceExports("TSML"))
         if (RNGkind()[1L] == "L'Ecuyer-CMRG")
           parallel::clusterSetRNGStream(cl)
@@ -103,6 +101,48 @@ tsci_multisplit <- function(df_treatment,
       } else list_outputs <- parallel::parLapply(cl, seq_len(nsplits), tsci_parallel)
     }
   } else list_outputs <- lapply(seq_len(nsplits), tsci_parallel)
+
+  check_list_outputs <- check_output(list_outputs = list_outputs, ind_start = 1)
+
+  if (check_list_outputs$prop_na > 0.25) {
+    stop(paste0("In more then 25% of the sample splits the output statistics could not be calculated.",
+               check_list_outputs$error_string), call. = FALSE)
+  }
+
+  if (check_list_outputs$prop_na > 0) {
+    nsplits_new <- ceiling(nsplits * 0.5)
+    if (do_parallel) {
+      if (parallel == "multicore") {
+        list_outputs_new <- parallel::mclapply(seq_len(nsplits_new), tsci_parallel, mc.cores = ncores)
+      } else if (parallel == "snow") {
+        if (is.null(cl)) {
+          cl <- parallel::makePSOCKcluster(rep("localhost", ncores))
+          parallel::clusterExport(cl, varlist = getNamespaceExports("TSML"))
+          if (RNGkind()[1L] == "L'Ecuyer-CMRG")
+            parallel::clusterSetRNGStream(cl)
+          list_outputs_new <- parallel::parLapply(cl, seq_len(nsplits_new), tsci_parallel)
+          parallel::stopCluster(cl)
+          cl <- NULL # overwrite object which is responsible for the connection
+        } else list_outputs_new <- parallel::parLapply(cl, seq_len(nsplits_new), tsci_parallel)
+      }
+    } else list_outputs_new <- lapply(seq_len(nsplits_new), tsci_parallel)
+    check_list_outputs_new <- check_output(list_outputs = list_outputs_new, ind_start = nsplits + 1)
+    error_string <- paste0(check_list_outputs$error_string, check_list_outputs_new$error_string)
+    if ((1 - check_list_outputs_new$prop_na) * nsplits_new < check_list_outputs$prop_na * nsplits) {
+      stop(paste("Even after performing ",
+                 nsplits + nsplits_new,
+                 "sample splits there were still less than",
+                 nsplits,
+                 "for which the output statistics could be calculated.",
+                 error_string), call. = FALSE)
+    }
+    pos_na <- which(check_list_outputs$ind_na)
+    pos_stat <- which(!(check_list_outputs_new$ind_na))
+    for(i in seq_len(length(pos_na))) {
+      list_outputs[[pos_na[i]]] <- list_outputs_new[[pos_stat[i]]]
+    }
+    warning(error_string, call. = FALSE)
+  }
 
   aggregate_output(output_list = list_outputs, alpha = alpha, Q = list_vio_space$Q, mult_split_method = mult_split_method)
 }
