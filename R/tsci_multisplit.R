@@ -141,7 +141,15 @@ tsci_multisplit <- function(df_treatment,
     for(i in seq_len(length(pos_na))) {
       list_outputs[[pos_na[i]]] <- list_outputs_new[[pos_stat[i]]]
     }
-    warning(error_string, call. = FALSE)
+    warning(paste0("In ",
+                   sum(check_list_outputs$ind_na),
+                   " of the ",
+                   nrounds,
+                   " data splits the output statistics could not be calculated.",
+                   " Thus another ",
+                   nrounds_new,
+                   " data splits were performed.",
+                   error_string), call. = FALSE)
   }
 
   aggregate_output(output_list = list_outputs, alpha = alpha, Q = list_vio_space$Q, mult_split_method = mult_split_method)

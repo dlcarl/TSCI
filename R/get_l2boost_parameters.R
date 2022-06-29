@@ -25,7 +25,7 @@
 #' cv_fit$params_A2
 get_l2boost_parameters <- function(df_treatment_A2, params_grid, nfolds) {
   n_A2 <- NROW(df_treatment_A2)
-  # Position of column containing the residuals at each iteration of the boosting algorithm
+
   xgbD_A2 <- xgb.DMatrix(as.matrix(df_treatment_A2[, -1]), label = df_treatment_A2[, 1])
 
   MSE_CV_A2 <- Inf
@@ -56,7 +56,6 @@ get_l2boost_parameters <- function(df_treatment_A2, params_grid, nfolds) {
       m <- params_grid$nrounds[i]
     }
     if (mse_cv[m] <= MSE_CV_A2) {
-      ind <- i
       params_grid$nrounds[i] <- m
       params_A2 <- params_grid[i, ]
       MSE_CV_A2 <- mse_cv[m]

@@ -1,6 +1,6 @@
-#' Two Stage Curvature Identification with Random Forests
-#' @description \code{tsci_forest} implements Two Stage Curvature Identification
-#' (Guo and Bühlmann 2022) with random forests. Through a data-dependent way it
+#' Two Stage Curvature Identification with Basis Splines
+#' @description \code{tsci_boosting} implements Two Stage Curvature Identification
+#' (Guo and Bühlmann 2022) with basis splines. Through a data-dependent way it
 #' tests for the smallest sufficiently large violation space among a pre-specified
 #' sequence of nested violation space candidates. Point and uncertainty estimates
 #' of the treatment effect for all violation space candidates including the
@@ -24,29 +24,11 @@
 #' If \code{NULL}, then the violation space candidates are the spaces of polynomials up to the 3-th order.
 #' See Details for more information.
 #' @param intercept logical. If \code{TRUE} an intercept is included in the outcome model.
-#' @param split_prop proportion of observations used to fit the outcome model. Has to be a value in (0, 1).
-#' @param num_trees number of trees in random forests.
-#' Can either be a single integer value or a vector containing multiple integer values to try.
-#' @param mtry number of covariates to possibly split at in each node of the tree in random forests.
-#' Can either be a single numeric value, a vector containing multiple numeric values, a single to try.
-#' Can also be a list of single argument function(s) returning an integer, given the number of independent variables.
-#' The values have to be positive integers not larger than the number of independent variables in the treatment model.
-#' @param max_depth maximal tree depth in random forests.
-#' Can either be a single integer value or a vector containing multiple integer values to try.
-#' 0 correspond to unlimited depth.
-#' @param min_node_size minimal size of each leaf node in random forests.
-#' Can either be a single integer value or a vector containing multiple integer values to try.
-#' @param self_predict logical, if \code{FALSE} it sets the diagonal of the hat matrix
-#' of each tree to zero to avoid self prediction and rescales the off-diagonal elements accordingly.
+#' @param nknots xxx
+#' @param norder xxx
+#' @param nfolds number of folds used for cross-validation to choose best parameter combination.
 #' @param str_thol minimal value of the threshold of IV strength test.
 #' @param alpha the significance level.
-#' @param mult_split_method method to calculate the standard errors and p-values
-#' and to construct the confidence intervals if multi-splitting is performed.
-#' Either 'DML' or 'FWER'. See Details.
-#' @param nsplits number of times the data will be split. Has to be an integer larger or equal 1.
-#' @param parallel One out of \code{"no"}, \code{"multicore"}, or \code{"snow"} specifying the parallelization method used.
-#' @param ncores the number of cores to use.
-#' @param cl either an parallel or snow cluster or \code{NULL}.
 #'
 #' @return
 #' A list containing the following elements:
@@ -89,15 +71,15 @@
 #' @details The treatment and outcome models are assumed to be of the following forms:
 #' \deqn{D_i = g(Z_i, X_i) + \delta_i}
 #' \deqn{Y_i = \beta * D_i + h(Z_i, X_i) + \epsilon_i}
-#' where \eqn{g(Z_i, X_i)} is estimated using a random forest and
+#' where \eqn{g(Z_i, X_i)} is estimated using L2 boosting with regression trees as base learners and
 #' \eqn{h(Z_i X_i)} is approximated using the violation space candidates and by
 #' a linear combination of baseline covariates. The errors are allowed to be heteroscedastic.
 #' To avoid overfitting bias the data is randomly split into two subsets \eqn{A1} and \eqn{A2}
 #' where the proportion of number of observations in the two sets is specified by \code{split_prop}.
-#' \eqn{A2} is used to train the random forest and \eqn{A1} is used to fit the outcome model. \cr \cr
-#' The package \code{ranger} is used to fit the random forest. If any of \code{num_trees},
-#' \code{max_depth} or \code{min_node_size} has more than one value,
-#' the best parameter combination is chosen by minimizing the out-of-bag mean squared error. \cr \cr
+#' \eqn{A2} is used to train the boosting model and \eqn{A1} is used to fit the outcome model. \cr \cr
+#' The package \code{xgboost} is used for boosting. If any of \code{nrounds},
+#' \code{eta}, \code{max_depth}, \code{subsample} or \code{colsample_bytree} has more than one value,
+#' the best parameter combination is chosen by minimizing the cross-validation mean squared error. \cr \cr
 #' The violation space candidates are required to be in a nested sequence. The specification
 #' of suitable violation space candidates is a crucial step because a poor approximation
 #' of \eqn{h(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
@@ -113,7 +95,7 @@
 #' and controls for the family-wise error rate. 'FWER' does not provide standard errors.
 #' For large sample sizes a large values for \code{nsplits} can lead to a high
 #' running time as for each split a new hat matrix must be calculated.
-#' The same parameter combination for the random forest is used for all n splits and
+#' The same parameter combination for the boosting model is used for all n splits and
 #' is selected by a separate data split.
 #'
 #' @references
@@ -170,33 +152,25 @@
 #' Y <- D * beta + tau * Z + X %*% gamma + Error[, 2]
 #'
 #'
-#' # Two Stage Random Forest
-#' output_RF <- tsci_forest(Y, D, Z, X)
+#' # Two Stage L2 Boosting
+#' output_SP <- tsci_splines(Y, D, Z, X)
 #' # point estimates
-#' output_RF$Coef_robust
+#' output_SP$Coef_robust
 #' # standard errors
-#' output_RF$sd_robust
+#' output_SP$sd_robust
 #' # confidence intervals
-#' output_RF$CI_robust
-tsci_forest <- function(Y,
-                        D,
-                        Z,
-                        X = NULL,
-                        vio_space = NULL,
-                        intercept = TRUE,
-                        split_prop = 2 / 3,
-                        num_trees = 200,
-                        mtry = list(function(p) round(sqrt(p))),
-                        max_depth = 0,
-                        min_node_size = c(5, 10, 20),
-                        self_predict = TRUE,
-                        str_thol = 10,
-                        alpha = 0.05,
-                        mult_split_method = "DML",
-                        nsplits = 10,
-                        parallel = "no",
-                        ncores = 1,
-                        cl = NULL) {
+#' output_SP$CI_robust
+tsci_splines <- function(Y,
+                         D,
+                         Z,
+                         X = NULL,
+                         vio_space = NULL,
+                         intercept = TRUE,
+                         nknots = NULL,
+                         norder = 4,
+                         nfolds = 5,
+                         str_thol = 10,
+                         alpha = 0.05) {
 
   # check that input is in the correct format
   error_message <- NULL
@@ -219,30 +193,6 @@ tsci_forest <- function(Y,
     if (!is.numeric(unlist(vio_space)))
       error_message <- paste(error_message, "vio_space is not numeric", sep = "\n")
   }
-  if (!is.numeric(split_prop))
-    error_message <- paste(error_message, "split_prop is not numeric.", sep = "\n")
-  if (!is.numeric(num_trees))
-    error_message <- paste(error_message, "num_trees is not numeric.", sep = "\n")
-  if (!is.numeric(mtry) & !is.null(mtry) & !is.list(mtry))
-    error_message <- paste(error_message, "mtry is not numeric nor (a list of) function(s).", sep = "\n")
-  if (!is.numeric(max_depth))
-    error_message <- paste(error_message, "max_depth is not numeric.", sep = "\n")
-  if (!is.numeric(min_node_size))
-    error_message <- paste(error_message, "min_node_size is not numeric.", sep = "\n")
-  if (!is.logical(self_predict))
-    error_message <- paste(error_message, "self_predict is neither TRUE nor FALSE", sep = "\n")
-  if (!is.numeric(str_thol))
-    error_message <- paste(error_message, "str_thol is not numeric.", sep = "\n")
-  if (!is.numeric(alpha))
-    error_message <- paste(error_message, "alpha is not numeric.", sep = "\n")
-  if (!is.character(mult_split_method))
-    error_message <- paste(error_message, "mult_split_method is not character.", sep = "\n")
-  if (!is.numeric(nsplits))
-    error_message <- paste(error_message, "nsplits is not numeric.", sep = "\n")
-  if (!is.character(parallel))
-    error_message <- paste(error_message, "parallel is not character.", sep = "\n")
-  if (!is.numeric(ncores))
-    error_message <- paste(error_message, "ncores is not numeric.", sep = "\n")
 
   if (!is.null(error_message))
     stop(error_message)
@@ -278,31 +228,8 @@ tsci_forest <- function(Y,
   if (is.list(vio_space))
     if(any(is.na(unlist(vio_space))))
       error_message <- paste(error_message, "There are NA's in vio_space.", sep = "\n")
-  if (split_prop <= 0 | split_prop >= 1)
-    error_message <- paste(error_message, "split_prop is not in (0, 1).", sep = "\n")
-  if (any(num_trees < 0))
-    error_message <- paste(error_message, "num_trees cannot be negative.", sep = "\n")
-  if (is.numeric(mtry))
-    if (any(mtry <= 0))
-      error_message <- paste(error_message, "mtry cannot be negative or larger than
-                             the sum of the number of columns in Z and X.", sep = "\n")
-  if (any(max_depth < 0))
-    error_message <- paste(error_message, "max_depth cannot be negative.", sep = "\n")
-  if (any(min_node_size < 0))
-    error_message <- paste(error_message, "min_node_size cannot be negative.", sep = "\n")
   if (alpha > 0.5)
     error_message <- paste(error_message, "alpha cannot be larget than 0.5.", sep = "\n")
-  if (!(mult_split_method %in% c("FWER", "DML")))
-    error_message <- paste(error_message, "No valid multi-splitting inference method
-                           selected. Choose either 'DML' or 'FWER'.", sep = "\n")
-  if (nsplits < 1)
-    error_message <- paste(error_message, "nsplits cannot be smaller than 1.", sep = "\n")
-  if (!(parallel %in% c("no", "multicore", "snow")))
-    error_message <- paste(error_message, "No valid parallelization method
-                           selected. Choose either 'no', 'multicore' or 'snow'.", sep = "\n")
-  if (ncores < 1)
-    error_message <- paste(error_message, "ncores cannot be smaller than 1.", sep = "\n")
-
   if (!is.null(error_message))
     stop(error_message)
 
@@ -310,15 +237,14 @@ tsci_forest <- function(Y,
   Y = as.matrix(Y); D = as.matrix(D); Z = as.matrix(Z)
   if (!is.null(X)) X <- as.matrix(X)
 
-  do_parallel <- parallelization_setup(parallel = parallel, ncpus = ncores, cl = cl)
+  if (is.null(nknots)) {
+    nknots <- seq(2, min(50, round(0.5 * (1 - 1 / nfolds) * n)), by = 1)
+  }
 
   # grid search
   params_grid <- expand.grid(
-    num_trees = num_trees,
-    mtry = mtry,
-    max_depth = max_depth,
-    min_node_size = min_node_size,
-    self_predict = self_predict
+    nknots = nknots,
+    norder = norder
   )
 
   # Treatment model fitting
@@ -326,39 +252,25 @@ tsci_forest <- function(Y,
   df_treatment <- data.frame(cbind(D, W))
   names(df_treatment) <- c("D", paste("W", seq_len(p), sep = ""))
 
-  # split the data into two parts A1 and A2
-  # use A2 to train and use A1 to predict
-  n_A1 <- round(split_prop * n)
-  n_A2 <- n - n_A1
-  A1_ind <- sample(seq_len(n), n_A1)
-  df_treatment_A1 <- df_treatment[A1_ind, ]
-  df_treatment_A2 <- df_treatment[-A1_ind, ]
+  # hyperparameter tuning
+  splines_CV <- get_splines_parameters(df_treatment, params_grid = params_grid, nfolds = nfolds)
 
-  # Hyperparameter selection
-  forest_OOB <- get_forest_parameters(df_treatment_A2 = df_treatment_A2, params_grid = params_grid)
+  list_vio_space <- check_vio_space(Z, vio_space)
 
-
-  outputs <- tsci_multisplit(df_treatment = df_treatment,
-                             Y = Y,
-                             D = D,
-                             Z = Z,
-                             X = X,
-                             vio_space = vio_space,
-                             A1_ind = A1_ind,
-                             intercept = intercept,
-                             str_thol = str_thol,
-                             alpha = alpha,
-                             params = forest_OOB$params_A2,
-                             function_hatmatrix = get_forest_hatmatrix,
-                             split_prop = split_prop,
-                             parallel = parallel,
-                             do_parallel = do_parallel,
-                             nsplits = nsplits,
-                             ncores = ncores,
-                             mult_split_method = mult_split_method,
-                             cl = cl)
+  outputs <- tsci_fit(df_treatment = df_treatment,
+                      Y = Y,
+                      D = D,
+                      Z = Z,
+                      X = X,
+                      list_vio_space = list_vio_space,
+                      intercept = intercept,
+                      str_thol = str_thol,
+                      split_prop = 1,
+                      alpha = alpha,
+                      params = splines_CV$params,
+                      function_hatmatrix = get_splines_hatmatrix)
 
   # Return output
-  outputs <- append(outputs, list("mse" = forest_OOB$mse))
+  outputs <- append(outputs, list("mse" = splines_CV$mse))
   return(outputs)
 }
