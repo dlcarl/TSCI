@@ -1,6 +1,6 @@
-#' Two Stage Curvature Identification with User Provided Hat Matrix
-#' @description \code{tsci_secondstage} implements Two Stage Curvature Identification
-#' (Guo and Bühlmann 2022) for a user-provided hat matrix. Through a data-dependent way it
+#' Two Stage Curvature Identification with Basis Splines
+#' @description \code{tsci_boosting} implements Two Stage Curvature Identification
+#' (Guo and Bühlmann 2022) with basis splines. Through a data-dependent way it
 #' tests for the smallest sufficiently large violation space among a pre-specified
 #' sequence of nested violation space candidates. Point and uncertainty estimates
 #' of the treatment effect for all violation space candidates including the
@@ -21,12 +21,11 @@
 #' If a matrix or a list, then the violation space candidates (in form of matrices)
 #' are defined sequentially starting with an empty violation matrix and subsequently
 #' adding the next column of the matrix or element of the list to the current violation matrix.
+#' If \code{NULL}, then the violation space candidates are the spaces of polynomials up to the 3-th order.
 #' See Details for more information.
-#' @param weight the hat matrix of the treatment model.
-#' @param A1_ind indices of the observations that wil be used to fit the outcome model.
-#' Must be of same length as the number of rows and columns of \code{weight}.
-#' If \code{NULL} all observations will be used.
 #' @param intercept logical. If \code{TRUE} an intercept is included in the outcome model.
+#' @param norder xxx
+#' @param nfolds number of folds used for cross-validation to choose best parameter combination.
 #' @param str_thol minimal value of the threshold of IV strength test.
 #' @param alpha the significance level.
 #'
@@ -71,15 +70,32 @@
 #' @details The treatment and outcome models are assumed to be of the following forms:
 #' \deqn{D_i = g(Z_i, X_i) + \delta_i}
 #' \deqn{Y_i = \beta * D_i + h(Z_i, X_i) + \epsilon_i}
-#' where \eqn{g(Z_i, X_i)} is assumed to be estimated by the user and
+#' where \eqn{g(Z_i, X_i)} is estimated using L2 boosting with regression trees as base learners and
 #' \eqn{h(Z_i X_i)} is approximated using the violation space candidates and by
 #' a linear combination of baseline covariates. The errors are allowed to be heteroscedastic.
-#' \eqn{A1} is used to fit the outcome model. \cr \cr
+#' To avoid overfitting bias the data is randomly split into two subsets \eqn{A1} and \eqn{A2}
+#' where the proportion of number of observations in the two sets is specified by \code{split_prop}.
+#' \eqn{A2} is used to train the boosting model and \eqn{A1} is used to fit the outcome model. \cr \cr
+#' The package \code{xgboost} is used for boosting. If any of \code{nrounds},
+#' \code{eta}, \code{max_depth}, \code{subsample} or \code{colsample_bytree} has more than one value,
+#' the best parameter combination is chosen by minimizing the cross-validation mean squared error. \cr \cr
 #' The violation space candidates are required to be in a nested sequence. The specification
 #' of suitable violation space candidates is a crucial step because a poor approximation
 #' of \eqn{h(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
-#' The function \code{create_monomials} can be used to create such a nested sequence for a
-#' predefined type of violation space candidates (monomials). \cr \cr
+#' If \code{vio_space} is \code{NULL} the violation space candidates are chosen to be
+#' \eqn{{}, {Z1, Z2, ..., Zs}, {Z1, Z2, ..., Zs, Z1^2, Z2^2, ..., Z2^2}} and
+#' \eqn{{Z1, Z2, ..., Zs, Z1^2, Z2^2, ..., Z2^2, Z1^3, Z2^3, ..., Z2^3}} thus implicitly assuming
+#' that there are no interactions between the instruments and the covariates and
+#' between the instruments themselves in the outcome model. \cr \cr
+#' If \code{nsplits} is larger than 1, point estimates are aggregated by medians
+#' and standard errors, p-values and confidence intervals are obtained by the method
+#' specified by the parameter \code{mult_split_method}. 'DML' uses the approach by
+#' Chernozhukov et al. (2018). 'FWER' uses the approach by Meinshausen et al. (2009)
+#' and controls for the family-wise error rate. 'FWER' does not provide standard errors.
+#' For large sample sizes a large values for \code{nsplits} can lead to a high
+#' running time as for each split a new hat matrix must be calculated.
+#' The same parameter combination for the boosting model is used for all n splits and
+#' is selected by a separate data split.
 #'
 #' @references
 #' \itemize{
@@ -94,6 +110,7 @@
 #' and structural parameters: Double/debiased machine learning.
 #' \emph{The Econometrics Journal}, 21(1), 2018. 4, 16, 18}
 #' }
+#'
 #' @export
 #'
 #' @examples
@@ -133,31 +150,26 @@
 #' # generate the outcome variable Y
 #' Y <- D * beta + tau * Z + X %*% gamma + Error[, 2]
 #'
-#' # get hat matrix of outcome model
-#' A <- cbind(Z, Z^2, Z^3, Z^4, Z*X, X)
-#' weight <- A %*% chol2inv(chol(t(A) %*% A)) %*% t(A)
 #'
-#' # Two Stage L2 Boosting
-#' vio_space <- create_monomials(Z, 4, "monomials_main")
-#' output <- tsci_secondstage(Y, D, Z, X, vio_space, weight)
+#' # Two Stage Polynomials
+#' output_PO <- tsci_poly(Y, D, Z, X)
 #' # point estimates
-#' output$Coef_robust
+#' output_PO$Coef_robust
 #' # standard errors
-#' output$sd_robust
+#' output_PO$sd_robust
 #' # confidence intervals
-#' output$CI_robust
-#'
-#' @importFrom stats coef lm qnorm quantile resid rnorm
-tsci_secondstage <- function(Y,
-                             D,
-                             Z,
-                             X,
-                             vio_space,
-                             weight,
-                             A1_ind = NULL,
-                             intercept = TRUE,
-                             str_thol = 10,
-                             alpha = 0.05) {
+#' output_PO$CI_robust
+tsci_poly <- function(Y,
+                         D,
+                         Z,
+                         X = NULL,
+                         vio_space = NULL,
+                         intercept = TRUE,
+                         norder = seq(1, 6, by = 1),
+                         nfolds = 5,
+                         str_thol = 10,
+                         alpha = 0.05) {
+
   # check that input is in the correct format
   error_message <- NULL
   if (!is.numeric(Y))
@@ -167,11 +179,7 @@ tsci_secondstage <- function(Y,
   if (!is.numeric(Z))
     error_message <- paste(error_message, "Z is not numeric.", sep = "\n")
   if (!is.numeric(X) & !is.null(X))
-    error_message <- paste(error_message, "X is beither numeric nor NULL.", sep = "\n")
-  if (!is.numeric(A1_ind) & !is.null(A1_ind))
-    error_message <- paste(error_message, "A1_ind is neither numeric nor NULL.", sep = "\n")
-  if (!is.numeric(weight))
-    error_message <- paste(error_message, "weight is not numeric.", sep = "\n")
+    error_message <- paste(error_message, "X is not numeric.", sep = "\n")
   if (!is.logical(intercept))
     error_message <- paste(error_message, "intercept is neither TRUE nor FALSE.", sep = "\n")
   if (!is.matrix(vio_space) & !is.list(vio_space) & !is.null(vio_space))
@@ -183,10 +191,6 @@ tsci_secondstage <- function(Y,
     if (!is.numeric(unlist(vio_space)))
       error_message <- paste(error_message, "vio_space is not numeric", sep = "\n")
   }
-  if (!is.numeric(str_thol))
-    error_message <- paste(error_message, "str_thol is not numeric.", sep = "\n")
-  if (!is.numeric(alpha))
-    error_message <- paste(error_message, "alpha is not numeric.", sep = "\n")
 
   if (!is.null(error_message))
     stop(error_message)
@@ -216,18 +220,6 @@ tsci_secondstage <- function(Y,
   if (!is.null(X))
     if(any(is.na(X)))
       error_message <- paste(error_message, "There are NA's in X.", sep = "\n")
-  if (!is.null(A1_ind)) {
-    if (any(duplicated(A1_ind)))
-      error_message <- paste(error_message, "There are duplicates in A1_ind.", sep = "\n")
-    if (length(A1_ind) > NROW(Y))
-      error_message <- paste(error_message, "A1_ind contains more elements than Y has observations", sep = "\n")
-    if (any(A1_ind < 0) | any(A1_ind > NROW(Y)))
-      error_message <- paste(error_message, "A1_ind contains elements that are negative or larger than Y has observations", sep = "\n")
-    if (length(A1_ind) != NROW(weight))
-      error_message <- paste(error_message, "A1_ind contains not the same amount of elements as weight has rows.", sep = "\n")
-  }
-  if (NROW(weight) != NROW(Y))
-    error_message <- paste(error_message, "weight has not the same amount of rows as Y has observations.", sep = "\n")
   if (is.matrix(vio_space))
     if(any(is.na(vio_space)))
       error_message <- paste(error_message, "There are NA's in vio_space.", sep = "\n")
@@ -236,47 +228,45 @@ tsci_secondstage <- function(Y,
       error_message <- paste(error_message, "There are NA's in vio_space.", sep = "\n")
   if (alpha > 0.5)
     error_message <- paste(error_message, "alpha cannot be larget than 0.5.", sep = "\n")
-
   if (!is.null(error_message))
     stop(error_message)
 
-  if (is.null(A1_ind)) A1_ind <- seq_len(NROW(Y))
 
-
-  Y <- as.matrix(Y)
-  D <- as.matrix(D)
-  Z <- as.matrix(Z)
+  Y = as.matrix(Y); D = as.matrix(D); Z = as.matrix(Z)
   if (!is.null(X)) X <- as.matrix(X)
-  n_A1 <- length(A1_ind)
 
-  list_vio_space <- check_vio_space(Z, vio_space)
-  vio_space <- list_vio_space$vio_space[A1_ind, ]
-  rm_ind <- list_vio_space$rm_ind
-  Q <- list_vio_space$Q
 
-  Y_A1 <- Y[A1_ind, ]
-  D_A1 <- D[A1_ind, ]
-  if (is.null(X)){
-    X_A1 <- NULL
-  } else {
-    X_A1 <- X[A1_ind, ]
-  }
-
-  outputs <- tsci_selection(
-    Y = Y,
-    D = D,
-    X = X,
-    Y_A1 = Y_A1,
-    D_A1 = D_A1,
-    X_A1 = X_A1,
-    vio_space = vio_space,
-    rm_ind = rm_ind,
-    Q = Q,
-    weight = weight,
-    intercept = intercept,
-    str_thol = str_thol,
-    alpha = alpha
+  # grid search
+  params_grid <- expand.grid(
+    norder = norder,
+    placeholder = 1
   )
 
+  # Treatment model fitting
+  W <- as.matrix(cbind(Z, X))
+  df_treatment <- data.frame(cbind(D, W))
+  names(df_treatment) <- c("D", paste("W", seq_len(p), sep = ""))
+
+  # hyperparameter tuning
+  poly_CV <- get_poly_parameters(df_treatment, params_grid = params_grid, nfolds = nfolds)
+
+  if (is.null(vio_space)) vio_space <- poly(as.vector(Z), degree = poly_CV$params$norder, raw = TRUE, simple = TRUE)
+  list_vio_space <- check_vio_space(Z, vio_space)
+
+  outputs <- tsci_fit(df_treatment = df_treatment,
+                      Y = Y,
+                      D = D,
+                      Z = Z,
+                      X = X,
+                      list_vio_space = list_vio_space,
+                      intercept = intercept,
+                      str_thol = str_thol,
+                      split_prop = 1,
+                      alpha = alpha,
+                      params = poly_CV$params,
+                      function_hatmatrix = get_poly_hatmatrix)
+
+  # Return output
+  outputs <- append(outputs, list("mse" = poly_CV$mse))
   return(outputs)
 }

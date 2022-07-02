@@ -153,7 +153,8 @@
 #'
 #'
 #' # Two Stage L2 Boosting
-#' output_SP <- tsci_splines(Y, D, Z, X)
+#' vio_space <- create_monomials(Z, 4, "monomials_main")
+#' output_SP <- tsci_splines(Y, D, Z, X, vio_space = vio_space)
 #' # point estimates
 #' output_SP$Coef_robust
 #' # standard errors

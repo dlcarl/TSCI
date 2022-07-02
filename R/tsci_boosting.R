@@ -17,11 +17,10 @@
 #' (if no covariates should be included).
 #' @param vio_space either a numeric matrix with dimension n by q or a list with
 #' numeric vectors of length n and/or numeric matrices with n rows as elements to
-#' specify the violation space candidates or \code{NULL}.
+#' specify the violation space candidates or '\code{NULL}'.
 #' If a matrix or a list, then the violation space candidates (in form of matrices)
 #' are defined sequentially starting with an empty violation matrix and subsequently
 #' adding the next column of the matrix or element of the list to the current violation matrix.
-#' If \code{NULL}, then the violation space candidates are the spaces of polynomials up to the 3-th order.
 #' See Details for more information.
 #' @param intercept logical. If \code{TRUE} an intercept is included in the outcome model.
 #' @param split_prop proportion of observations used to fit the outcome model. Has to be a value in (0, 1).
@@ -103,11 +102,8 @@
 #' The violation space candidates are required to be in a nested sequence. The specification
 #' of suitable violation space candidates is a crucial step because a poor approximation
 #' of \eqn{h(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
-#' If \code{vio_space} is \code{NULL} the violation space candidates are chosen to be
-#' \eqn{{}, {Z1, Z2, ..., Zs}, {Z1, Z2, ..., Zs, Z1^2, Z2^2, ..., Z2^2}} and
-#' \eqn{{Z1, Z2, ..., Zs, Z1^2, Z2^2, ..., Z2^2, Z1^3, Z2^3, ..., Z2^3}} thus implicitly assuming
-#' that there are no interactions between the instruments and the covariates and
-#' between the instruments themselves in the outcome model. \cr \cr
+#' The function \code{create_monomials} can be used to create such a nested sequence for a
+#' predefined type of violation space candidates (monomials).\cr \cr
 #' If \code{nsplits} is larger than 1, point estimates are aggregated by medians
 #' and standard errors, p-values and confidence intervals are obtained by the method
 #' specified by the parameter \code{mult_split_method}. 'DML' uses the approach by
@@ -173,7 +169,8 @@
 #'
 #'
 #' # Two Stage L2 Boosting
-#' output_BO <- tsci_boosting(Y, D, Z, X)
+#' vio_space <- create_monomials(Z, 4, "monomials_main")
+#' output_BO <- tsci_boosting(Y, D, Z, X, vio_space)
 #' # point estimates
 #' output_BO$Coef_robust
 #' # standard errors
@@ -214,8 +211,8 @@ tsci_boosting <- function(Y,
     error_message <- paste(error_message, "X is not numeric.", sep = "\n")
   if (!is.logical(intercept))
     error_message <- paste(error_message, "intercept is neither TRUE nor FALSE.", sep = "\n")
-  if (!is.matrix(vio_space) & !is.list(vio_space) & !is.null(vio_space))
-    error_message <- paste(error_message, "vio_space is neither a matrix nor a list nor NULL", sep = "\n")
+  if (!is.matrix(vio_space) & !is.list(vio_space))
+    error_message <- paste(error_message, "vio_space is neither a matrix nor a list", sep = "\n")
   if (is.matrix(vio_space)) {
     if (!is.numeric(vio_space))
       error_message <- paste(error_message, "vio_space is not numeric", sep = "\n")

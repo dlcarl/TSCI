@@ -9,9 +9,9 @@ tsci_secondstage(
   D,
   Z,
   X,
+  vio_space,
   weight,
   A1_ind = NULL,
-  vio_space = NULL,
   intercept = TRUE,
   str_thol = 10,
   alpha = 0.05
@@ -31,20 +31,19 @@ or a numeric matrix with dimension n by s.}
 or a numeric matrix with dimension n by p or \code{NULL}
 (if no covariates should be included).}
 
-\item{weight}{the hat matrix of the treatment model.}
-
-\item{A1_ind}{indices of the observations that wil be used to fit the outcome model.
-Must be of same length as the number of rows and columns of \code{weight}.
-If \code{NULL} all observations will be used.}
-
 \item{vio_space}{either a numeric matrix with dimension n by q or a list with
 numeric vectors of length n and/or numeric matrices with n rows as elements to
 specify the violation space candidates or \code{NULL}.
 If a matrix or a list, then the violation space candidates (in form of matrices)
 are defined sequentially starting with an empty violation matrix and subsequently
 adding the next column of the matrix or element of the list to the current violation matrix.
-If \code{NULL}, then the violation space candidates are the spaces of polynomials up to the 3-th order.
 See Details for more information.}
+
+\item{weight}{the hat matrix of the treatment model.}
+
+\item{A1_ind}{indices of the observations that wil be used to fit the outcome model.
+Must be of same length as the number of rows and columns of \code{weight}.
+If \code{NULL} all observations will be used.}
 
 \item{intercept}{logical. If \code{TRUE} an intercept is included in the outcome model.}
 
@@ -109,11 +108,8 @@ a linear combination of baseline covariates. The errors are allowed to be hetero
 The violation space candidates are required to be in a nested sequence. The specification
 of suitable violation space candidates is a crucial step because a poor approximation
 of \eqn{h(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
-If \code{vio_space} is \code{NULL} the violation space candidates are chosen to be
-\eqn{{}, {Z1, Z2, ..., Zs}, {Z1, Z2, ..., Zs, Z1^2, Z2^2, ..., Z2^2}} and
-\eqn{{Z1, Z2, ..., Zs, Z1^2, Z2^2, ..., Z2^2, Z1^3, Z2^3, ..., Z2^3}} thus implicitly assuming
-that there are no interactions between the instruments and the covariates and
-between the instruments themselves in the outcome model. \cr \cr
+The function \code{create_monomials} can be used to create such a nested sequence for a
+predefined type of violation space candidates (monomials). \cr \cr
 }
 \examples{
 # dimension
@@ -157,7 +153,8 @@ A <- cbind(Z, Z^2, Z^3, Z^4, Z*X, X)
 weight <- A \%*\% chol2inv(chol(t(A) \%*\% A)) \%*\% t(A)
 
 # Two Stage L2 Boosting
-output <- tsci_secondstage(Y, D, Z, X, weight)
+vio_space <- create_monomials(Z, 4, "monomials_main")
+output <- tsci_secondstage(Y, D, Z, X, vio_space, weight)
 # point estimates
 output$Coef_robust
 # standard errors

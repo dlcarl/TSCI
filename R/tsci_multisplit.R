@@ -144,13 +144,12 @@ tsci_multisplit <- function(df_treatment,
     warning(paste0("In ",
                    sum(check_list_outputs$ind_na),
                    " of the ",
-                   nrounds,
+                   nsplits,
                    " data splits the output statistics could not be calculated.",
                    " Thus another ",
-                   nrounds_new,
+                   nsplits_new,
                    " data splits were performed.",
                    error_string), call. = FALSE)
   }
-
   aggregate_output(output_list = list_outputs, alpha = alpha, Q = list_vio_space$Q, mult_split_method = mult_split_method)
 }
