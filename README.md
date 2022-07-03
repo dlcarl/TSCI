@@ -3,7 +3,10 @@ R Package of TSML
 
 # Data generation
 ```
-### set seeds for reproducibility
+library(MASS)
+library(TSML)
+
+# set seeds for reproducibility
 RNGkind("L'Ecuyer-CMRG")
 set.seed(1)
 # dimension
