@@ -137,7 +137,7 @@
 #' A <- cbind(Z, Z^2, Z^3, Z^4, Z*X, X)
 #' weight <- A %*% chol2inv(chol(t(A) %*% A)) %*% t(A)
 #'
-#' # Two Stage L2 Boosting
+#' # Two Stage User Defined
 #' vio_space <- create_monomials(Z, 4, "monomials_main")
 #' output <- tsci_secondstage(Y, D, Z, X, vio_space, weight)
 #' # point estimates
@@ -283,7 +283,7 @@ tsci_secondstage <- function(Y,
                          n_A2 = n - n_A1,
                          nsplits = NULL,
                          mult_split_method = NULL,
-                         alpha = alpha,
+                         alpha = alpha
                          ))
   class(outputs) <- c("tsci", "list")
   return(outputs)
