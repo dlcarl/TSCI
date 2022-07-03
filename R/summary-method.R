@@ -9,57 +9,57 @@ summary.tsci <- function(object,
                          ...) {
   stopifnot(inherits(object, "tsci"))
 
-  coef_robust <- object$Coef_robust
-  sd_robust <- object$sd_robust
-  pval_robust <- object$pval_robust
-  ci_robust <- object$CI_robust
 
-  coef_all <- object$Coef_all
-  sd_all <- object$sd_all
-  pval_all <- object$pval_all
-  ci_all <- object$CI_all
+  if (!is.null(object$mult_split_method)) {
+    if (object$mult_split_method == "FWER") {
+      sd_robust <- rep(".", length(object$Coef_robust))
+      sd_all <- rep(".", length(object$Coef_all))
+    } else {
+      sd_robust <- round(object$sd_robust, 5)
+      sd_all <- round(object$sd_all, 5)
+    }
+  } else {
+    sd_robust <- round(object$sd_robust, 5)
+    sd_all <- round(object$sd_all, 5)
+  }
 
-  iv_str <- object$iv_str
-  iv_tol <- object$iv_thol
+  coef_df <-
+    data.frame(round(c(object$Coef_robust, object$Coef_all), 5),
+               c(sd_robust, sd_all),
+               c(round(object$CI_robust[1, ], 5), round(object$CI_all[1, ], 5)),
+               c(round(object$CI_robust[2, ], 5), round(object$CI_all[2, ], 5)),
+               c(round(object$pval_robust, 3), round(object$pval_all, 3)))
+  colnames(coef_df) <- c("Estimate", "Std. Error", paste(100 * object$alpha/2, "%"), paste(100*(1 - object$alpha/2), "%"), "Pr(>|t|)")
+  rownames(coef_df) <- names(c(object$Coef_robust, object$Coef_all))
 
-  Qmax <- object$Qmax
-  q_comp <- object$q_comp
-  q_robust <- object$q_robust
+  TreatmentModel_df <- data.frame("Estimation Method" = object$FirstStage_model,
+                                  "Residual Standard Error" = round(object$FirstStage_rse, 4),
+                                  "R Squared" = round(object$FirstStage_Rsquared, 4))
 
-  FirstStage_model <- object$FirstStage_model
-  FirstStage_params <- object$FirstStage_params
-  FirstStage_rse <- object$FirstStage_rse
-  FirstStage_Rsquared <- object$FirstStage_Rsquared
+  OutcomeModel_df <- data.frame("Residual Standard Error" = round(object$SecondStage_rse, 4),
+                                "R Squared" = round(object$SecondStage_Rsquared, 4))
+  row.names(OutcomeModel_df) <- names(object$SecondStage_rse)
 
-  SecondStage_rse <- object$SecondStage_rse
-  SecondStage_Rsquared <- object$SecondStage_Rsquared
+  ViolationSpace_DF <- data.frame("q comp" = object$q_comp,
+                                  "q robust" = object$q_robust,
+                                  "Qmax" = object$Qmax)
+  row.names(ViolationSpace_DF) <- names(object$Qmax)
 
-  split_prop <- object$split_prop
-  nsplits <- object$nsplits
-  mult_split_method <- object$mult_split_method
+  IVStrength_df <- data.frame("IV Strength" = object$iv_str,
+                              "IV Tolerance" = object$iv_thol)
+  row.names(IVStrength_df) <- names(object$iv_str)
 
-  output_list <- list(coef_robust = coef_robust,
-                      sd_robust = sd_robust,
-                      pval_robust = pval_robust,
-                      ci_robust = ci_robust,
-                      coef_all = coef_all,
-                      sd_all = sd_all,
-                      pval_all = pval_all,
-                      ci_all,
-                      iv_str = iv_str,
-                      iv_tol = iv_tol,
-                      Qmax = Qmax,
-                      q_comp = q_comp,
-                      q_robust = q_robust,
-                      FirstStage_model = FirstStage_model,
-                      FirstStage_params = FirstStage_params,
-                      FirstStage_rse = FirstStage_rse,
-                      FirstStage_Rsquared = FirstStage_Rsquared,
-                      SecondStage_rse = SecondStage_rse,
-                      SecondStage_Rsquared = SecondStage_Rsquared,
-                      split_prop = split_prop,
-                      nsplits = nsplits,
-                      mult_split_method = mult_split_method)
+
+  output_list <- list(coefficients = coef_df,
+                      iv_strength = IVStrength_df,
+                      viospace_selection = ViolationSpace_DF,
+                      treatment_model = TreatmentModel_df,
+                      outcome_model = OutcomeModel_df,
+                      sample_size_A1 = object$n_A1,
+                      sample_size_A2 = object$n_A2,
+                      n_splits = object$nsplits,
+                      mult_split_method = object$mult_split_method,
+                      alpha = object$alpha)
   class(output_list) <- "summary.tsci"
   return(output_list)
 }

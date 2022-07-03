@@ -52,7 +52,8 @@ tsci_multisplit <- function(df_treatment,
                             nsplits,
                             ncores,
                             mult_split_method,
-                            cl) {
+                            cl,
+                            raw_output) {
   list_vio_space <- check_vio_space(Z, vio_space)
 
   tsci_parallel <- local({
@@ -151,5 +152,9 @@ tsci_multisplit <- function(df_treatment,
                    " data splits were performed.",
                    error_string), call. = FALSE)
   }
-  aggregate_output(output_list = list_outputs, alpha = alpha, Q = list_vio_space$Q, mult_split_method = mult_split_method)
+  aggregate_output(output_list = list_outputs,
+                   alpha = alpha,
+                   Q = list_vio_space$Q,
+                   mult_split_method = mult_split_method,
+                   raw_output = raw_output)
 }

@@ -277,6 +277,14 @@ tsci_secondstage <- function(Y,
     str_thol = str_thol,
     alpha = alpha
   )
+  outputs <- append(outputs,
+                    list(FirstStage_model = "Specified by User",
+                         n_A1 = n_A1,
+                         n_A2 = n - n_A1,
+                         nsplits = NULL,
+                         mult_split_method = NULL,
+                         alpha = alpha,
+                         ))
   class(outputs) <- c("tsci", "list")
   return(outputs)
 }

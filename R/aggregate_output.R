@@ -8,7 +8,7 @@
 #' @return a list with the aggregated statistics.
 #' @noRd
 #' @importFrom stats median
-aggregate_output <- function(output_list, alpha, Q,  mult_split_method) {
+aggregate_output <- function(output_list, alpha, Q,  mult_split_method, raw_output) {
 
   # creates list with NAs
   returnList <- tsci_fit_NA_return(Q)
@@ -111,6 +111,12 @@ aggregate_output <- function(output_list, alpha, Q,  mult_split_method) {
     returnList$sd_robust[] <- rep(NA, times = NCOL(sd_robust_matrix))
     returnList$pval_robust[] <- rep(NA, times = NCOL(sd_robust_matrix))
     returnList$CI_robust[] <- matrix(NA, nrow = 2, ncol = NCOL(Coef_robust_matrix))
+  }
+  if (raw_output) {
+    returnList$coef_all_raw <- Coef_all_matrix
+    returnList$sd_all_raw <- sd_all_matrix
+    returnList$coef_robust_raw <- Coef_robust_matrix
+    returnList$sd_robust_raw <- sd_robust_matrix
   }
   returnList
 }

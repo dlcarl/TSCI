@@ -271,9 +271,11 @@ tsci_poly <- function(Y,
                     list(mse = poly_CV$mse,
                          FirstStage_model = "OLS with Polynomials",
                          FirstStage_params = poly_CV$params,
-                         split_prop = 1,
+                         n_A1 = n,
+                         n_A2 = 0,
                          nsplits = NULL,
-                         mult_split_method = NULL))
+                         mult_split_method = NULL,
+                         alpha = alpha))
   class(outputs) <- c("tsci", "list")
   return(outputs)
 }

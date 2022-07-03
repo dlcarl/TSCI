@@ -23,7 +23,8 @@ tsci_forest(
   nsplits = 10,
   parallel = "no",
   ncores = 1,
-  cl = NULL
+  cl = NULL,
+  raw_output = ifelse(mult_split_method == "FWER", TRUE, FALSE)
 )
 }
 \arguments{
@@ -85,6 +86,9 @@ Either 'DML' or 'FWER'. See Details.}
 \item{ncores}{the number of cores to use.}
 
 \item{cl}{either an parallel or snow cluster or \code{NULL}.}
+
+\item{raw_output}{logical. If \code{TRUE} the coefficient and standard error estimates of each split will be returned.
+This is only needed if \code{mult_split_method} equals "FWER" and the function \code{confint} will be used.}
 }
 \value{
 A list containing the following elements:

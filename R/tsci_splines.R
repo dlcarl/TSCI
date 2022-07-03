@@ -276,9 +276,11 @@ tsci_splines <- function(Y,
                     list(mse = splines_CV$mse,
                          FirstStage_model = "OLS with Basis Splines",
                          FirstStage_params = splines_CV$params,
-                         split_prop = 1,
+                         n_A1 = n,
+                         n_A2 = 0,
                          nsplits = NULL,
-                         mult_split_method = NULL))
+                         mult_split_method = NULL,
+                         alpha = alpha))
   class(outputs) <- c("tsci", "list")
   return(outputs)
 }

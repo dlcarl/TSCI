@@ -46,6 +46,8 @@
 #' @param parallel One out of \code{"no"}, \code{"multicore"}, or \code{"snow"} specifying the parallelization method used.
 #' @param ncores the number of cores to use.
 #' @param cl either an parallel or snow cluster or \code{NULL}.
+#' @param raw_output logical. If \code{TRUE} the coefficient and standard error estimates of each split will be returned.
+#' This is only needed if \code{mult_split_method} equals "FWER" and the function \code{confint} will be used.
 #'
 #' @return
 #' A list containing the following elements:
@@ -193,7 +195,8 @@ tsci_forest <- function(Y,
                         nsplits = 10,
                         parallel = "no",
                         ncores = 1,
-                        cl = NULL) {
+                        cl = NULL,
+                        raw_output = ifelse(mult_split_method == "FWER", TRUE, FALSE)) {
 
   # check that input is in the correct format
   error_message <- NULL
@@ -353,16 +356,19 @@ tsci_forest <- function(Y,
                              nsplits = nsplits,
                              ncores = ncores,
                              mult_split_method = mult_split_method,
-                             cl = cl)
+                             cl = cl,
+                             raw_output = raw_output)
 
   # Return output
   outputs <- append(outputs,
                     list(mse = forest_OOB$mse,
                          FirstStage_model = "Random Forest",
                          FirstStage_params = forest_OOB$params_A2,
-                         split_prop = split_prop,
+                         n_A1 = n_A1,
+                         n_A2 = n_A2,
                          nsplits = nsplits,
-                         mult_split_method = mult_split_method))
+                         mult_split_method = mult_split_method,
+                         alpha = alpha))
   class(outputs) <- c("tsci", "list")
   return(outputs)
 }
