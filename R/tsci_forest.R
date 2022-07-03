@@ -356,6 +356,13 @@ tsci_forest <- function(Y,
                              cl = cl)
 
   # Return output
-  outputs <- append(outputs, list("mse" = forest_OOB$mse))
+  outputs <- append(outputs,
+                    list(mse = forest_OOB$mse,
+                         FirstStage_model = "Random Forest",
+                         FirstStage_params = forest_OOB$params_A2,
+                         split_prop = split_prop,
+                         nsplits = nsplits,
+                         mult_split_method = mult_split_method))
+  class(outputs) <- c("tsci", "list")
   return(outputs)
 }

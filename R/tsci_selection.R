@@ -45,6 +45,7 @@ tsci_selection <- function(Y,
                            intercept,
                            str_thol,
                            alpha) {
+
   Cov_aug_A1 <- cbind(vio_space, X_A1)
   Y_rep <- as.matrix(weight %*% Y_A1)
   D_rep <- as.matrix(weight %*% D_A1)
@@ -54,6 +55,9 @@ tsci_selection <- function(Y,
 
   # initialize output list
   output <- tsci_fit_NA_return(Q = Q)
+  # calculate first stage residuals standard error and R-squared
+  output$FirstStage_rse[] <- sqrt(sum((weight %*% Y_A1 - Y_A1)^2)) / sqrt(n_A1 - sum(diag(weight)))
+  output$FirstStage_Rsquared[] <- 1 - var((weight %*% Y_A1 - Y_A1)) / var(Y_A1)
 
   # the non bias corrected beta estimates
   Coef_all <- rep(NA, Q)
@@ -77,7 +81,11 @@ tsci_selection <- function(Y,
         betaHat <- coef(reg_ml)[1]
       }
       Coef_all[index] <- betaHat
-      eps_hat[[index]] <- resid(lm(Y_A1 - D_A1 * betaHat ~ Cov_aug_A1))
+      reg_ml2 <- lm(Y_A1 - D_A1 * betaHat ~ Cov_aug_A1)
+      summary_ml <- summary(reg_ml2)
+      output$SecondStage_rse[index + 1] <- summary_ml$sigma
+      output$SecondStage_Rsquared[index + 1] <- 1 - var(summary_ml$residuals) / var(Y_A1)
+      eps_hat[[index]] <- resid(reg_ml2)
       stat_outputs <- tsci_secondstage_stats(D_rep,
         Cov_rep,
         weight,
@@ -94,8 +102,11 @@ tsci_selection <- function(Y,
         betaHat <- coef(reg_ml)[1]
       }
       Coef_all[index] <- betaHat
-      eps_hat[[index]] <-
-        Y_A1 - D_A1 * betaHat - mean(Y_A1 - D_A1 * betaHat)
+      reg_ml2 <- lm(Y_A1 - D_A1 * betaHat ~ 1)
+      summary_ml <- summary(reg_ml2)
+      output$SecondStage_rse[index + 1] <- summary_ml$sigma
+      output$SecondStage_Rsquared[index + 1] <- 1 - var(summary_ml$residuals) / var(Y_A1)
+      eps_hat[[index]] <- resid(reg_ml2)
       stat_outputs <- tsci_secondstage_stats(D_rep,
                                              matrix(1, nrow = n_A1),
                                              weight,
@@ -113,8 +124,11 @@ tsci_selection <- function(Y,
         betaHat <- coef(reg_ml)[1]
       }
       Coef_all[index] <- betaHat
-      eps_hat[[index]] <-
-        resid(lm(Y_A1 - D_A1 * betaHat ~ Cov_aug_A1[, -rm_ind[[index]]]))
+      reg_ml2 <- lm(Y_A1 - D_A1 * betaHat ~ Cov_aug_A1[, -rm_ind[[index]]])
+      summary_ml <- summary(reg_ml2)
+      output$SecondStage_rse[index + 1] <- summary_ml$sigma
+      output$SecondStage_Rsquared[index + 1] <- 1 - var(summary_ml$residuals) / var(Y_A1)
+      eps_hat[[index]] <- resid(reg_ml2)
       stat_outputs <- tsci_secondstage_stats(D_rep,
         Cov_rep[, -rm_ind[[index]]],
         weight,
@@ -227,9 +241,15 @@ tsci_selection <- function(Y,
 
   # OLS estimator
   if (is.null(X)) {
-    OLS <- summary(lm(Y ~ D))$coefficients
+    summary_OLS <- summary(lm(Y ~ D))
+    output$SecondStage_rse[1] <- summary_OLS$sigma
+    output$SecondStage_Rsquared[1] <- summary_OLS$r.squared
+    OLS <- summary_OLS$coefficients
   } else {
-    OLS <- summary(lm(Y ~ D + X))$coefficients
+    summary_OLS <- summary(lm(Y ~ D + X))
+    output$SecondStage_rse[1] <- summary_OLS$sigma
+    output$SecondStage_Rsquared[1] <- summary_OLS$r.squared
+    OLS <- summary_OLS$coefficients
   }
   Coef_OLS <- OLS[2, 1]
   sd_OLS <- OLS[2, 2]
@@ -283,6 +303,5 @@ tsci_selection <- function(Y,
     sapply(seq_len(length(output$Coef_robust)),
       FUN = function(i) p_val(Coef = output$CI_robust[i], SE = output$sd_robust[i], beta_test = 0)
     )
-
   output
 }

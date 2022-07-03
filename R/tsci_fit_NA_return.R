@@ -23,6 +23,10 @@ tsci_fit_NA_return <- function(Q) {
   names(Qmax) <- names(q_comp) <- names(q_robust) <- c("OLS", paste("q", seq(0, Q - 1), sep = ""))
   invalidity <- rep(NA, 2)
   names(invalidity) <- c("valid", "invalid")
+  FirstStage_rse <- FirstStage_Rsquared <- NA
+  SecondStage_rse <- SecondStage_Rsquared <- rep(NA, Q + 1)
+  names(SecondStage_rse) <- names(SecondStage_Rsquared) <- c("OLS", paste("TSCI-Cor-q", seq(0, Q - 1), sep = ""))
+
 
   list(
     Coef_all = Coef_all,
@@ -38,6 +42,10 @@ tsci_fit_NA_return <- function(Q) {
     Qmax = Qmax,
     q_comp = q_comp,
     q_robust = q_robust,
-    invalidity = invalidity
+    invalidity = invalidity,
+    FirstStage_rse = FirstStage_rse,
+    FirstStage_Rsquared = FirstStage_Rsquared,
+    SecondStage_rse = SecondStage_rse,
+    SecondStage_Rsquared = SecondStage_Rsquared
   )
 }

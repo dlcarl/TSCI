@@ -50,6 +50,18 @@ aggregate_output <- function(output_list, alpha, Q,  mult_split_method) {
   returnList$invalidity[] <-
     apply(matrix(unlist(lapply(output_list, FUN = function(x) x$value$invalidity), use.names = FALSE),
                  ncol = length(returnList$invalidity), byrow = TRUE), 2, sum)
+  returnList$FirstStage_rse[] <-
+    apply(matrix(unlist(lapply(output_list, FUN = function(x) x$value$FirstStage_rse), use.names = FALSE),
+                 ncol = length(returnList$FirstStage_rse), byrow = TRUE), 2, median)
+  returnList$FirstStage_Rsquared[] <-
+    apply(matrix(unlist(lapply(output_list, FUN = function(x) x$value$FirstStage_Rsquared), use.names = FALSE),
+                 ncol = length(returnList$FirstStage_Rsquared), byrow = TRUE), 2, median)
+  returnList$SecondStage_rse[] <-
+    apply(matrix(unlist(lapply(output_list, FUN = function(x) x$value$SecondStage_rse), use.names = FALSE),
+                 ncol = length(returnList$SecondStage_rse), byrow = TRUE), 2, median)
+  returnList$SecondStage_Rsquared[] <-
+    apply(matrix(unlist(lapply(output_list, FUN = function(x) x$value$SecondStage_Rsquared), use.names = FALSE),
+                 ncol = length(returnList$SecondStage_Rsquared), byrow = TRUE), 2, median)
 
 
   if (mult_split_method == "FWER") {

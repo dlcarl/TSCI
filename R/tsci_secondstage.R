@@ -277,6 +277,6 @@ tsci_secondstage <- function(Y,
     str_thol = str_thol,
     alpha = alpha
   )
-
+  class(outputs) <- c("tsci", "list")
   return(outputs)
 }

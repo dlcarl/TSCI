@@ -272,6 +272,13 @@ tsci_splines <- function(Y,
                       function_hatmatrix = get_splines_hatmatrix)
 
   # Return output
-  outputs <- append(outputs, list("mse" = splines_CV$mse))
+  outputs <- append(outputs,
+                    list(mse = splines_CV$mse,
+                         FirstStage_model = "OLS with Basis Splines",
+                         FirstStage_params = splines_CV$params,
+                         split_prop = 1,
+                         nsplits = NULL,
+                         mult_split_method = NULL))
+  class(outputs) <- c("tsci", "list")
   return(outputs)
 }

@@ -267,6 +267,13 @@ tsci_poly <- function(Y,
                       function_hatmatrix = get_poly_hatmatrix)
 
   # Return output
-  outputs <- append(outputs, list("mse" = poly_CV$mse))
+  outputs <- append(outputs,
+                    list(mse = poly_CV$mse,
+                         FirstStage_model = "OLS with Polynomials",
+                         FirstStage_params = poly_CV$params,
+                         split_prop = 1,
+                         nsplits = NULL,
+                         mult_split_method = NULL))
+  class(outputs) <- c("tsci", "list")
   return(outputs)
 }

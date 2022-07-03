@@ -371,6 +371,13 @@ tsci_boosting <- function(Y,
                              cl = cl)
 
   # Return output
-  outputs <- append(outputs, list("mse" = treeboost_CV$mse))
+  outputs <- append(outputs,
+                    list(mse = treeboost_CV$mse,
+                         FirstStage_model = "L2 Gradient Tree Boosting",
+                         FirstStage_params = treeboost_CV$params_A2,
+                         split_prop = split_prop,
+                         nsplits = nsplits,
+                         mult_split_method = mult_split_method))
+  class(outputs) <- c("tsci", "list")
   return(outputs)
 }
