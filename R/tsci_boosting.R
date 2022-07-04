@@ -300,8 +300,8 @@ tsci_boosting <- function(Y,
     error_message <- paste(error_message, "colsample_bytree is not in [0, 1].", sep = "\n")
   if (any(nfolds < 0))
     error_message <- paste(error_message, "nfolds cannot be negative.", sep = "\n")
-  if (alpha > 0.5)
-    error_message <- paste(error_message, "alpha cannot be larget than 0.5.", sep = "\n")
+  if (alpha > 1)
+    error_message <- paste(error_message, "alpha cannot be larget than 1.", sep = "\n")
   if (!(mult_split_method %in% c("FWER", "DML")))
     error_message <- paste(error_message, "No valid multi-splitting inference method
                            selected. Choose either 'DML' or 'FWER'.", sep = "\n")

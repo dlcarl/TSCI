@@ -290,8 +290,8 @@ tsci_forest <- function(Y,
     error_message <- paste(error_message, "max_depth cannot be negative.", sep = "\n")
   if (any(min_node_size < 0))
     error_message <- paste(error_message, "min_node_size cannot be negative.", sep = "\n")
-  if (alpha > 0.5)
-    error_message <- paste(error_message, "alpha cannot be larget than 0.5.", sep = "\n")
+  if (alpha > 1)
+    error_message <- paste(error_message, "alpha cannot be larget than 1.", sep = "\n")
   if (!(mult_split_method %in% c("FWER", "DML")))
     error_message <- paste(error_message, "No valid multi-splitting inference method
                            selected. Choose either 'DML' or 'FWER'.", sep = "\n")
