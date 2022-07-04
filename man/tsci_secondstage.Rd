@@ -152,7 +152,7 @@ Y <- D * beta + tau * Z + X \%*\% gamma + Error[, 2]
 A <- cbind(Z, Z^2, Z^3, Z^4, Z*X, X)
 weight <- A \%*\% chol2inv(chol(t(A) \%*\% A)) \%*\% t(A)
 
-# Two Stage L2 Boosting
+# Two Stage User Defined
 vio_space <- create_monomials(Z, 4, "monomials_main")
 output <- tsci_secondstage(Y, D, Z, X, vio_space, weight)
 # point estimates

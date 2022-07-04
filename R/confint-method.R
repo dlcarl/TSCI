@@ -1,12 +1,13 @@
 #' xxx
 #'
 #' @param object xxx
+#' @param parm xxx
 #' @param level xxx
 #' @param ... xxx
 #'
 #' @return xxx
 #' @export
-confint.tsci <- function(object, level = 0.95, ...) {
+confint.tsci <- function(object, parm, level = 0.95, ...) {
   stopifnot(inherits(object, "tsci"))
   alpha <- 1 - level
   if (level == (1 - object$alpha)) {

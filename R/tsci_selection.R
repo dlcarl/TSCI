@@ -30,8 +30,7 @@
 #'     \item{\code{invalidity}}{invalidity of TSLS. If TRUE, the IV is invalid; Otherwise, the IV is valid}
 #' @noRd
 #'
-#' @importFrom stats coef lm qnorm quantile resid rnorm
-#'
+#' @importFrom stats coef lm qnorm quantile resid rnorm var
 tsci_selection <- function(Y,
                            D,
                            X,

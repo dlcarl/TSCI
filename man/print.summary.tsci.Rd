@@ -4,10 +4,10 @@
 \alias{print.summary.tsci}
 \title{Title}
 \usage{
-\method{print}{summary.tsci}(object, ...)
+\method{print}{summary.tsci}(x, ...)
 }
 \arguments{
-\item{object}{xxx}
+\item{x}{xxx}
 
 \item{...}{xxx}
 }

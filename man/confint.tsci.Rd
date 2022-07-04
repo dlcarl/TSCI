@@ -4,10 +4,12 @@
 \alias{confint.tsci}
 \title{xxx}
 \usage{
-\method{confint}{tsci}(object, level, ...)
+\method{confint}{tsci}(object, parm, level = 0.95, ...)
 }
 \arguments{
 \item{object}{xxx}
+
+\item{parm}{xxx}
 
 \item{level}{xxx}
 
