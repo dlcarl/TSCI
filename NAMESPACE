@@ -3,6 +3,7 @@
 S3method(coef,tsci)
 S3method(confint,tsci)
 S3method(print,summary.tsci)
+S3method(print,tsci)
 S3method(summary,tsci)
 export(create_monomials)
 export(tsci_boosting)

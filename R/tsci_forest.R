@@ -18,7 +18,7 @@
 #' @param vio_space either a numeric matrix with dimension n by q or a list with
 #' numeric vectors of length n and/or numeric matrices with n rows as elements to
 #' specify the violation space candidates.
-#' If a matrix or a list, then the violation space candidates (in form of matrices)
+#' The violation space candidates (in form of matrices)
 #' are defined sequentially starting with an empty violation matrix and subsequently
 #' adding the next column of the matrix or element of the list to the current violation matrix.
 #' See Details for more information.
@@ -39,10 +39,10 @@
 #' of each tree to zero to avoid self prediction and rescales the off-diagonal elements accordingly.
 #' @param str_thol minimal value of the threshold of IV strength test.
 #' @param alpha the significance level.
+#' @param nsplits number of times the data will be split. Has to be an integer larger or equal 1.
 #' @param mult_split_method method to calculate the standard errors and p-values
 #' and to construct the confidence intervals if multi-splitting is performed.
 #' Either 'DML' or 'FWER'. See Details.
-#' @param nsplits number of times the data will be split. Has to be an integer larger or equal 1.
 #' @param parallel One out of \code{"no"}, \code{"multicore"}, or \code{"snow"} specifying the parallelization method used.
 #' @param ncores the number of cores to use.
 #' @param cl either an parallel or snow cluster or \code{NULL}.
@@ -67,7 +67,7 @@
 #'     \item{\code{CI_robust}}{confidence intervals for the treatment effect for
 #'     the selected violation spaces.}
 #'     \item{\code{iv_str}}{IV strength for the different violation space candidates.}
-#'     \item{\code{iv_thol}}{the threshold for the different violation space candidates.}
+#'     \item{\code{iv_thol}}{the threshold for the IV strength for the different violation space candidates.}
 #'     \item{\code{Qmax}}{a named vector containing the number of times the
 #'     violation space candidates were the largest acceptable violation space by
 #'     the IV strength test.
@@ -84,7 +84,18 @@
 #'     \item{\code{invalidity}}{a named vector containing the number of times
 #'     the instrument was considered valid and invalid. The instrument is considered
 #'     invalid if the selected violation space is larger than the empty space.}
-#'     \item{\code{mse}}{the out-of-sample mean squared error of the treatment model.}
+#'     \item{\code{FirstStage_rse}}{residual standard error of the fitted treatment model.}
+#'     \item{\code{FirstStage_Rsquared}}{R-squared of the fitted treatment model.}
+#'     \item{\code{FirstStage_rse}}{a named vector containing the residual standard error of the fitted outcome model for each violation space candidate.}
+#'     \item{\code{FirstStage_Rsquared}}{a named vector containing the R-squared of the fitted outcome model for each violation space candidate.}
+#'     \item{\code{mse}}{the out-of-sample mean squared error of the fitted treatment model.}
+#'     \item{\code{FirstStage_model}}{the method used to fit the treatment model.}
+#'     \item{\code{FirstStage_params}}{the hyperparameter combination used to fit the treatment model.}
+#'     \item{\code{n_A1}}{number of observations in A1.}
+#'     \item{\code{n_A2}}{number of observations in A2.}
+#'     \item{\code{nsplits}}{number of data splits performed.}
+#'     \item{\code{mult_split_method}}{the method used to calculate the standard errors and p-values.}
+#'     \item{\code{alpha}}{the significance level used.}
 #'}
 #'
 #' @details The treatment and outcome models are assumed to be of the following forms:
@@ -181,7 +192,7 @@ tsci_forest <- function(Y,
                         D,
                         Z,
                         X = NULL,
-                        vio_space = NULL,
+                        vio_space,
                         intercept = TRUE,
                         split_prop = 2 / 3,
                         num_trees = 200,
@@ -191,14 +202,14 @@ tsci_forest <- function(Y,
                         self_predict = TRUE,
                         str_thol = 10,
                         alpha = 0.05,
-                        mult_split_method = "DML",
                         nsplits = 10,
+                        mult_split_method = ifelse(nsplits > 1, "FWER", "DML"),
                         parallel = "no",
                         ncores = 1,
                         cl = NULL,
                         raw_output = ifelse(mult_split_method == "FWER", TRUE, FALSE)) {
 
-  # check that input is in the correct format
+  # checks that input is in the correct format
   error_message <- NULL
   if (!is.numeric(Y))
     error_message <- paste(error_message, "Y is not numeric.", sep = "\n")
@@ -210,8 +221,8 @@ tsci_forest <- function(Y,
     error_message <- paste(error_message, "X is not numeric.", sep = "\n")
   if (!is.logical(intercept))
     error_message <- paste(error_message, "intercept is neither TRUE nor FALSE.", sep = "\n")
-  if (!is.matrix(vio_space) & !is.list(vio_space) & !is.null(vio_space))
-    error_message <- paste(error_message, "vio_space is neither a matrix nor a list nor NULL", sep = "\n")
+  if (!is.matrix(vio_space) & !is.list(vio_space))
+    error_message <- paste(error_message, "vio_space is neither a matrix nor a list", sep = "\n")
   if (is.matrix(vio_space)) {
     if (!is.numeric(vio_space))
       error_message <- paste(error_message, "vio_space is not numeric", sep = "\n")
@@ -243,11 +254,13 @@ tsci_forest <- function(Y,
     error_message <- paste(error_message, "parallel is not character.", sep = "\n")
   if (!is.numeric(ncores))
     error_message <- paste(error_message, "ncores is not numeric.", sep = "\n")
+  if (!is.logical(raw_output))
+    error_message <- paste(error_message, "raw_output is neither TRUE nor FALSE", sep = "\n")
 
   if (!is.null(error_message))
     stop(error_message)
 
-  # check if inputs are possible
+  # checks if inputs are possible
   p <- NCOL(Z) + ifelse(is.null(X), 0, NCOL(X))
   if (length(unique(sapply(list(Y, D, Z), FUN = function(variable) NROW(variable)))) > 1)
     error_message <- paste(error_message, "Y, D and Z have not the same amount of observations.", sep = "\n")
@@ -306,13 +319,14 @@ tsci_forest <- function(Y,
   if (!is.null(error_message))
     stop(error_message)
 
-
+  # stores variables as matrices as matrix multiplications will be performed later
   Y = as.matrix(Y); D = as.matrix(D); Z = as.matrix(Z)
   if (!is.null(X)) X <- as.matrix(X)
 
+  # initializes parallelization setup
   do_parallel <- parallelization_setup(parallel = parallel, ncpus = ncores, cl = cl)
 
-  # grid search
+  # sets up grid search over the hyperparameter combinations
   params_grid <- expand.grid(
     num_trees = num_trees,
     mtry = mtry,
@@ -321,23 +335,26 @@ tsci_forest <- function(Y,
     self_predict = self_predict
   )
 
-  # Treatment model fitting
+  # creates the dataframe used to fit the treatment model
   W <- as.matrix(cbind(Z, X))
   df_treatment <- data.frame(cbind(D, W))
   names(df_treatment) <- c("D", paste("W", seq_len(p), sep = ""))
 
-  # split the data into two parts A1 and A2
-  # use A2 to train and use A1 to predict
+  # splits the data into two parts A1 and A2
+  # A2 will be used to train the treatment model and the hat matrix will be calculated for A1
   n_A1 <- round(split_prop * n)
   n_A2 <- n - n_A1
   A1_ind <- sample(seq_len(n), n_A1)
   df_treatment_A1 <- df_treatment[A1_ind, ]
   df_treatment_A2 <- df_treatment[-A1_ind, ]
 
-  # Hyperparameter selection
+  # grid search through params_grid to identify the hyperparameter combination that minimizes the OOB MSE
   forest_OOB <- get_forest_parameters(df_treatment_A2 = df_treatment_A2, params_grid = params_grid)
 
 
+  # calls tsci_multisplit which splits the data n_splits time into A1 and A2.
+  # fits the treatment model with A2, calculates the hat matrix for A1
+  # and subsequently performs violation space selection and treatment effect estimation.
   outputs <- tsci_multisplit(df_treatment = df_treatment,
                              Y = Y,
                              D = D,
@@ -359,7 +376,7 @@ tsci_forest <- function(Y,
                              cl = cl,
                              raw_output = raw_output)
 
-  # Return output
+  # returns output
   outputs <- append(outputs,
                     list(mse = forest_OOB$mse,
                          FirstStage_model = "Random Forest",

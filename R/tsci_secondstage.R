@@ -249,7 +249,7 @@ tsci_secondstage <- function(Y,
   if (!is.null(X)) X <- as.matrix(X)
   n_A1 <- length(A1_ind)
 
-  list_vio_space <- check_vio_space(Z, vio_space)
+  list_vio_space <- build_vio_space_candidates(Z, vio_space)
   vio_space <- list_vio_space$vio_space[A1_ind, ]
   rm_ind <- list_vio_space$rm_ind
   Q <- list_vio_space$Q

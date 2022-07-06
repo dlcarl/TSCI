@@ -256,7 +256,7 @@ tsci_splines <- function(Y,
   # hyperparameter tuning
   splines_CV <- get_splines_parameters(df_treatment, params_grid = params_grid, nfolds = nfolds)
 
-  list_vio_space <- check_vio_space(Z, vio_space)
+  list_vio_space <- build_vio_space_candidates(Z, vio_space)
 
   outputs <- tsci_fit(df_treatment = df_treatment,
                       Y = Y,
@@ -278,8 +278,8 @@ tsci_splines <- function(Y,
                          FirstStage_params = splines_CV$params,
                          n_A1 = n,
                          n_A2 = 0,
-                         nsplits = NULL,
-                         mult_split_method = NULL,
+                         nsplits = 0,
+                         mult_split_method = "No sample splitting was performed",
                          alpha = alpha))
   class(outputs) <- c("tsci", "list")
   return(outputs)

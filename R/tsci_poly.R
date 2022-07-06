@@ -251,7 +251,7 @@ tsci_poly <- function(Y,
   poly_CV <- get_poly_parameters(df_treatment, params_grid = params_grid, nfolds = nfolds)
 
   if (is.null(vio_space)) vio_space <- poly(as.vector(Z), degree = poly_CV$params$norder, raw = TRUE, simple = TRUE)
-  list_vio_space <- check_vio_space(Z, vio_space)
+  list_vio_space <- build_vio_space_candidates(Z, vio_space)
 
   outputs <- tsci_fit(df_treatment = df_treatment,
                       Y = Y,
@@ -273,8 +273,8 @@ tsci_poly <- function(Y,
                          FirstStage_params = poly_CV$params,
                          n_A1 = n,
                          n_A2 = 0,
-                         nsplits = NULL,
-                         mult_split_method = NULL,
+                         nsplits = 0,
+                         mult_split_method = "No sample splitting was performed",
                          alpha = alpha))
   class(outputs) <- c("tsci", "list")
   return(outputs)

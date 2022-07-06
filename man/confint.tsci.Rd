@@ -4,7 +4,7 @@
 \alias{confint.tsci}
 \title{xxx}
 \usage{
-\method{confint}{tsci}(object, parm, level = 0.95, ...)
+\method{confint}{tsci}(object, parm = NULL, level = 0.95, ...)
 }
 \arguments{
 \item{object}{xxx}

@@ -14,11 +14,10 @@ get_FWER_CI <- function(Coef, SE, level, gamma = 0.5) {
   alpha <- 1 - level
   beta_min <- min(Coef - qnorm(1 - alpha / 2 * gamma)  * SE)
   beta_max <- max(Coef + qnorm(1 - alpha / 2 * gamma)  * SE)
-
   beta_range <- seq(beta_min, beta_max, length.out = 10^4)
   p_val_med <- sapply(beta_range, FUN = function(beta_test) quantile(p_val(Coef, SE, beta_test), probs = gamma, names = FALSE))
-  lower <- beta_range[min(which(p_val_med > alpha * gamma)) - 1]
-  upper <- beta_range[max(which(p_val_med > alpha * gamma)) + 1]
+  lower <- beta_range[max(min(which(p_val_med > alpha * gamma)) - 1, 1)]
+  upper <- beta_range[min(max(which(p_val_med > alpha * gamma)) + 1,10^4)]
   p_value <- min(1, quantile(p_val(Coef, SE, 0) / gamma, probs = gamma, names = FALSE))
   return(list(CI = c("lower" = lower, "upper" = upper), p_value = p_value))
 }

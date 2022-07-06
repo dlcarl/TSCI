@@ -9,7 +9,7 @@ tsci_forest(
   D,
   Z,
   X = NULL,
-  vio_space = NULL,
+  vio_space,
   intercept = TRUE,
   split_prop = 2/3,
   num_trees = 200,
@@ -19,8 +19,8 @@ tsci_forest(
   self_predict = TRUE,
   str_thol = 10,
   alpha = 0.05,
-  mult_split_method = "DML",
   nsplits = 10,
+  mult_split_method = ifelse(nsplits > 1, "FWER", "DML"),
   parallel = "no",
   ncores = 1,
   cl = NULL,
@@ -44,7 +44,7 @@ or a numeric matrix with dimension n by p or \code{NULL}
 \item{vio_space}{either a numeric matrix with dimension n by q or a list with
 numeric vectors of length n and/or numeric matrices with n rows as elements to
 specify the violation space candidates.
-If a matrix or a list, then the violation space candidates (in form of matrices)
+The violation space candidates (in form of matrices)
 are defined sequentially starting with an empty violation matrix and subsequently
 adding the next column of the matrix or element of the list to the current violation matrix.
 See Details for more information.}
@@ -75,11 +75,11 @@ of each tree to zero to avoid self prediction and rescales the off-diagonal elem
 
 \item{alpha}{the significance level.}
 
+\item{nsplits}{number of times the data will be split. Has to be an integer larger or equal 1.}
+
 \item{mult_split_method}{method to calculate the standard errors and p-values
 and to construct the confidence intervals if multi-splitting is performed.
 Either 'DML' or 'FWER'. See Details.}
-
-\item{nsplits}{number of times the data will be split. Has to be an integer larger or equal 1.}
 
 \item{parallel}{One out of \code{"no"}, \code{"multicore"}, or \code{"snow"} specifying the parallelization method used.}
 
@@ -108,7 +108,7 @@ selected violation spaces.}
 \item{\code{CI_robust}}{confidence intervals for the treatment effect for
 the selected violation spaces.}
 \item{\code{iv_str}}{IV strength for the different violation space candidates.}
-\item{\code{iv_thol}}{the threshold for the different violation space candidates.}
+\item{\code{iv_thol}}{the threshold for the IV strength for the different violation space candidates.}
 \item{\code{Qmax}}{a named vector containing the number of times the
 violation space candidates were the largest acceptable violation space by
 the IV strength test.
@@ -125,7 +125,18 @@ was too weak even for the empty violation space.}
 \item{\code{invalidity}}{a named vector containing the number of times
 the instrument was considered valid and invalid. The instrument is considered
 invalid if the selected violation space is larger than the empty space.}
-\item{\code{mse}}{the out-of-sample mean squared error of the treatment model.}
+\item{\code{FirstStage_rse}}{residual standard error of the fitted treatment model.}
+\item{\code{FirstStage_Rsquared}}{R-squared of the fitted treatment model.}
+\item{\code{FirstStage_rse}}{a named vector containing the residual standard error of the fitted outcome model for each violation space candidate.}
+\item{\code{FirstStage_Rsquared}}{a named vector containing the R-squared of the fitted outcome model for each violation space candidate.}
+\item{\code{mse}}{the out-of-sample mean squared error of the fitted treatment model.}
+\item{\code{FirstStage_model}}{the method used to fit the treatment model.}
+\item{\code{FirstStage_params}}{the hyperparameter combination used to fit the treatment model.}
+\item{\code{n_A1}}{number of observations in A1.}
+\item{\code{n_A2}}{number of observations in A2.}
+\item{\code{nsplits}}{number of data splits performed.}
+\item{\code{mult_split_method}}{the method used to calculate the standard errors and p-values.}
+\item{\code{alpha}}{the significance level used.}
 }
 }
 \description{

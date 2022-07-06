@@ -15,38 +15,38 @@ summary.tsci <- function(object,
       sd_robust <- rep(".", length(object$Coef_robust))
       sd_all <- rep(".", length(object$Coef_all))
     } else {
-      sd_robust <- round(object$sd_robust, 5)
-      sd_all <- round(object$sd_all, 5)
+      sd_robust <- object$sd_robust
+      sd_all <- object$sd_all
     }
   } else {
-    sd_robust <- round(object$sd_robust, 5)
-    sd_all <- round(object$sd_all, 5)
+    sd_robust <- object$sd_robust
+    sd_all <- object$sd_all
   }
 
   coef_df <-
-    data.frame(round(c(object$Coef_robust, object$Coef_all), 5),
+    data.frame(c(object$Coef_robust, object$Coef_all),
                c(sd_robust, sd_all),
-               c(round(object$CI_robust[1, ], 5), round(object$CI_all[1, ], 5)),
-               c(round(object$CI_robust[2, ], 5), round(object$CI_all[2, ], 5)),
-               c(round(object$pval_robust, 3), round(object$pval_all, 3)))
-  colnames(coef_df) <- c("Estimate", "Std. Error", paste(100 * object$alpha/2, "%"), paste(100*(1 - object$alpha/2), "%"), "Pr(>|t|)")
+               c(object$CI_robust[1, ], object$CI_all[1, ]),
+               c(object$CI_robust[2, ], object$CI_all[2, ]),
+               c(object$pval_robust, object$pval_all))
+  colnames(coef_df) <- c("Estimate", "Std_Error", paste(100 * object$alpha/2, "%"), paste(100*(1 - object$alpha/2), "%"), "Pr(>|t|)")
   rownames(coef_df) <- names(c(object$Coef_robust, object$Coef_all))
 
-  TreatmentModel_df <- data.frame("Estimation Method" = object$FirstStage_model,
-                                  "Residual Standard Error" = round(object$FirstStage_rse, 4),
-                                  "R Squared" = round(object$FirstStage_Rsquared, 4))
+  TreatmentModel_df <- data.frame("Estimation_Method" = object$FirstStage_model,
+                                  "Residual_Standard_Error" = object$FirstStage_rse,
+                                  "R_Squared" = object$FirstStage_Rsquared)
 
-  OutcomeModel_df <- data.frame("Residual Standard Error" = round(object$SecondStage_rse, 4),
-                                "R Squared" = round(object$SecondStage_Rsquared, 4))
+  OutcomeModel_df <- data.frame("Residual_Standard_Error" = object$SecondStage_rse,
+                                "R_Squared" = object$SecondStage_Rsquared)
   row.names(OutcomeModel_df) <- names(object$SecondStage_rse)
 
-  ViolationSpace_DF <- data.frame("q comp" = object$q_comp,
-                                  "q robust" = object$q_robust,
+  ViolationSpace_DF <- data.frame("q_comp" = object$q_comp,
+                                  "q_robust" = object$q_robust,
                                   "Qmax" = object$Qmax)
   row.names(ViolationSpace_DF) <- names(object$Qmax)
 
-  IVStrength_df <- data.frame("IV Strength" = object$iv_str,
-                              "IV Tolerance" = object$iv_thol)
+  IVStrength_df <- data.frame("IV_Strength" = object$iv_str,
+                              "IV_Threshold" = object$iv_thol)
   row.names(IVStrength_df) <- names(object$iv_str)
 
 

@@ -15,18 +15,8 @@
 #' @param params a list containing the hyperparameters of the treatment model fitting method.
 #' @param function_hatmatrix a function to get the hat matrix of the treatment model.
 #'
-#' @return
-#'     \item{\code{Coef_all}}{a series of point estimators of treatment effect corresponding to different violation spaces and the OLS}
-#'     \item{\code{sd_all}}{standard errors of Coef_all}
-#'     \item{\code{CI_all}}{confidence intervals for the treatment effect corresponding to different violation spaces and the OLS}
-#'     \item{\code{Coef_robust}}{the point estimators corresponding to the violation space selected by the robust comparison}
-#'     \item{\code{sd_robust}}{the standard errors of Coef_robust}
-#'     \item{\code{CI_robust}}{confidence intervals for the treatment effect with the violation space selected by the robust comparison}
-#'     \item{\code{iv_str}}{IV strength corresponding to different violation spaces}
-#'     \item{\code{iv_thol}}{the threshold of IV strength test corresponding to different violation spaces}
-#'     \item{\code{Qmax}}{the index of largest violation space selected by IV strength test. If -1, the IV strength test fails for null violation space and run OLS. If 0, the IV Strength test fails for the first violation space and run TSRF only for null violation space. In other cases, violation space selection is performed}
-#'     \item{\code{q_hat}}{the index of estimated violation space corresponding to Qmax}
-#'     \item{\code{invalidity}}{invalidity of TSLS. If TRUE, the IV is invalid; Otherwise, the IV is valid}
+#' @return The output of \code{tsci_selection}
+#'
 #' @noRd
 #'
 tsci_fit <- function(df_treatment,

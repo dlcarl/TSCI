@@ -1,4 +1,4 @@
-#' Checks and builds violation spaces.
+#' Builds violation space candidates.
 #'
 #' @param Z Z instrument variable with dimension n by 1.
 #' @param vio_space a \code{list} with vectors or matrices as elements or a \code{matrix}.
@@ -18,9 +18,8 @@
 #'
 #' @importFrom stats poly
 #'
-check_vio_space <- function(Z, vio_space) {
+build_vio_space_candidates <- function(Z, vio_space) {
   n <- NROW(Z)
-  # define the vio_space as polynomials if not specified
   if (class(vio_space)[1] == "list") {
     vio_space <- lapply(vio_space, as.matrix)
     Q <- length(vio_space) + 1
@@ -30,7 +29,7 @@ check_vio_space <- function(Z, vio_space) {
       lapply(seq_len(Q - 1), FUN = function(i) {
         seq(from = sum(v_len[seq_len(i)]), to = sum(v_len[seq_len(Q - 1) + 1]))
       })
-    # merge the list of violation space to a matrix
+    # merges the list of violation space to a matrix
     vio_space <- Reduce(cbind, vio_space)
   } else if (class(vio_space)[1] == "matrix") {
     Q <- ncol(vio_space) + 1

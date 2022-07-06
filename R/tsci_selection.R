@@ -17,17 +17,43 @@
 #'
 #' @return
 #' \describe{
-#'     \item{\code{Coef_all}}{a series of point estimators of treatment effect corresponding to different violation spaces and the OLS}
-#'     \item{\code{sd_all}}{standard errors of Coef_all}
-#'     \item{\code{CI_all}}{confidence intervals for the treatment effect corresponding to different violation spaces and the OLS}
-#'     \item{\code{Coef_robust}}{the point estimators corresponding to the violation space selected by the robust comparison}
-#'     \item{\code{sd_robust}}{the standard errors of Coef_robust}
-#'     \item{\code{CI_robust}}{confidence intervals for the treatment effect with the violation space selected by the robust comparison}
-#'     \item{\code{iv_str}}{IV strength corresponding to different violation spaces}
-#'     \item{\code{iv_thol}}{the threshold of IV strength test corresponding to different violation spaces}
-#'     \item{\code{Qmax}}{the index of largest violation space selected by IV strength test. If -1, the IV strength test fails for null violation space and run OLS. If 0, the IV Strength test fails for the first violation space and run TSRF only for null violation space. In other cases, violation space selection is performed}
-#'     \item{\code{q_hat}}{the index of estimated violation space corresponding to Qmax}
-#'     \item{\code{invalidity}}{invalidity of TSLS. If TRUE, the IV is invalid; Otherwise, the IV is valid}
+#'     \item{\code{Coef_all}}{a series of point estimates of the treatment effect
+#'     for the different violation space candidates and the OLS estimate.}
+#'     \item{\code{sd_all}}{standard errors of Coef_all.}
+#'     \item{\code{pvall_all}}{p-values of the treatment effect estimates for the
+#'     different violation space candidates and for the OLS estimate.}
+#'     \item{\code{CI_all}}{confidence intervals for the treatment effect for the
+#'     different violation space candidates and for the OLS estimate.}
+#'     \item{\code{Coef_robust}}{the point estimators of the treatment effect for
+#'     the selected violation spaces.}
+#'     \item{\code{sd_robust}}{the standard errors of Coef_robust.}
+#'     \item{\code{pvall_all}}{p-values of the treatment effect estimates for the
+#'     selected violation spaces.}
+#'     \item{\code{CI_robust}}{confidence intervals for the treatment effect for
+#'     the selected violation spaces.}
+#'     \item{\code{iv_str}}{IV strength for the different violation space candidates.}
+#'     \item{\code{iv_thol}}{the threshold for the IV strength for the different violation space candidates.}
+#'     \item{\code{Qmax}}{a named vector containing the number of times the
+#'     violation space candidates were the largest acceptable violation space by
+#'     the IV strength test.
+#'     The value of the element named "OLS" is the number of times the instrument
+#'     was too weak even for the empty violation space.}
+#'     \item{\code{q_comp}}{a named vector containing the number of times the
+#'     violation space candidates were the selected violation space.
+#'     The value of the element named "OLS" is the number of times the instrument
+#'     was too weak even for the empty violation space.}
+#'     \item{\code{q_robust}}{a named vector containing the number of times the
+#'     violation space candidates were the selected violation space by the robust method.
+#'     The value of the element named "OLS" is the number of times the instrument
+#'     was too weak even for the empty violation space.}
+#'     \item{\code{invalidity}}{a named vector containing the number of times
+#'     the instrument was considered valid and invalid. The instrument is considered
+#'     invalid if the selected violation space is larger than the empty space.}
+#'     \item{\code{FirstStage_rse}}{residual standard error of the fitted treatment model.}
+#'     \item{\code{FirstStage_Rsquared}}{R-squared of the fitted treatment model.}
+#'     \item{\code{FirstStage_rse}}{a named vector containing the residual standard error of the fitted outcome model for each violation space candidate.}
+#'     \item{\code{FirstStage_Rsquared}}{a named vector containing the R-squared of the fitted outcome model for each violation space candidate.}
+#' }
 #' @noRd
 #'
 #' @importFrom stats coef lm qnorm quantile resid rnorm var

@@ -5,11 +5,11 @@
 #' @param D treatment vector with dimension n by 1.
 #' @param Z instrument variable with dimension n by 1.
 #' @param X baseline covariates with dimension n by p.
-#' @param vio_space vio_space a matrix or a list. If a matrix, then each column corresponds to a violation form of Z; If a list, then each element corresponds to a violation form of Z and must be a matrix of n rows, e.g. (Z^3,Z^2); If NULL, then default by the n by 3 matrix (Z^3, Z^2, Z). Violation form selection will be performed according to provided violation forms, for example, null violation space vs Z vs (Z^2, Z) vs (Z^3, Z^2, Z) in the default case.
+#' @param vio_space vio_space a matrix or a list.
 #' @param A1_ind the indices of samples in A1 in the first split.
 #' @param intercept logical, including the intercept or not in the outcome model, default by TRUE.
-#' @param str_thol minimal value of the threshold of IV strength test, default by 10.
-#' @param alpha the significance level, default by 0.05.
+#' @param str_thol minimal value of the threshold of IV strength test.
+#' @param alpha the significance level.
 #' @param params a list containing the hyperparameters of the treatment model fitting method.
 #' @param function_hatmatrix a function to get the hat matrix of the treatment model.
 #' @param split_prop numeric, proportion of observations used to fit the outcome model.
@@ -54,8 +54,10 @@ tsci_multisplit <- function(df_treatment,
                             mult_split_method,
                             cl,
                             raw_output) {
-  list_vio_space <- check_vio_space(Z, vio_space)
+  # if vio_space is a list, this function merges the list into a matrix and identifies the columns to include (resp. to exclude) for each violation space candidate.
+  list_vio_space <- build_vio_space_candidates(Z, vio_space)
 
+  # sets up local environment for the calculations for each data split to handle potential error and warning messages better.
   tsci_parallel <- local({
     df_treatment
     Y
@@ -87,6 +89,7 @@ tsci_multisplit <- function(df_treatment,
       ), tsci_fit_NA_return(Q = list_vio_space$Q))}
   })
 
+  # Perfroms calculations for each data split, check outputs for NAs and depending on the number of NAs performs a second round of data splits.
   if (do_parallel) {
     if (parallel == "multicore") {
       list_outputs <- parallel::mclapply(seq_len(nsplits), tsci_parallel, mc.cores = ncores)
@@ -152,6 +155,8 @@ tsci_multisplit <- function(df_treatment,
                    " data splits were performed.",
                    error_string), call. = FALSE)
   }
+
+  # aggregates outputs of data splits.
   aggregate_output(output_list = list_outputs,
                    alpha = alpha,
                    Q = list_vio_space$Q,

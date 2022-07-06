@@ -18,7 +18,7 @@ or a numeric matrix with dimension n by s.}
 }
 \value{
 A ordered list. Each element is a matrix consisting of the monomials to be added to
-next violation space candidate.
+the next violation space candidate.
 }
 \description{
 Monomials as Violation Space Candidates
@@ -26,7 +26,7 @@ Monomials as Violation Space Candidates
 \details{
 assuming there are 3 instrumental variables Z1, Z2, and Z3 and \code{degree} = d,
 \code{monomials_main} creates the monomials of the polynomials (Z1 + 1)^d, (Z2 + 1)^d, (Z3 + 1)^d without the constants and
-\code{monomials_full} creates the monomials of the polynomials (Z1 + Z2 + Z3)^1, (Z1 + Z2 + Z3)^2, ..., (Z1 + Z2 + Z3)^d.
+\code{monomials_full} creates the monomials of the polynomials (Z1 + Z2 + Z3)^1, (Z1 + Z2 + Z3)^2, ..., (Z1 + Z2 + Z3)^d without the constants.
 Thus \code{type} = \code{monomials_main} does not include interactions between the instrumental variables.
 }
 \examples{
