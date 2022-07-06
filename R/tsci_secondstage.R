@@ -281,8 +281,8 @@ tsci_secondstage <- function(Y,
                     list(FirstStage_model = "Specified by User",
                          n_A1 = n_A1,
                          n_A2 = n - n_A1,
-                         nsplits = NULL,
-                         mult_split_method = NULL,
+                         nsplits = 0,
+                         mult_split_method = "No sample splitting was performed",
                          alpha = alpha
                          ))
   class(outputs) <- c("tsci", "list")

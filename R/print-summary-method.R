@@ -4,7 +4,7 @@
 #' @param ... xxx
 #'
 #' @return xxx
-#' @export
+#' @exportS3Method
 print.summary.tsci <- function(x, ...) {
 
   # print multi-splitting statistics

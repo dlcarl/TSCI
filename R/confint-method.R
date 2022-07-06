@@ -6,7 +6,7 @@
 #' @param ... xxx
 #'
 #' @return xxx
-#' @export
+#' @exportS3Method
 confint.tsci <- function(object, parm = NULL, level = 0.95, ...) {
   stopifnot(inherits(object, "tsci"))
   alpha <- 1 - level

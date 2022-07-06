@@ -4,8 +4,7 @@
 #' @param ... xxx
 #'
 #' @return xxx
-#' @export
-#'
+#' @exportS3Method
 print.tsci <- function(x, ...) {
   stopifnot(inherits(x, "tsci"))
 
