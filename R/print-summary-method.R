@@ -22,6 +22,7 @@ print.summary.tsci <- function(x, ...) {
   # print coefficients
   cat("\nCoefficients:\n")
   coefficients_df <- data.frame(lapply(x$coefficients, FUN = function(y) if (is.numeric(y)) {round(y, 5)}  else {y}))
+  rownames(coefficients_df) <- rownames(x$coefficients)
   colnames(coefficients_df) <- colnames(x$coefficients)
   print(coefficients_df)
 
