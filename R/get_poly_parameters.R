@@ -26,9 +26,11 @@ get_poly_parameters <- function(df_treatment,
                                    params_list = params_list,
                                    gcv = gcv,
                                    nfolds = nfolds)
+    } else {
+      stop("No valid order selection method chosen.")
     }
   } else {
-    stop("no valid order selection method chosen.")
+    optimal_order <- unlist(params_list)
   }
 
   # performs k-fold CV for the chosen order of polynomials to get an out-of-sample MSE.

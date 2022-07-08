@@ -45,5 +45,6 @@ backfitting <- function(df,
     change <- sqrt(sum((g_X - g_old)^2)) / sqrt(sum(g_old^2))
     if(change < tol) return(order_opt)
   }
+  warning("backfitting did not converge.")
   return(order_opt)
 }
