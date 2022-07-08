@@ -47,7 +47,6 @@ get_l2boost_hatmatrix <- function(df_treatment_A1,
 
 
   l2boost_hatmatrix <- matrix(0, n_A1, n_A1)
-  f_A2 <- rep(0, n_A2)
   for (iter in seq_len(params$nrounds)) {
     leaves_iter_A1 <- nodes_A1[, iter]
     # calculates the hat matrix

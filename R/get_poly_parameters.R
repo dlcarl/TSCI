@@ -1,50 +1,46 @@
 #' Title
 #'
 #' @param df_treatment xxx
-#' @param params_grid xxx
+#' @param params_list xxx
 #' @param nfolds xxx
 #'
 #' @return xxx
 #' @noRd
 #' @importFrom stats lm coef
-get_poly_parameters <- function(df_treatment, params_grid, nfolds) {
-  n <- NROW(df_treatment)
-  MSE_CV <- Inf
-  params <- NULL
+get_poly_parameters <- function(df_treatment,
+                                params_list,
+                                order_selection_method,
+                                gcv,
+                                nfolds) {
 
-  Resample <- sample(n)
-  sub_obs <- floor(n / nfolds)
-  for (i in seq_len(NROW(params_grid))) {
-    mse_tmp <- rep(NA, nfolds)
-    for (j in seq_len(nfolds)) {
-      if (j == nfolds) {
-        sub_test_index <- seq((j - 1) * sub_obs + 1, n)
-      } else {
-        sub_test_index <- seq((j - 1) * sub_obs + 1, j * sub_obs)
-      }
-
-      sub_test_index <- Resample[sub_test_index]
-
-      m <- poly(df_treatment[, 2], degree = params_grid$norder[i], raw = TRUE, simple = TRUE)
-      A <- as.matrix(cbind(1, m, df_treatment[, -c(1,2)]))
-      coefs <- coef(lm(df_treatment[-sub_test_index, 1] ~ A[-sub_test_index, ] - 1))
-
-      D_pred <- A[sub_test_index, ] %*% coefs
-
-      mse_tmp[j] <- mean((D_pred - df_treatment[sub_test_index, 1])^2)
-
+  # selects optimal order of the polynomials
+  if (max(sapply(seq_len(length(params_list)), FUN = function(i) length(params_list[[i]]))) > 1) {
+    if (order_selection_method == "backfitting") {
+      optimal_order <- backfitting(df = df_treatment,
+                                   params_list = params_list,
+                                   gcv = gcv,
+                                   nfolds = nfolds)
     }
-
-
-    mse_cv <- mean(mse_tmp)
-
-    if (mse_cv <= MSE_CV) {
-      params <- params_grid[i, ]
-      MSE_CV <- mse_cv
+    else if (order_selection_method == "grid search") {
+      optimal_order <- grid_search(df = df_treatment,
+                                   params_list = params_list,
+                                   gcv = gcv,
+                                   nfolds = nfolds)
     }
+  } else {
+    stop("no valid order selection method chosen.")
   }
+
+  # performs k-fold CV for the chosen order of polynomials to get an out-of-sample MSE.
+  A <- matrix(1, nrow = NROW(df_treatment))
+  for (j in seq_len(length(optimal_order))) {
+    A <- cbind(A, poly(df_treatment[, j + 1], degree = optimal_order[j]))
+  }
+  MSE_CV <- cross_validate(Y = df_treatment[, 1],
+                           X = A,
+                           nfolds)
   return(list(
-    "params" = params,
+    "params" = list(optimal_order),
     "mse" = MSE_CV
   ))
 }

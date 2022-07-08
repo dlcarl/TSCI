@@ -45,7 +45,7 @@ or a numeric matrix with dimension n by p or \code{NULL}
 
 \item{vio_space}{either a numeric matrix with dimension n by q or a list with
 numeric vectors of length n and/or numeric matrices with n rows as elements to
-specify the violation space candidates or '\code{NULL}'.
+specify the violation space candidates.
 The violation space candidates (in form of matrices)
 are defined sequentially starting with an empty violation matrix and subsequently
 adding the next column of the matrix or element of the list to the current violation matrix.

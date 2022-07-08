@@ -230,7 +230,7 @@ tsci_splines <- function(Y,
     if(any(is.na(unlist(vio_space))))
       error_message <- paste(error_message, "There are NA's in vio_space.", sep = "\n")
   if (alpha > 1)
-    error_message <- paste(error_message, "alpha cannot be larget than 1.", sep = "\n")
+    error_message <- paste(error_message, "alpha cannot be larger than 1.", sep = "\n")
   if (!is.null(error_message))
     stop(error_message)
 

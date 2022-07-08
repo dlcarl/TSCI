@@ -1,6 +1,6 @@
-#' Two Stage Curvature Identification with Basis Splines
-#' @description \code{tsci_boosting} implements Two Stage Curvature Identification
-#' (Guo and Bühlmann 2022) with basis splines. Through a data-dependent way it
+#' Two Stage Curvature Identification with Polynomial Basis Expansion
+#' @description \code{tsci_poly} implements Two Stage Curvature Identification
+#' (Guo and Bühlmann 2022) with a basis expansion by monomials. Through a data-dependent way it
 #' tests for the smallest sufficiently large violation space among a pre-specified
 #' sequence of nested violation space candidates. Point and uncertainty estimates
 #' of the treatment effect for all violation space candidates including the
@@ -21,11 +21,26 @@
 #' If a matrix or a list, then the violation space candidates (in form of matrices)
 #' are defined sequentially starting with an empty violation matrix and subsequently
 #' adding the next column of the matrix or element of the list to the current violation matrix.
-#' If \code{NULL}, then the violation space candidates are the spaces of polynomials up to the 3-th order.
-#' See Details for more information.
+#' If \code{NULL}, then the violation space candidates are chosen to be a nested sequence
+#' of monomials with degree depending on the orders of the polynomials used to fit
+#' the treatment model.
 #' @param intercept logical. If \code{TRUE} an intercept is included in the outcome model.
-#' @param norder xxx
-#' @param nfolds number of folds used for cross-validation to choose best parameter combination.
+#' @param min_order either a single numeric value or a numeric vector of length s specifying
+#' the smallest order of polynomials to use in the selection of the treatment model. If a
+#' single numeric value, all the polynomials of all instrumental variables use this value.
+#' @param max_order either a single numeric value or a numeric vector of length s specifying
+#' the largest order of polynomials to use in the selection of the treatment model. If a
+#' single numeric value, all the polynomials of all instrumental variables use this value.
+#' @param exact_order either a single numeric value or a numeric vector of length s specifying
+#' the exact order of polynomials to use in the treatment model. If a
+#' single numeric value, all the polynomials of all instrumental variables use this value.
+#' @param order_selection_method method used to select the best fitting order of polynomials
+#' for the treatment model. Must be either 'backfitting' or 'grid search'.
+#' 'grid search' can be very slow if the number of instruments is large.
+#' @param gcv logical. If \code{TRUE} the generalized cross validation mean squared error is used
+#' to determine the best fitting order of polynomials for the treatment model.
+#' If \code{FALSE} k-fold cross validation is used instead.
+#' @param nfolds number of folds used for the k-fold cross-validation if \code{gcv} is \code{FALSE}.
 #' @param str_thol minimal value of the threshold of IV strength test.
 #' @param alpha the significance level.
 #'
@@ -73,12 +88,6 @@
 #' where \eqn{g(Z_i, X_i)} is estimated using L2 boosting with regression trees as base learners and
 #' \eqn{h(Z_i X_i)} is approximated using the violation space candidates and by
 #' a linear combination of baseline covariates. The errors are allowed to be heteroscedastic.
-#' To avoid overfitting bias the data is randomly split into two subsets \eqn{A1} and \eqn{A2}
-#' where the proportion of number of observations in the two sets is specified by \code{split_prop}.
-#' \eqn{A2} is used to train the boosting model and \eqn{A1} is used to fit the outcome model. \cr \cr
-#' The package \code{xgboost} is used for boosting. If any of \code{nrounds},
-#' \code{eta}, \code{max_depth}, \code{subsample} or \code{colsample_bytree} has more than one value,
-#' the best parameter combination is chosen by minimizing the cross-validation mean squared error. \cr \cr
 #' The violation space candidates are required to be in a nested sequence. The specification
 #' of suitable violation space candidates is a crucial step because a poor approximation
 #' of \eqn{h(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
@@ -87,28 +96,12 @@
 #' \eqn{{Z1, Z2, ..., Zs, Z1^2, Z2^2, ..., Z2^2, Z1^3, Z2^3, ..., Z2^3}} thus implicitly assuming
 #' that there are no interactions between the instruments and the covariates and
 #' between the instruments themselves in the outcome model. \cr \cr
-#' If \code{nsplits} is larger than 1, point estimates are aggregated by medians
-#' and standard errors, p-values and confidence intervals are obtained by the method
-#' specified by the parameter \code{mult_split_method}. 'DML' uses the approach by
-#' Chernozhukov et al. (2018). 'FWER' uses the approach by Meinshausen et al. (2009)
-#' and controls for the family-wise error rate. 'FWER' does not provide standard errors.
-#' For large sample sizes a large values for \code{nsplits} can lead to a high
-#' running time as for each split a new hat matrix must be calculated.
-#' The same parameter combination for the boosting model is used for all n splits and
-#' is selected by a separate data split.
 #'
 #' @references
 #' \itemize{
 #' \item{Zijian Guo, and Peter Bühlmann. Two Stage Curvature Identification with
 #' Machine Learning: Causal Inference with Possibly Invalid Instrumental Variables.
 #' \emph{arXiv:2203.12808}, 2022}
-#' \item{Nicolai Meinshausen, Lukas Meier, and Peter Bühlmann. P-values for high-dimensional
-#' regression. \emph{Journal of the American Statistical Association},
-#' 104(488):1671-1681, 2009. 16, 18}
-#' \item{Victor Chernozhukov, Denis Chetverikov, Mert Demirer, Esther Duflo, Christian Hansen,
-#' Whitney Newey, and James Robins. Double/debiased machine learning for treatment
-#' and structural parameters: Double/debiased machine learning.
-#' \emph{The Econometrics Journal}, 21(1), 2018. 4, 16, 18}
 #' }
 #'
 #' @export
@@ -160,15 +153,19 @@
 #' # confidence intervals
 #' output_PO$CI_robust
 tsci_poly <- function(Y,
-                         D,
-                         Z,
-                         X = NULL,
-                         vio_space = NULL,
-                         intercept = TRUE,
-                         norder = seq(1, 6, by = 1),
-                         nfolds = 5,
-                         str_thol = 10,
-                         alpha = 0.05) {
+                      D,
+                      Z,
+                      X = NULL,
+                      vio_space = NULL,
+                      intercept = TRUE,
+                      min_order = 1,
+                      max_order = 10,
+                      exact_order = NULL,
+                      order_selection_method = "backfitting",
+                      gcv = T,
+                      nfolds = 5,
+                      str_thol = 10,
+                      alpha = 0.05) {
 
   # check that input is in the correct format
   error_message <- NULL
@@ -227,7 +224,7 @@ tsci_poly <- function(Y,
     if(any(is.na(unlist(vio_space))))
       error_message <- paste(error_message, "There are NA's in vio_space.", sep = "\n")
   if (alpha > 1)
-    error_message <- paste(error_message, "alpha cannot be larget than 1.", sep = "\n")
+    error_message <- paste(error_message, "alpha cannot be larger than 1.", sep = "\n")
   if (!is.null(error_message))
     stop(error_message)
 
@@ -237,10 +234,25 @@ tsci_poly <- function(Y,
 
 
   # grid search
-  params_grid <- expand.grid(
-    norder = norder,
-    placeholder = 1
-  )
+  if (is.null(exact_order)) {
+    if (length(max_order) == 1) max_order <- rep(max_order, NCOL(Z))
+    if (length(min_order) == 1) min_order <- rep(min_order, NCOL(Z))
+  } else if (!is.null(exact_order)) {
+    if (length(exact_order) == 1) {
+      max_order <- rep(exact_order, NCOL(Z))
+      min_order <- rep(exact_order, NCOL(Z))
+    } else {
+      max_order <- exact_order
+      min_order <- exact_order
+    }
+  }
+
+  if (!is.null(X)) {
+    max_order <- c(max_order, rep(1, NCOL(X)))
+    min_order <- c(min_order, rep(1, NCOL(X)))
+  }
+
+  params_list <- lapply(seq_len(p), FUN = function(i) seq(min_order[i], max_order[i], by = 1))
 
   # Treatment model fitting
   W <- as.matrix(cbind(Z, X))
@@ -248,9 +260,15 @@ tsci_poly <- function(Y,
   names(df_treatment) <- c("D", paste("W", seq_len(p), sep = ""))
 
   # hyperparameter tuning
-  poly_CV <- get_poly_parameters(df_treatment, params_grid = params_grid, nfolds = nfolds)
+  poly_CV <- get_poly_parameters(df_treatment = df_treatment,
+                                 params_list = params_list,
+                                 order_selection_method = order_selection_method,
+                                 gcv = gcv,
+                                 nfolds = nfolds)
 
-  if (is.null(vio_space)) vio_space <- poly(as.vector(Z), degree = poly_CV$params$norder, raw = TRUE, simple = TRUE)
+  if (is.null(vio_space)) vio_space <- create_monomials(Z = Z,
+                                                        degree = max(unlist(poly_CV$params)[seq_len(NCOL(Z))]),
+                                                        type = "monomials_main")
   list_vio_space <- build_vio_space_candidates(Z, vio_space)
 
   outputs <- tsci_fit(df_treatment = df_treatment,
