@@ -298,7 +298,7 @@ tsci_poly <- function(Y,
                                  nfolds = nfolds)
 
   if (is.null(vio_space)) vio_space <- create_monomials(Z = Z,
-                                                        degree = max(unlist(poly_CV$params)[seq_len(NCOL(Z))]),
+                                                        degree = unlist(poly_CV$params)[seq_len(NCOL(Z))],
                                                         type = "monomials_main")
   list_vio_space <- build_vio_space_candidates(Z, vio_space)
 
