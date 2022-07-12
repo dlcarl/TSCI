@@ -8,7 +8,7 @@ tsci_secondstage(
   Y,
   D,
   Z,
-  X,
+  W,
   vio_space,
   weight,
   A1_ind = NULL,
@@ -27,8 +27,8 @@ or a numeric matrix with dimension n by 1.}
 \item{Z}{observations of the instrumental variable(s). Either a numeric vector of length n
 or a numeric matrix with dimension n by s.}
 
-\item{X}{observations of baseline covariate(s). Either a numeric vector of length n
-or a numeric matrix with dimension n by p or \code{NULL}
+\item{W}{(transformed) observations of baseline covariate(s) used to fit the outcome model. Either a numeric vector of length n
+or a numeric matrix with dimension n by p_w or \code{NULL}
 (if no covariates should be included).}
 
 \item{vio_space}{either a numeric matrix with dimension n by q or a list with
@@ -103,7 +103,7 @@ The treatment and outcome models are assumed to be of the following forms:
 \deqn{Y_i = \beta * D_i + h(Z_i, X_i) + \epsilon_i}
 where \eqn{g(Z_i, X_i)} is assumed to be estimated by the user and
 \eqn{h(Z_i X_i)} is approximated using the violation space candidates and by
-a linear combination of baseline covariates. The errors are allowed to be heteroscedastic.
+a linear combination of the columns in \code{W}. The errors are allowed to be heteroscedastic.
 \eqn{A1} is used to fit the outcome model. \cr \cr
 The violation space candidates are required to be in a nested sequence. The specification
 of suitable violation space candidates is a crucial step because a poor approximation

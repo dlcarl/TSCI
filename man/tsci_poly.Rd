@@ -9,6 +9,7 @@ tsci_poly(
   D,
   Z,
   X = NULL,
+  W = X,
   vio_space = NULL,
   intercept = TRUE,
   min_order = 1,
@@ -31,8 +32,12 @@ or a numeric matrix with dimension n by 1.}
 \item{Z}{observations of the instrumental variable(s). Either a numeric vector of length n
 or a numeric matrix with dimension n by s.}
 
-\item{X}{observations of baseline covariate(s). Either a numeric vector of length n
+\item{X}{observations of baseline covariate(s) used to fit the treatment model. Either a numeric vector of length n
 or a numeric matrix with dimension n by p or \code{NULL}
+(if no covariates should be included).}
+
+\item{W}{(transformed) observations of baseline covariate(s) used to fit the outcome model. Either a numeric vector of length n
+or a numeric matrix with dimension n by p_w or \code{NULL}
 (if no covariates should be included).}
 
 \item{vio_space}{either a numeric matrix with dimension n by q or a list with
@@ -123,17 +128,15 @@ selected violation space will be returned amongst other relevant statistics.
 The treatment and outcome models are assumed to be of the following forms:
 \deqn{D_i = g(Z_i, X_i) + \delta_i}
 \deqn{Y_i = \beta * D_i + h(Z_i, X_i) + \epsilon_i}
-where \eqn{g(Z_i, X_i)} is estimated using L2 boosting with regression trees as base learners and
+where \eqn{g(Z_i, X_i)} is estimated using a polynomial basis expansion of the instrumental variables
+and a linear combination of the baseline covariates and
 \eqn{h(Z_i X_i)} is approximated using the violation space candidates and by
-a linear combination of baseline covariates. The errors are allowed to be heteroscedastic.
-The violation space candidates are required to be in a nested sequence. The specification
-of suitable violation space candidates is a crucial step because a poor approximation
-of \eqn{h(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
-If \code{vio_space} is \code{NULL} the violation space candidates are chosen to be
-\eqn{{}, {Z1, Z2, ..., Zs}, {Z1, Z2, ..., Zs, Z1^2, Z2^2, ..., Z2^2}} and
-\eqn{{Z1, Z2, ..., Zs, Z1^2, Z2^2, ..., Z2^2, Z1^3, Z2^3, ..., Z2^3}} thus implicitly assuming
-that there are no interactions between the instruments and the covariates and
-between the instruments themselves in the outcome model. \cr \cr
+a linear combination the columns in \code{W}. The errors are allowed to be heteroscedastic. \cr \cr
+If \code{vio_space} is \code{NULL} the violation space candidates are chosen to be a nested sequence
+of polynomials of the instrumental variables up to the degrees used to fit the treatment model.
+This guarantees that the possible spaces the violation lives will be tested.
+If the functional form of the outcome model is not well-known it is advisable to use the default values
+for \code{W} and \code{vio_space}. \cr \cr
 }
 \examples{
 # dimension

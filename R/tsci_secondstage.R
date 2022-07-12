@@ -12,8 +12,8 @@
 #' or a numeric matrix with dimension n by 1.
 #' @param Z observations of the instrumental variable(s). Either a numeric vector of length n
 #' or a numeric matrix with dimension n by s.
-#' @param X observations of baseline covariate(s). Either a numeric vector of length n
-#' or a numeric matrix with dimension n by p or \code{NULL}
+#' @param W (transformed) observations of baseline covariate(s) used to fit the outcome model. Either a numeric vector of length n
+#' or a numeric matrix with dimension n by p_w or \code{NULL}
 #' (if no covariates should be included).
 #' @param vio_space either a numeric matrix with dimension n by q or a list with
 #' numeric vectors of length n and/or numeric matrices with n rows as elements to
@@ -73,7 +73,7 @@
 #' \deqn{Y_i = \beta * D_i + h(Z_i, X_i) + \epsilon_i}
 #' where \eqn{g(Z_i, X_i)} is assumed to be estimated by the user and
 #' \eqn{h(Z_i X_i)} is approximated using the violation space candidates and by
-#' a linear combination of baseline covariates. The errors are allowed to be heteroscedastic.
+#' a linear combination of the columns in \code{W}. The errors are allowed to be heteroscedastic.
 #' \eqn{A1} is used to fit the outcome model. \cr \cr
 #' The violation space candidates are required to be in a nested sequence. The specification
 #' of suitable violation space candidates is a crucial step because a poor approximation
@@ -151,7 +151,7 @@
 tsci_secondstage <- function(Y,
                              D,
                              Z,
-                             X,
+                             W,
                              vio_space,
                              weight,
                              A1_ind = NULL,
@@ -166,8 +166,8 @@ tsci_secondstage <- function(Y,
     error_message <- paste(error_message, "D is not numeric.", sep = "\n")
   if (!is.numeric(Z))
     error_message <- paste(error_message, "Z is not numeric.", sep = "\n")
-  if (!is.numeric(X) & !is.null(X))
-    error_message <- paste(error_message, "X is beither numeric nor NULL.", sep = "\n")
+  if (!is.numeric(W) & !is.null(W))
+    error_message <- paste(error_message, "W is beither numeric nor NULL.", sep = "\n")
   if (!is.numeric(A1_ind) & !is.null(A1_ind))
     error_message <- paste(error_message, "A1_ind is neither numeric nor NULL.", sep = "\n")
   if (!is.numeric(weight))
@@ -192,14 +192,14 @@ tsci_secondstage <- function(Y,
     stop(error_message)
 
   # check if inputs are possible
-  p <- NCOL(Z) + ifelse(is.null(X), 0, NCOL(X))
+  p <- NCOL(Z) + ifelse(is.null(W), 0, NCOL(W))
   if (length(unique(sapply(list(Y, D, Z), FUN = function(variable) NROW(variable)))) > 1)
     error_message <- paste(error_message, "Y, D and Z have not the same amount of observations.", sep = "\n")
   else {
     n <- NROW(Y)
-    if (!is.null(X))
-      if(NROW(X) != n)
-        error_message <- paste(error_message, "X has not the same amount of observations as Y.", sep = "\n")
+    if (!is.null(W))
+      if(NROW(W) != n)
+        error_message <- paste(error_message, "W has not the same amount of observations as Y.", sep = "\n")
     if (is.matrix(vio_space))
       if (NROW(vio_space) != n)
         error_message <- paste(error_message, "vio_space has not the same amount of observations as Y.", sep = "\n")
@@ -213,9 +213,9 @@ tsci_secondstage <- function(Y,
     error_message <- paste(error_message, "There are NA's in D.", sep = "\n")
   if (any(is.na(Z)))
     error_message <- paste(error_message, "There are NA's in Z.", sep = "\n")
-  if (!is.null(X))
-    if(any(is.na(X)))
-      error_message <- paste(error_message, "There are NA's in X.", sep = "\n")
+  if (!is.null(W))
+    if(any(is.na(W)))
+      error_message <- paste(error_message, "There are NA's in W.", sep = "\n")
   if (!is.null(A1_ind)) {
     if (any(duplicated(A1_ind)))
       error_message <- paste(error_message, "There are duplicates in A1_ind.", sep = "\n")
@@ -246,7 +246,7 @@ tsci_secondstage <- function(Y,
   Y <- as.matrix(Y)
   D <- as.matrix(D)
   Z <- as.matrix(Z)
-  if (!is.null(X)) X <- as.matrix(X)
+  if (!is.null(W)) W <- as.matrix(W)
   n_A1 <- length(A1_ind)
 
   list_vio_space <- build_vio_space_candidates(Z, vio_space)
@@ -256,19 +256,19 @@ tsci_secondstage <- function(Y,
 
   Y_A1 <- Y[A1_ind, ]
   D_A1 <- D[A1_ind, ]
-  if (is.null(X)){
-    X_A1 <- NULL
+  if (is.null(W)){
+    W_A1 <- NULL
   } else {
-    X_A1 <- X[A1_ind, ]
+    W_A1 <- W[A1_ind, ]
   }
 
   outputs <- tsci_selection(
     Y = Y,
     D = D,
-    X = X,
+    W = W,
     Y_A1 = Y_A1,
     D_A1 = D_A1,
-    X_A1 = X_A1,
+    W_A1 = W_A1,
     vio_space = vio_space,
     rm_ind = rm_ind,
     Q = Q,

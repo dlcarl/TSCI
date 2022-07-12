@@ -12,8 +12,11 @@
 #' or a numeric matrix with dimension n by 1.
 #' @param Z observations of the instrumental variable(s). Either a numeric vector of length n
 #' or a numeric matrix with dimension n by s.
-#' @param X observations of baseline covariate(s). Either a numeric vector of length n
+#' @param X observations of baseline covariate(s) used to fit the treatment model. Either a numeric vector of length n
 #' or a numeric matrix with dimension n by p or \code{NULL}
+#' (if no covariates should be included).
+#' @param W (transformed) observations of baseline covariate(s) used to fit the outcome model. Either a numeric vector of length n
+#' or a numeric matrix with dimension n by p_w or \code{NULL}
 #' (if no covariates should be included).
 #' @param vio_space either a numeric matrix with dimension n by q or a list with
 #' numeric vectors of length n and/or numeric matrices with n rows as elements to
@@ -85,17 +88,15 @@
 #' @details The treatment and outcome models are assumed to be of the following forms:
 #' \deqn{D_i = g(Z_i, X_i) + \delta_i}
 #' \deqn{Y_i = \beta * D_i + h(Z_i, X_i) + \epsilon_i}
-#' where \eqn{g(Z_i, X_i)} is estimated using L2 boosting with regression trees as base learners and
+#' where \eqn{g(Z_i, X_i)} is estimated using a polynomial basis expansion of the instrumental variables
+#' and a linear combination of the baseline covariates and
 #' \eqn{h(Z_i X_i)} is approximated using the violation space candidates and by
-#' a linear combination of baseline covariates. The errors are allowed to be heteroscedastic.
-#' The violation space candidates are required to be in a nested sequence. The specification
-#' of suitable violation space candidates is a crucial step because a poor approximation
-#' of \eqn{h(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
-#' If \code{vio_space} is \code{NULL} the violation space candidates are chosen to be
-#' \eqn{{}, {Z1, Z2, ..., Zs}, {Z1, Z2, ..., Zs, Z1^2, Z2^2, ..., Z2^2}} and
-#' \eqn{{Z1, Z2, ..., Zs, Z1^2, Z2^2, ..., Z2^2, Z1^3, Z2^3, ..., Z2^3}} thus implicitly assuming
-#' that there are no interactions between the instruments and the covariates and
-#' between the instruments themselves in the outcome model. \cr \cr
+#' a linear combination the columns in \code{W}. The errors are allowed to be heteroscedastic. \cr \cr
+#' If \code{vio_space} is \code{NULL} the violation space candidates are chosen to be a nested sequence
+#' of polynomials of the instrumental variables up to the degrees used to fit the treatment model.
+#' This guarantees that the possible spaces the violation lives will be tested.
+#' If the functional form of the outcome model is not well-known it is advisable to use the default values
+#' for \code{W} and \code{vio_space}. \cr \cr
 #'
 #' @references
 #' \itemize{
@@ -156,6 +157,7 @@ tsci_poly <- function(Y,
                       D,
                       Z,
                       X = NULL,
+                      W = X,
                       vio_space = NULL,
                       intercept = TRUE,
                       min_order = 1,
@@ -177,6 +179,8 @@ tsci_poly <- function(Y,
     error_message <- paste(error_message, "Z is not numeric.", sep = "\n")
   if (!is.numeric(X) & !is.null(X))
     error_message <- paste(error_message, "X is not numeric.", sep = "\n")
+  if (!is.numeric(W) & !is.null(W))
+    error_message <- paste(error_message, "W is not numeric.", sep = "\n")
   if (!is.numeric(min_order) & !is.null(min_order))
     error_message <- paste(error_message, "min_order is not numeric.", sep = "\n")
   if (!is.numeric(max_order) & !is.null(max_order))
@@ -209,6 +213,9 @@ tsci_poly <- function(Y,
     if (!is.null(X))
       if(NROW(X) != n)
         error_message <- paste(error_message, "X has not the same amount of observations as Y.", sep = "\n")
+    if (!is.null(W))
+      if(NROW(W) != n)
+        error_message <- paste(error_message, "W has not the same amount of observations as Y.", sep = "\n")
     if (is.matrix(vio_space))
       if (NROW(vio_space) != n)
         error_message <- paste(error_message, "vio_space has not the same amount of observations as Y.", sep = "\n")
@@ -225,6 +232,9 @@ tsci_poly <- function(Y,
   if (!is.null(X))
     if(any(is.na(X)))
       error_message <- paste(error_message, "There are NA's in X.", sep = "\n")
+  if (!is.null(W))
+    if(any(is.na(W)))
+      error_message <- paste(error_message, "There are NA's in W.", sep = "\n")
   if (is.matrix(vio_space))
     if(any(is.na(vio_space)))
       error_message <- paste(error_message, "There are NA's in vio_space.", sep = "\n")
@@ -252,6 +262,7 @@ tsci_poly <- function(Y,
 
   Y = as.matrix(Y); D = as.matrix(D); Z = as.matrix(Z)
   if (!is.null(X)) X <- as.matrix(X)
+  if (!is.null(W)) W <- as.matrix(W)
 
 
   # grid search
@@ -276,9 +287,8 @@ tsci_poly <- function(Y,
   params_list <- lapply(seq_len(p), FUN = function(i) seq(min_order[i], max_order[i], by = 1))
 
   # Treatment model fitting
-  W <- as.matrix(cbind(Z, X))
-  df_treatment <- data.frame(cbind(D, W))
-  names(df_treatment) <- c("D", paste("W", seq_len(p), sep = ""))
+  df_treatment <- data.frame(cbind(D, Z, X))
+  names(df_treatment) <- c("D", paste("B", seq_len(p), sep = ""))
 
   # hyperparameter tuning
   poly_CV <- get_poly_parameters(df_treatment = df_treatment,
@@ -296,7 +306,7 @@ tsci_poly <- function(Y,
                       Y = Y,
                       D = D,
                       Z = Z,
-                      X = X,
+                      W = W,
                       list_vio_space = list_vio_space,
                       intercept = intercept,
                       str_thol = str_thol,

@@ -9,6 +9,7 @@ tsci_boosting(
   D,
   Z,
   X = NULL,
+  W = X,
   vio_space,
   intercept = TRUE,
   split_prop = 2/3,
@@ -39,8 +40,12 @@ or a numeric matrix with dimension n by 1.}
 \item{Z}{observations of the instrumental variable(s). Either a numeric vector of length n
 or a numeric matrix with dimension n by s.}
 
-\item{X}{observations of baseline covariate(s). Either a numeric vector of length n
+\item{X}{observations of baseline covariate(s) used to fit the treatment model. Either a numeric vector of length n
 or a numeric matrix with dimension n by p or \code{NULL}
+(if no covariates should be included).}
+
+\item{W}{(transformed) observations of baseline covariate(s) used to fit the outcome model. Either a numeric vector of length n
+or a numeric matrix with dimension n by p_w or \code{NULL}
 (if no covariates should be included).}
 
 \item{vio_space}{either a numeric matrix with dimension n by q or a list with
@@ -159,7 +164,7 @@ The treatment and outcome models are assumed to be of the following forms:
 \deqn{Y_i = \beta * D_i + h(Z_i, X_i) + \epsilon_i}
 where \eqn{g(Z_i, X_i)} is estimated using L2 boosting with regression trees as base learners and
 \eqn{h(Z_i X_i)} is approximated using the violation space candidates and by
-a linear combination of baseline covariates. The errors are allowed to be heteroscedastic.
+a linear combination of the columns in \code{W}. The errors are allowed to be heteroscedastic.
 To avoid overfitting bias the data is randomly split into two subsets \eqn{A1} and \eqn{A2}
 where the proportion of number of observations in the two sets is specified by \code{split_prop}.
 \eqn{A2} is used to train the boosting model and \eqn{A1} is used to fit the outcome model. \cr \cr
@@ -167,10 +172,12 @@ The package \code{xgboost} is used for boosting. If any of \code{nrounds},
 \code{eta}, \code{max_depth}, \code{subsample} or \code{colsample_bytree} has more than one value,
 the best parameter combination is chosen by minimizing the cross-validation mean squared error. \cr \cr
 The violation space candidates are required to be in a nested sequence. The specification
-of suitable violation space candidates is a crucial step because a poor approximation
+of suitable violation space candidates  is a crucial step because a poor approximation
 of \eqn{h(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
 The function \code{create_monomials} can be used to create such a nested sequence for a
-predefined type of violation space candidates (monomials).\cr \cr
+predefined type of violation space candidates (monomials). If \eqn{h(Z_i X_i)} is not well-known, see also \code{Tsci_poly}. \cr \cr
+\code{W} should be chosen to be flexible enough to approximate the functional form of how the covariates affect the outcome well
+as otherwise the treatment estimator might be biased. \cr \cr
 If \code{nsplits} is larger than 1, point estimates are aggregated by medians
 and standard errors, p-values and confidence intervals are obtained by the method
 specified by the parameter \code{mult_split_method}. 'DML' uses the approach by
@@ -221,7 +228,7 @@ Y <- D * beta + tau * Z + X \%*\% gamma + Error[, 2]
 
 # Two Stage L2 Boosting
 vio_space <- create_monomials(Z, 4, "monomials_main")
-output_BO <- tsci_boosting(Y, D, Z, X, vio_space)
+output_BO <- tsci_boosting(Y, D, Z, X, vio_space = vio_space)
 # point estimates
 output_BO$Coef_robust
 # standard errors

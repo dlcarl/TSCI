@@ -12,8 +12,11 @@
 #' or a numeric matrix with dimension n by 1.
 #' @param Z observations of the instrumental variable(s). Either a numeric vector of length n
 #' or a numeric matrix with dimension n by s.
-#' @param X observations of baseline covariate(s). Either a numeric vector of length n
+#' @param X observations of baseline covariate(s) used to fit the treatment model. Either a numeric vector of length n
 #' or a numeric matrix with dimension n by p or \code{NULL}
+#' (if no covariates should be included).
+#' @param W (transformed) observations of baseline covariate(s) used to fit the outcome model. Either a numeric vector of length n
+#' or a numeric matrix with dimension n by p_w or \code{NULL}
 #' (if no covariates should be included).
 #' @param vio_space either a numeric matrix with dimension n by q or a list with
 #' numeric vectors of length n and/or numeric matrices with n rows as elements to
@@ -105,7 +108,7 @@
 #' \deqn{Y_i = \beta * D_i + h(Z_i, X_i) + \epsilon_i}
 #' where \eqn{g(Z_i, X_i)} is estimated using L2 boosting with regression trees as base learners and
 #' \eqn{h(Z_i X_i)} is approximated using the violation space candidates and by
-#' a linear combination of baseline covariates. The errors are allowed to be heteroscedastic.
+#' a linear combination of the columns in \code{W}. The errors are allowed to be heteroscedastic.
 #' To avoid overfitting bias the data is randomly split into two subsets \eqn{A1} and \eqn{A2}
 #' where the proportion of number of observations in the two sets is specified by \code{split_prop}.
 #' \eqn{A2} is used to train the boosting model and \eqn{A1} is used to fit the outcome model. \cr \cr
@@ -113,10 +116,12 @@
 #' \code{eta}, \code{max_depth}, \code{subsample} or \code{colsample_bytree} has more than one value,
 #' the best parameter combination is chosen by minimizing the cross-validation mean squared error. \cr \cr
 #' The violation space candidates are required to be in a nested sequence. The specification
-#' of suitable violation space candidates is a crucial step because a poor approximation
+#' of suitable violation space candidates  is a crucial step because a poor approximation
 #' of \eqn{h(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
 #' The function \code{create_monomials} can be used to create such a nested sequence for a
-#' predefined type of violation space candidates (monomials).\cr \cr
+#' predefined type of violation space candidates (monomials). If \eqn{h(Z_i X_i)} is not well-known, see also \code{Tsci_poly}. \cr \cr
+#' \code{W} should be chosen to be flexible enough to approximate the functional form of how the covariates affect the outcome well
+#' as otherwise the treatment estimator might be biased. \cr \cr
 #' If \code{nsplits} is larger than 1, point estimates are aggregated by medians
 #' and standard errors, p-values and confidence intervals are obtained by the method
 #' specified by the parameter \code{mult_split_method}. 'DML' uses the approach by
@@ -183,7 +188,7 @@
 #'
 #' # Two Stage L2 Boosting
 #' vio_space <- create_monomials(Z, 4, "monomials_main")
-#' output_BO <- tsci_boosting(Y, D, Z, X, vio_space)
+#' output_BO <- tsci_boosting(Y, D, Z, X, vio_space = vio_space)
 #' # point estimates
 #' output_BO$Coef_robust
 #' # standard errors
@@ -194,6 +199,7 @@ tsci_boosting <- function(Y,
                           D,
                           Z,
                           X = NULL,
+                          W = X,
                           vio_space,
                           intercept = TRUE,
                           split_prop = 2 / 3,
@@ -223,6 +229,8 @@ tsci_boosting <- function(Y,
     error_message <- paste(error_message, "Z is not numeric.", sep = "\n")
   if (!is.numeric(X) & !is.null(X))
     error_message <- paste(error_message, "X is not numeric.", sep = "\n")
+  if (!is.numeric(W) & !is.null(W))
+    error_message <- paste(error_message, "W is not numeric.", sep = "\n")
   if (!is.logical(intercept))
     error_message <- paste(error_message, "intercept is neither TRUE nor FALSE.", sep = "\n")
   if (!is.matrix(vio_space) & !is.list(vio_space))
@@ -277,6 +285,9 @@ tsci_boosting <- function(Y,
     if (!is.null(X))
       if(NROW(X) != n)
         error_message <- paste(error_message, "X has not the same amount of observations as Y.", sep = "\n")
+    if (!is.null(W))
+      if(NROW(W) != n)
+        error_message <- paste(error_message, "W has not the same amount of observations as Y.", sep = "\n")
     if (is.matrix(vio_space))
       if (NROW(vio_space) != n)
         error_message <- paste(error_message, "vio_space has not the same amount of observations as Y.", sep = "\n")
@@ -293,6 +304,9 @@ tsci_boosting <- function(Y,
   if (!is.null(X))
     if(any(is.na(X)))
       error_message <- paste(error_message, "There are NA's in X.", sep = "\n")
+  if (!is.null(W))
+    if(any(is.na(W)))
+      error_message <- paste(error_message, "There are NA's in W.", sep = "\n")
   if (is.matrix(vio_space))
     if(any(is.na(vio_space)))
       error_message <- paste(error_message, "There are NA's in vio_space.", sep = "\n")
@@ -332,6 +346,7 @@ tsci_boosting <- function(Y,
   # stores variables as matrices as matrix multiplications will be performed later
   Y = as.matrix(Y); D = as.matrix(D); Z = as.matrix(Z)
   if (!is.null(X)) X <- as.matrix(X)
+  if (!is.null(W)) W <- as.matrix(W)
 
   # initializes parallelization setup
   do_parallel <- parallelization_setup(parallel = parallel, ncpus = ncores, cl = cl)
@@ -348,9 +363,8 @@ tsci_boosting <- function(Y,
   )
 
   # creates the dataframe used to fit the treatment model
-  W <- as.matrix(cbind(Z, X))
-  df_treatment <- data.frame(cbind(D, W))
-  names(df_treatment) <- c("D", paste("W", seq_len(p), sep = ""))
+  df_treatment <- data.frame(cbind(D, Z, X))
+  names(df_treatment) <- c("D", paste("B", seq_len(p), sep = ""))
 
   # splits the data into two parts A1 and A2
   # A2 will be used to train the treatment model and the hat matrix will be calculated for A1
@@ -373,7 +387,7 @@ tsci_boosting <- function(Y,
                              Y = Y,
                              D = D,
                              Z = Z,
-                             X = X,
+                             W = W,
                              vio_space = vio_space,
                              A1_ind = A1_ind,
                              intercept = intercept,

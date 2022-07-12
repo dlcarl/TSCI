@@ -3,10 +3,10 @@
 #'
 #' @param Y outcome with dimension n by 1
 #' @param D treatment with dimension n by 1
-#' @param X baseline covariates with dimension n by p
+#' @param W (transformed) baseline covariates with dimension n by p_w used to fit the outcome model.
 #' @param Y_A1 outcome with dimension n_A1 by 1
 #' @param D_A1 treatment with dimension n_A1 by 1
-#' @param X_A1 baseline covariates with dimension n_A1 by p
+#' @param W_A1 (transformed) baseline covariates with dimension n_A1 by p_w used to fit the outcome model.
 #' @param vio_space the \code{matrix} of the largest violation space
 #' @param rm_ind a \code{list} containing the indices to remove to obtain the violation spaces to test for (including the null space).
 #' @param Q the number of violation spaces (including the null space).
@@ -59,10 +59,10 @@
 #' @importFrom stats coef lm qnorm quantile resid rnorm var
 tsci_selection <- function(Y,
                            D,
-                           X,
+                           W,
                            Y_A1,
                            D_A1,
-                           X_A1,
+                           W_A1,
                            vio_space,
                            rm_ind,
                            Q,
@@ -71,7 +71,7 @@ tsci_selection <- function(Y,
                            str_thol,
                            alpha) {
 
-  Cov_aug_A1 <- cbind(vio_space, X_A1)
+  Cov_aug_A1 <- cbind(vio_space, W_A1)
   Y_rep <- as.matrix(weight %*% Y_A1)
   D_rep <- as.matrix(weight %*% D_A1)
   Cov_rep <- as.matrix(weight %*% Cov_aug_A1)
@@ -265,13 +265,13 @@ tsci_selection <- function(Y,
   }
 
   # OLS estimator
-  if (is.null(X)) {
+  if (is.null(W)) {
     summary_OLS <- summary(lm(Y ~ D))
     output$SecondStage_rse[1] <- summary_OLS$sigma
     output$SecondStage_Rsquared[1] <- summary_OLS$r.squared
     OLS <- summary_OLS$coefficients
   } else {
-    summary_OLS <- summary(lm(Y ~ D + X))
+    summary_OLS <- summary(lm(Y ~ D + W))
     output$SecondStage_rse[1] <- summary_OLS$sigma
     output$SecondStage_Rsquared[1] <- summary_OLS$r.squared
     OLS <- summary_OLS$coefficients

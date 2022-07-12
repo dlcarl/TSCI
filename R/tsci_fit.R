@@ -6,7 +6,7 @@
 #' @param Y outcome vector with dimension n by 1.
 #' @param D treatment vector with dimension n by 1.
 #' @param Z instrument variable with dimension n by 1.
-#' @param X baseline covariates with dimension n by p.
+#' @param W (transformed) baseline covariates with dimension n by p_w used to fit the outcome model.
 #' @param vio_space vio_space a matrix or a list. If a matrix, then each column corresponds to a violation form of Z; If a list, then each element corresponds to a violation form of Z and must be a matrix of n rows, e.g. (Z^3,Z^2); If NULL, then default by the n by 3 matrix (Z^3, Z^2, Z). Violation form selection will be performed according to provided violation forms, for example, null violation space vs Z vs (Z^2, Z) vs (Z^3, Z^2, Z) in the default case.
 #' @param intercept logical, including the intercept or not in the outcome model, default by TRUE.
 #' @param split_prop split_prop numeric, proportion of observations used to fit the outcome model.
@@ -23,7 +23,7 @@ tsci_fit <- function(df_treatment,
                      Y,
                      D,
                      Z,
-                     X,
+                     W,
                      list_vio_space,
                      intercept,
                      str_thol,
@@ -50,10 +50,10 @@ tsci_fit <- function(df_treatment,
 
   Y_A1 <- Y[A1_ind, ]
   D_A1 <- D[A1_ind, ]
-  if (is.null(X)){
-    X_A1 <- NULL
+  if (is.null(W)){
+    W_A1 <- NULL
   } else {
-    X_A1 <- X[A1_ind, ]
+    W_A1 <- W[A1_ind, ]
   }
 
   vio_space <- list_vio_space$vio_space[A1_ind, ]
@@ -65,10 +65,10 @@ tsci_fit <- function(df_treatment,
   outputs <- tsci_selection(
     Y = Y,
     D = D,
-    X = X,
+    W = W,
     Y_A1 = Y_A1,
     D_A1 = D_A1,
-    X_A1 = X_A1,
+    W_A1 = W_A1,
     vio_space = vio_space,
     rm_ind = rm_ind,
     Q = Q,

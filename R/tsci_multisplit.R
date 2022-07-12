@@ -4,7 +4,7 @@
 #' @param Y outcome vector with dimension n by 1.
 #' @param D treatment vector with dimension n by 1.
 #' @param Z instrument variable with dimension n by 1.
-#' @param X baseline covariates with dimension n by p.
+#' @param W (transformed) baseline covariates with dimension n by p_w used to fit the outcome model.
 #' @param vio_space vio_space a matrix or a list.
 #' @param A1_ind the indices of samples in A1 in the first split.
 #' @param intercept logical, including the intercept or not in the outcome model, default by TRUE.
@@ -38,7 +38,7 @@ tsci_multisplit <- function(df_treatment,
                             Y,
                             D,
                             Z,
-                            X,
+                            W,
                             vio_space,
                             A1_ind,
                             intercept,
@@ -63,7 +63,7 @@ tsci_multisplit <- function(df_treatment,
     Y
     D
     Z
-    X
+    W
     list_vio_space
     A1_ind
     intercept
@@ -78,7 +78,7 @@ tsci_multisplit <- function(df_treatment,
         Y = Y,
         D = D,
         Z = Z,
-        X = X,
+        W = W,
         list_vio_space = list_vio_space,
         intercept = intercept,
         str_thol = str_thol,
