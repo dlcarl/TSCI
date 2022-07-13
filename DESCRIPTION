@@ -2,10 +2,17 @@ Package: TSML
 Title: Tools for causal inference with possibly invalid instrumental variables
 Version: 0.0.0.9000
 Authors@R: 
-    person("David", "Carl", , "dcarl@ethz.ch", role = c("aut", "cre"))
+    c(person(given="David", 
+    family="Carl",
+    role = c("aut", "cre"),
+    email="dcarl@ethz.ch"))
 Description: Two stage curvature identification with machine learning for causal 
     inference in settings when instrumental variable regression is not suitable
-    because of potentially invalid instrumental variables.
+    because of potentially invalid instrumental variables. Based on Guo and 
+    Bühlmann (2022) "Two Stage Curvature Identification with Machine Learning: 
+    Causal Inference with Possibly Invalid Instrumental Variables"
+    <arXiv:2203.12808> .
+URL: https://github.com/dlcarl/TSML
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
