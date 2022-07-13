@@ -1,10 +1,25 @@
-#' xxx
+#' Summarizing Two Stage Curvature Identification Fits
 #'
-#' @param object xxxx
-#' @param ... xxx
+#' @param object a object of class 'tsci'.
+#' @param ... arguments to be passed to or from other methods.
 #'
-#' @return xxx
-#' @exportS3Method
+#' @return a object of class 'summary.tsci' containing the following elements:
+#' \describe{
+#'     \item{\code{coefficients}}{a data frame with columns for the estimated treatment coefficients, their standard errors, confidence intervals and (two-sided) p-values.}
+#'     \item{\code{iv_strength}}{a data frame with columns containing the estimated instrumental variable strength and the estimated instrumental variable strength threshold.}
+#'     \item{\code{viospace_selection}}{a data frame with columns for the frequency of violation space candidates selected by comparison,
+#'     the robust method and as the largest violation space candidate for which the instrumental variable was considered to be strong enough.}
+#'     \item{\code{treatment_model}}{a data frame with columns for the estimation method, the residual standard error and the R-squared of the fitted treatment model.}
+#'     \item{\code{outcome_model}}{a data frame with columns for the residual standard error and the R-squared of the fitted outcome models.
+#'     Except for OLS the values for R-squared are calculated keeping the treatment coefficient fixed. Thus, negative values are possible.}
+#'     \item{\code{sample_size_A1}}{the number of observations in the subset used to fit the outcome model.}
+#'     \item{\code{sample_size_A2}}{the number of observations in the subset used to train the parameters for fitting the treatment model.}
+#'     \item{\code{n_splits}}{the number of sample splits performed.}
+#'     \item{\code{mult_split_method}}{the method used to calculate the standard errors and p-values if \code{n_splits} is larger than 1.}
+#'     \item{\code{alpha}}{the significance level used.}
+#
+#'}
+#' @export
 summary.tsci <- function(object,
                          ...) {
   stopifnot(inherits(object, "tsci"))
