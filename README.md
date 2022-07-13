@@ -57,22 +57,15 @@ output_RF <- tsci_forest(Y, D, Z, X, vio_space, nsplits = 10)
 summary(output_RF)
 ```
 
-
 # TSCI with boosting
 ```
-output_BO <- tsci_boosting(Y, D, Z, X, vio_space, nsplits = 10)
+output_BO <- tsci_boosting(Y, D, Z, X, vio_space = vio_space, nsplits = 10)
 summary(output_BO)
-```
-
-# TSCI with basis splines
-```
-output_SP <- tsci_splines(Y, D, Z, X, vio_space)
-summary(output_SP)
 ```
 
 # TSCI with polynomials
 ```
-output_PY <- tsci_poly(Y, D, Z, X, vio_space)
+output_PY <- tsci_poly(Y, D, Z, X)
 summary(output_PY)
 ```
 
@@ -80,6 +73,6 @@ summary(output_PY)
 ```
 A <- cbind(1, Z, Z^2, Z^3, Z^4, X)
 weight <- A %*% chol2inv(chol(t(A) %*% A)) %*% t(A)
-output_UD <- tsci_secondstage(Y, D, Z, X, vio_space, weight)
+output_UD <- tsci_secondstage(Y, D, Z, X, vio_space = vio_space, weight = weight)
 summary(output_UD)
 ```
