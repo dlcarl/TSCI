@@ -20,7 +20,8 @@ a object of class 'summary.tsci' containing the following elements:
 the robust method and as the largest violation space candidate for which the instrumental variable was considered to be strong enough.}
 \item{\code{treatment_model}}{a data frame with columns for the estimation method, the residual standard error and the R-squared of the fitted treatment model.}
 \item{\code{outcome_model}}{a data frame with columns for the residual standard error and the R-squared of the fitted outcome models.
-Except for OLS the values for R-squared are calculated keeping the treatment coefficient fixed. Thus, negative values are possible.}
+Except for OLS the values for R-squared are calculated keeping the treatment coefficient fixed. Thus, negative values are possible.
+If no intercept was included in the outcome model, values larger than 1 are also possible.}
 \item{\code{sample_size_A1}}{the number of observations in the subset used to fit the outcome model.}
 \item{\code{sample_size_A2}}{the number of observations in the subset used to train the parameters for fitting the treatment model.}
 \item{\code{n_splits}}{the number of sample splits performed.}
