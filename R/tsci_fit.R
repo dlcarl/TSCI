@@ -57,7 +57,7 @@ tsci_fit <- function(df_treatment,
   }
 
   vio_space <- list_vio_space$vio_space[A1_ind, ]
-  rm_ind <- list_vio_space$rm_ind
+  vio_ind <- list_vio_space$vio_ind
   Q <- list_vio_space$Q
 
 
@@ -70,7 +70,7 @@ tsci_fit <- function(df_treatment,
     D_A1 = D_A1,
     W_A1 = W_A1,
     vio_space = vio_space,
-    rm_ind = rm_ind,
+    vio_ind = vio_ind,
     Q = Q,
     weight = model_treatment$weight,
     intercept = intercept,

@@ -15,12 +15,12 @@
 #' @param W (transformed) observations of baseline covariate(s) used to fit the outcome model. Either a numeric vector of length n
 #' or a numeric matrix with dimension n by p_w or \code{NULL}
 #' (if no covariates should be included).
-#' @param vio_space either a numeric matrix with dimension n by q or a list with
-#' numeric vectors of length n and/or numeric matrices with n rows as elements to
-#' specify the violation space candidates or \code{NULL}.
-#' If a matrix or a list, then the violation space candidates (in form of matrices)
+#' @param vio_space  list with numeric vectors of length n and/or numeric matrices with n rows as elements to
+#' specify the violation space candidates. See Details for more information.
+#' @param create_nested_sequence logical. If \code{TRUE} the violation space candidates (in form of matrices)
 #' are defined sequentially starting with an empty violation matrix and subsequently
-#' adding the next column of the matrix or element of the list to the current violation matrix.
+#' adding the next element of \code{vio_space} to the current violation matrix.
+#' If \code{FALSE} the violation space candidates (in form of matrices) are defined as the elements of \code{vio_space}.
 #' See Details for more information.
 #' @param weight the hat matrix of the treatment model.
 #' @param A1_ind indices of the observations that wil be used to fit the outcome model.
@@ -75,10 +75,11 @@
 #' \eqn{h(Z_i X_i)} is approximated using the violation space candidates and by
 #' a linear combination of the columns in \code{W}. The errors are allowed to be heteroscedastic.
 #' \eqn{A1} is used to fit the outcome model. \cr \cr
-#' The violation space candidates are required to be in a nested sequence. The specification
-#' of suitable violation space candidates is a crucial step because a poor approximation
-#' of \eqn{h(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
-#' The function \code{create_monomials} can be used to create such a nested sequence for a
+#' The violation space candidates should be in a nested sequence as otherwise nonsensical results can occur.
+#' The specification of suitable violation space candidates is a crucial step
+#' because a poor approximation of \eqn{h(Z_i, X_i)} might not address the bias
+#' caused by the violation of the IV assumption sufficiently.
+#' The function \code{\link[TSML]{create_monomials}} can be used to create such a nested sequence for a
 #' predefined type of violation space candidates (monomials). \cr \cr
 #'
 #' @references
@@ -94,6 +95,12 @@
 #' and structural parameters: Double/debiased machine learning.
 #' \emph{The Econometrics Journal}, 21(1), 2018. 4, 16, 18}
 #' }
+#'
+#' @seealso
+#' \code{\link[TSML]{tsci_boosting}} for TSCI with boosting. \cr \cr
+#' \code{\link[TSML]{tsci_forest}} for TSCI with random forest. \cr \cr
+#' \code{\link[TSML]{tsci_poly}} for TSCI with polynomial basis expansion. \cr \cr
+#'
 #' @export
 #'
 #' @examples
@@ -139,7 +146,7 @@
 #'
 #' # Two Stage User Defined
 #' vio_space <- create_monomials(Z, 4, "monomials_main")
-#' output <- tsci_secondstage(Y, D, Z, X, vio_space, weight)
+#' output <- tsci_secondstage(Y, D, Z, X, vio_space = vio_space, weight = weight)
 #' # point estimates
 #' output$Coef_robust
 #' # standard errors
@@ -153,6 +160,7 @@ tsci_secondstage <- function(Y,
                              Z,
                              W,
                              vio_space,
+                             create_nested_sequence = TRUE,
                              weight,
                              A1_ind = NULL,
                              intercept = TRUE,
@@ -187,6 +195,8 @@ tsci_secondstage <- function(Y,
     error_message <- paste(error_message, "str_thol is not numeric.", sep = "\n")
   if (!is.numeric(alpha))
     error_message <- paste(error_message, "alpha is not numeric.", sep = "\n")
+  if (!is.logical(create_nested_sequence))
+    error_message <- paste(error_message, "create_nested_sequence is neither TRUE nor FALSE.", sep = "\n")
 
   if (!is.null(error_message))
     stop(error_message)
@@ -249,9 +259,15 @@ tsci_secondstage <- function(Y,
   if (!is.null(W)) W <- as.matrix(W)
   n_A1 <- length(A1_ind)
 
-  list_vio_space <- build_vio_space_candidates(Z, vio_space)
+  list_vio_space <- build_vio_space_candidates(Z = Z,
+                                               vio_space = vio_space,
+                                               create_nested_sequence = create_nested_sequence)
+
+  if (!(list_vio_space$nested_sequence))
+    warning("Sequence of violation space candidates is not nested. Results might be notsensical.")
+
   vio_space <- list_vio_space$vio_space[A1_ind, ]
-  rm_ind <- list_vio_space$rm_ind
+  vio_ind <- list_vio_space$vio_ind
   Q <- list_vio_space$Q
 
   Y_A1 <- Y[A1_ind, ]
@@ -270,7 +286,7 @@ tsci_secondstage <- function(Y,
     D_A1 = D_A1,
     W_A1 = W_A1,
     vio_space = vio_space,
-    rm_ind = rm_ind,
+    vio_ind = vio_ind,
     Q = Q,
     weight = weight,
     intercept = intercept,

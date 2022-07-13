@@ -1,43 +1,58 @@
 #' Builds violation space candidates.
 #'
 #' @param Z Z instrument variable with dimension n by 1.
-#' @param vio_space a \code{list} with vectors or matrices as elements or a \code{matrix}.
-#' If a \code{list} the sequence of violation spaces to test is build by starting with the empty space
+#' @param vio_space a \code{list} with vectors or matrices as elements.
+#' @param create_nested_sequence logical, if \code{TRUE} the sequence of violation spaces to test is build by starting with the empty space
 #' and obtaining the next larger violation space by iteratively adding the next
-#' element of the list to the current violation space.
-#' If a \code{matrix} the sequence of violation spaces to test is build by starting with the empty space
-#' and obtaining the next larger violation space by iteratively adding the next column of the matrix
-#' to the current violation space.
+#' element of the \code{vio_space} to the current violation space.
 #'
 #' @return A list containing:
 #' \describe{
-#'     \item{\code{vio_space}}{the \code{matrix} of the largest violation space.}
-#'     \item{\code{rm_ind}}{a \code{list} containing the indices to remove to obtain the violation spaces to test for (including the null space).}
-#'     \item{\code{Q}}{the number of violation spaces (including the null space).}
+#'     \item{\code{vio_space}}{a \code{matrix} consisting of the columns of all violation space candidates.}
+#'     \item{\code{rm_ind}}{a \code{list} containing the indices of the violation space candidate.}
+#'     \item{\code{Q}}{the number of violation space candidates (including the null space).}
 #' @noRd
 #'
 #' @importFrom stats poly
 #'
-build_vio_space_candidates <- function(Z, vio_space) {
+build_vio_space_candidates <- function(Z, vio_space, create_nested_sequence) {
   n <- NROW(Z)
-  if (class(vio_space)[1] == "list") {
-    vio_space <- lapply(vio_space, as.matrix)
-    Q <- length(vio_space) + 1
-    v_len <- c(1, sapply(vio_space, NCOL))
-    # the indices to remove to identify violation space
-    rm_ind <-
-      lapply(seq_len(Q - 1), FUN = function(i) {
-        seq(from = sum(v_len[seq_len(i)]), to = sum(v_len[seq_len(Q - 1) + 1]))
-      })
-    # merges the list of violation space to a matrix
-    vio_space <- Reduce(cbind, vio_space)
-  } else if (class(vio_space)[1] == "matrix") {
-    Q <- ncol(vio_space) + 1
-    rm_ind <- lapply(seq_len(Q - 1), FUN = function(i) seq(from = i, to = Q - 1))
+  vio_space <- lapply(vio_space, as.matrix)
+  Q <- length(vio_space) + 1
+  # merge violation space candidates into one matrix and remove duplicated columns
+  vio_space_matrix <- Reduce(cbind, vio_space)
+  duplicated_columns <- duplicated(t(vio_space_matrix))
+  vio_space_matrix <- vio_space_matrix[, !duplicated_columns, drop = FALSE]
+  # identify the columns of the matrix that belong to each violation space candidate
+  vio_ind <- lapply(seq_len(Q - 1), FUN = function(i) {
+    which(apply(vio_space_matrix, 2, FUN = function(x) any(colMeans(x == vio_space[[i]]) == 1)))
+  })
+  vio_space <- vio_space_matrix
+
+  # check if sequence is nested
+  nested_sequence <- TRUE
+  if (Q > 2) {
+    for (i in 2:(Q - 1)) {
+      if (!all(vio_ind[[i - 1]] %in% vio_ind[i])) {
+        nested_sequence <- FALSE
+        break
+      }
+    }
   }
+
+  if (create_nested_sequence & !nested_sequence) {
+    for (i in 2:(Q - 1)) {
+      vio_ind[[i]] <- unique(c(vio_ind[[i]], vio_ind[[i - 1]]))
+    }
+    nested_sequence <- TRUE
+  }
+
+
   return(list(
     vio_space = vio_space,
-    rm_ind = rm_ind,
-    Q = Q
+    vio_ind = vio_ind,
+    Q = Q,
+    nested_sequence = nested_sequence
   ))
 }
+

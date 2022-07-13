@@ -11,6 +11,7 @@ tsci_poly(
   X = NULL,
   W = X,
   vio_space = NULL,
+  create_nested_sequence = TRUE,
   intercept = TRUE,
   min_order = 1,
   max_order = 10,
@@ -40,15 +41,17 @@ or a numeric matrix with dimension n by p or \code{NULL}
 or a numeric matrix with dimension n by p_w or \code{NULL}
 (if no covariates should be included).}
 
-\item{vio_space}{either a numeric matrix with dimension n by q or a list with
-numeric vectors of length n and/or numeric matrices with n rows as elements to
-specify the violation space candidates or \code{NULL}.
-If a matrix or a list, then the violation space candidates (in form of matrices)
-are defined sequentially starting with an empty violation matrix and subsequently
-adding the next column of the matrix or element of the list to the current violation matrix.
+\item{vio_space}{either \code{NULL} or a list with numeric vectors of length n and/or numeric matrices with n rows as elements to
+specify the violation space candidates.
 If \code{NULL}, then the violation space candidates are chosen to be a nested sequence
 of monomials with degree depending on the orders of the polynomials used to fit
 the treatment model.}
+
+\item{create_nested_sequence}{logical. If \code{TRUE} the violation space candidates (in form of matrices)
+are defined sequentially starting with an empty violation matrix and subsequently
+adding the next element of \code{vio_space} to the current violation matrix.
+If \code{FALSE} the violation space candidates (in form of matrices) are defined as the elements of \code{vio_space}.
+See Details for more information.}
 
 \item{intercept}{logical. If \code{TRUE} an intercept is included in the outcome model.}
 
@@ -132,6 +135,7 @@ where \eqn{g(Z_i, X_i)} is estimated using a polynomial basis expansion of the i
 and a linear combination of the baseline covariates and
 \eqn{h(Z_i X_i)} is approximated using the violation space candidates and by
 a linear combination the columns in \code{W}. The errors are allowed to be heteroscedastic. \cr \cr
+The violation space candidates should be in a nested sequence as otherwise nonsensical results can occur.
 If \code{vio_space} is \code{NULL} the violation space candidates are chosen to be a nested sequence
 of polynomials of the instrumental variables up to the degrees used to fit the treatment model.
 This guarantees that the possible spaces the violation lives will be tested.
@@ -191,4 +195,9 @@ output_PO$CI_robust
 Machine Learning: Causal Inference with Possibly Invalid Instrumental Variables.
 \emph{arXiv:2203.12808}, 2022}
 }
+}
+\seealso{
+\code{\link[TSML]{tsci_forest}} for TSCI with random forest. \cr \cr
+\code{\link[TSML]{tsci_boosting}} for TSCI with boosting. \cr \cr
+\code{\link[TSML]{tsci_secondstage}} for TSCI with user provided hat matrix. \cr \cr
 }

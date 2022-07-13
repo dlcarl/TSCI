@@ -10,6 +10,7 @@ tsci_secondstage(
   Z,
   W,
   vio_space,
+  create_nested_sequence = TRUE,
   weight,
   A1_ind = NULL,
   intercept = TRUE,
@@ -31,12 +32,13 @@ or a numeric matrix with dimension n by s.}
 or a numeric matrix with dimension n by p_w or \code{NULL}
 (if no covariates should be included).}
 
-\item{vio_space}{either a numeric matrix with dimension n by q or a list with
-numeric vectors of length n and/or numeric matrices with n rows as elements to
-specify the violation space candidates or \code{NULL}.
-If a matrix or a list, then the violation space candidates (in form of matrices)
+\item{vio_space}{list with numeric vectors of length n and/or numeric matrices with n rows as elements to
+specify the violation space candidates. See Details for more information.}
+
+\item{create_nested_sequence}{logical. If \code{TRUE} the violation space candidates (in form of matrices)
 are defined sequentially starting with an empty violation matrix and subsequently
-adding the next column of the matrix or element of the list to the current violation matrix.
+adding the next element of \code{vio_space} to the current violation matrix.
+If \code{FALSE} the violation space candidates (in form of matrices) are defined as the elements of \code{vio_space}.
 See Details for more information.}
 
 \item{weight}{the hat matrix of the treatment model.}
@@ -105,10 +107,11 @@ where \eqn{g(Z_i, X_i)} is assumed to be estimated by the user and
 \eqn{h(Z_i X_i)} is approximated using the violation space candidates and by
 a linear combination of the columns in \code{W}. The errors are allowed to be heteroscedastic.
 \eqn{A1} is used to fit the outcome model. \cr \cr
-The violation space candidates are required to be in a nested sequence. The specification
-of suitable violation space candidates is a crucial step because a poor approximation
-of \eqn{h(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
-The function \code{create_monomials} can be used to create such a nested sequence for a
+The violation space candidates should be in a nested sequence as otherwise nonsensical results can occur.
+The specification of suitable violation space candidates is a crucial step
+because a poor approximation of \eqn{h(Z_i, X_i)} might not address the bias
+caused by the violation of the IV assumption sufficiently.
+The function \code{\link[TSML]{create_monomials}} can be used to create such a nested sequence for a
 predefined type of violation space candidates (monomials). \cr \cr
 }
 \examples{
@@ -154,7 +157,7 @@ weight <- A \%*\% chol2inv(chol(t(A) \%*\% A)) \%*\% t(A)
 
 # Two Stage User Defined
 vio_space <- create_monomials(Z, 4, "monomials_main")
-output <- tsci_secondstage(Y, D, Z, X, vio_space, weight)
+output <- tsci_secondstage(Y, D, Z, X, vio_space = vio_space, weight = weight)
 # point estimates
 output$Coef_robust
 # standard errors
@@ -176,4 +179,9 @@ Whitney Newey, and James Robins. Double/debiased machine learning for treatment
 and structural parameters: Double/debiased machine learning.
 \emph{The Econometrics Journal}, 21(1), 2018. 4, 16, 18}
 }
+}
+\seealso{
+\code{\link[TSML]{tsci_boosting}} for TSCI with boosting. \cr \cr
+\code{\link[TSML]{tsci_forest}} for TSCI with random forest. \cr \cr
+\code{\link[TSML]{tsci_poly}} for TSCI with polynomial basis expansion. \cr \cr
 }

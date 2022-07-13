@@ -6,6 +6,7 @@
 #' @param Z instrument variable with dimension n by 1.
 #' @param W (transformed) baseline covariates with dimension n by p_w used to fit the outcome model.
 #' @param vio_space vio_space a matrix or a list.
+#' @param create_nested_sequence xxx
 #' @param A1_ind the indices of samples in A1 in the first split.
 #' @param intercept logical, including the intercept or not in the outcome model, default by TRUE.
 #' @param str_thol minimal value of the threshold of IV strength test.
@@ -40,6 +41,7 @@ tsci_multisplit <- function(df_treatment,
                             Z,
                             W,
                             vio_space,
+                            create_nested_sequence,
                             A1_ind,
                             intercept,
                             str_thol,
@@ -55,7 +57,12 @@ tsci_multisplit <- function(df_treatment,
                             cl,
                             raw_output) {
   # if vio_space is a list, this function merges the list into a matrix and identifies the columns to include (resp. to exclude) for each violation space candidate.
-  list_vio_space <- build_vio_space_candidates(Z, vio_space)
+  list_vio_space <- build_vio_space_candidates(Z = Z,
+                                               vio_space = vio_space,
+                                               create_nested_sequence = create_nested_sequence)
+
+  if (!(list_vio_space$nested_sequence))
+    warning("Sequence of violation space candidates is not nested. Results might be nonsensical.")
 
   # sets up local environment for the calculations for each data split to handle potential error and warning messages better.
   tsci_parallel <- local({

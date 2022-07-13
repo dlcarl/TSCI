@@ -18,15 +18,16 @@
 #' @param W (transformed) observations of baseline covariate(s) used to fit the outcome model. Either a numeric vector of length n
 #' or a numeric matrix with dimension n by p_w or \code{NULL}
 #' (if no covariates should be included).
-#' @param vio_space either a numeric matrix with dimension n by q or a list with
-#' numeric vectors of length n and/or numeric matrices with n rows as elements to
-#' specify the violation space candidates or \code{NULL}.
-#' If a matrix or a list, then the violation space candidates (in form of matrices)
-#' are defined sequentially starting with an empty violation matrix and subsequently
-#' adding the next column of the matrix or element of the list to the current violation matrix.
+#' @param vio_space either \code{NULL} or a list with numeric vectors of length n and/or numeric matrices with n rows as elements to
+#' specify the violation space candidates.
 #' If \code{NULL}, then the violation space candidates are chosen to be a nested sequence
 #' of monomials with degree depending on the orders of the polynomials used to fit
 #' the treatment model.
+#' @param create_nested_sequence logical. If \code{TRUE} the violation space candidates (in form of matrices)
+#' are defined sequentially starting with an empty violation matrix and subsequently
+#' adding the next element of \code{vio_space} to the current violation matrix.
+#' If \code{FALSE} the violation space candidates (in form of matrices) are defined as the elements of \code{vio_space}.
+#' See Details for more information.
 #' @param intercept logical. If \code{TRUE} an intercept is included in the outcome model.
 #' @param min_order either a single numeric value or a numeric vector of length s specifying
 #' the smallest order of polynomials to use in the selection of the treatment model. If a
@@ -92,6 +93,7 @@
 #' and a linear combination of the baseline covariates and
 #' \eqn{h(Z_i X_i)} is approximated using the violation space candidates and by
 #' a linear combination the columns in \code{W}. The errors are allowed to be heteroscedastic. \cr \cr
+#' The violation space candidates should be in a nested sequence as otherwise nonsensical results can occur.
 #' If \code{vio_space} is \code{NULL} the violation space candidates are chosen to be a nested sequence
 #' of polynomials of the instrumental variables up to the degrees used to fit the treatment model.
 #' This guarantees that the possible spaces the violation lives will be tested.
@@ -104,6 +106,11 @@
 #' Machine Learning: Causal Inference with Possibly Invalid Instrumental Variables.
 #' \emph{arXiv:2203.12808}, 2022}
 #' }
+#'
+#' @seealso
+#' \code{\link[TSML]{tsci_forest}} for TSCI with random forest. \cr \cr
+#' \code{\link[TSML]{tsci_boosting}} for TSCI with boosting. \cr \cr
+#' \code{\link[TSML]{tsci_secondstage}} for TSCI with user provided hat matrix. \cr \cr
 #'
 #' @export
 #'
@@ -159,6 +166,7 @@ tsci_poly <- function(Y,
                       X = NULL,
                       W = X,
                       vio_space = NULL,
+                      create_nested_sequence = TRUE,
                       intercept = TRUE,
                       min_order = 1,
                       max_order = 10,
@@ -191,15 +199,14 @@ tsci_poly <- function(Y,
     error_message <- paste(error_message, "gcv is neither TRUE nor FALSE.", sep = "\n")
   if (!is.logical(intercept))
     error_message <- paste(error_message, "intercept is neither TRUE nor FALSE.", sep = "\n")
-  if (!is.matrix(vio_space) & !is.list(vio_space) & !is.null(vio_space))
-    error_message <- paste(error_message, "vio_space is neither a matrix nor a list nor NULL", sep = "\n")
-  if (is.matrix(vio_space)) {
-    if (!is.numeric(vio_space))
-      error_message <- paste(error_message, "vio_space is not numeric", sep = "\n")
+  if (!is.list(vio_space) & !is.null(vio_space)) {
+    error_message <- paste(error_message, "vio_space is neither NULL nor a list", sep = "\n")
   } else if (is.list(vio_space)) {
     if (!is.numeric(unlist(vio_space)))
       error_message <- paste(error_message, "vio_space is not numeric", sep = "\n")
   }
+  if (!is.logical(create_nested_sequence))
+    error_message <- paste(error_message, "create_nested_sequence is neither TRUE nor FALSE.", sep = "\n")
 
   if (!is.null(error_message))
     stop(error_message)
@@ -216,9 +223,6 @@ tsci_poly <- function(Y,
     if (!is.null(W))
       if(NROW(W) != n)
         error_message <- paste(error_message, "W has not the same amount of observations as Y.", sep = "\n")
-    if (is.matrix(vio_space))
-      if (NROW(vio_space) != n)
-        error_message <- paste(error_message, "vio_space has not the same amount of observations as Y.", sep = "\n")
     if (is.list(vio_space))
       if (length(unique(sapply(vio_space, FUN = function(variable) NROW(variable)))) > 1)
         error_message <- paste(error_message, "vio_space has not the same amount of observations as Y.", sep = "\n")
@@ -235,9 +239,6 @@ tsci_poly <- function(Y,
   if (!is.null(W))
     if(any(is.na(W)))
       error_message <- paste(error_message, "There are NA's in W.", sep = "\n")
-  if (is.matrix(vio_space))
-    if(any(is.na(vio_space)))
-      error_message <- paste(error_message, "There are NA's in vio_space.", sep = "\n")
   if (is.list(vio_space))
     if(any(is.na(unlist(vio_space))))
       error_message <- paste(error_message, "There are NA's in vio_space.", sep = "\n")
@@ -297,10 +298,19 @@ tsci_poly <- function(Y,
                                  gcv = gcv,
                                  nfolds = nfolds)
 
-  if (is.null(vio_space)) vio_space <- create_monomials(Z = Z,
-                                                        degree = unlist(poly_CV$params)[seq_len(NCOL(Z))],
-                                                        type = "monomials_main")
-  list_vio_space <- build_vio_space_candidates(Z, vio_space)
+  if (is.null(vio_space)) {
+    vio_space <- create_monomials(Z = Z,
+                                  degree = unlist(poly_CV$params)[seq_len(NCOL(Z))],
+                                  type = "monomials_main")
+    create_nested_sequence = TRUE
+
+  }
+  list_vio_space <- build_vio_space_candidates(Z = Z,
+                                               vio_space = vio_space,
+                                               create_nested_sequence = create_nested_sequence)
+
+  if (!(list_vio_space$nested_sequence))
+    warning("Sequence of violation space candidates is not nested. Results might be nonsensical.")
 
   outputs <- tsci_fit(df_treatment = df_treatment,
                       Y = Y,

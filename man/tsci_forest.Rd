@@ -11,6 +11,7 @@ tsci_forest(
   X = NULL,
   W = X,
   vio_space,
+  create_nested_sequence = TRUE,
   intercept = TRUE,
   split_prop = 2/3,
   num_trees = 200,
@@ -46,12 +47,13 @@ or a numeric matrix with dimension n by p or \code{NULL}
 or a numeric matrix with dimension n by p_w or \code{NULL}
 (if no covariates should be included).}
 
-\item{vio_space}{either a numeric matrix with dimension n by q or a list with
-numeric vectors of length n and/or numeric matrices with n rows as elements to
-specify the violation space candidates.
-The violation space candidates (in form of matrices)
+\item{vio_space}{list with numeric vectors of length n and/or numeric matrices with n rows as elements to
+specify the violation space candidates. See Details for more information.}
+
+\item{create_nested_sequence}{logical. If \code{TRUE} the violation space candidates (in form of matrices)
 are defined sequentially starting with an empty violation matrix and subsequently
-adding the next column of the matrix or element of the list to the current violation matrix.
+adding the next element of \code{vio_space} to the current violation matrix.
+If \code{FALSE} the violation space candidates (in form of matrices) are defined as the elements of \code{vio_space}.
 See Details for more information.}
 
 \item{intercept}{logical. If \code{TRUE} an intercept is included in the outcome model.}
@@ -165,11 +167,10 @@ where the proportion of number of observations in the two sets is specified by \
 The package \code{ranger} is used to fit the random forest. If any of \code{num_trees},
 \code{max_depth} or \code{min_node_size} has more than one value,
 the best parameter combination is chosen by minimizing the out-of-bag mean squared error. \cr \cr
-The violation space candidates are required to be in a nested sequence. The specification
+The violation space candidates should be in a nested sequence as otherwise nonsensical results can occur. The specification
 of suitable violation space candidates is a crucial step because a poor approximation
 of \eqn{h(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
-The function \code{create_monomials} can be used to create such a nested sequence for a
-predefined type of violation space candidates (monomials). If \eqn{h(Z_i X_i)} is not well-known, see also \code{Tsci_poly}. \cr \cr
+The function \code{\link[TSML]{create_monomials}} can be used to create a predefined sequence of violation space candidates (monomials).  \cr \cr
 \code{W} should be chosen to be flexible enough to approximate the functional form of how the covariates affect the outcome well
 as otherwise the treatment estimator might be biased.\cr \cr
 If \code{nsplits} is larger than 1, point estimates are aggregated by medians
@@ -243,4 +244,9 @@ Whitney Newey, and James Robins. Double/debiased machine learning for treatment
 and structural parameters: Double/debiased machine learning.
 \emph{The Econometrics Journal}, 21(1), 2018. 4, 16, 18}
 }
+}
+\seealso{
+\code{\link[TSML]{tsci_boosting}} for TSCI with boosting. \cr \cr
+\code{\link[TSML]{tsci_poly}} for TSCI with polynomial basis expansion. \cr \cr
+\code{\link[TSML]{tsci_secondstage}} for TSCI with user provided hat matrix. \cr \cr
 }

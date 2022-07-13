@@ -8,7 +8,7 @@
 #' @param D_A1 treatment with dimension n_A1 by 1
 #' @param W_A1 (transformed) baseline covariates with dimension n_A1 by p_w used to fit the outcome model.
 #' @param vio_space the \code{matrix} of the largest violation space
-#' @param rm_ind a \code{list} containing the indices to remove to obtain the violation spaces to test for (including the null space).
+#' @param vio_ind a \code{list} containing the indices to remove to obtain the violation spaces to test for (including the null space).
 #' @param Q the number of violation spaces (including the null space).
 #' @param weight n_A1 by n_A1 weight matrix.
 #' @param intercept logic, to include intercept in the outcome model or not.
@@ -64,12 +64,20 @@ tsci_selection <- function(Y,
                            D_A1,
                            W_A1,
                            vio_space,
-                           rm_ind,
+                           vio_ind,
                            Q,
                            weight,
                            intercept,
                            str_thol,
                            alpha) {
+
+  if (intercept) {
+    W <- cbind(rep(1, NCOL(Y)), W)
+    W_A1 <- cbind(1, NCOL(Y_A1), W_A1)
+  } else {
+    W <- cbind(rep(0, NCOL(Y)), W)
+    W_A1 <- cbind(0, NCOL(Y_A1), W_A1)
+  }
 
   Cov_aug_A1 <- cbind(vio_space, W_A1)
   Y_rep <- as.matrix(weight %*% Y_A1)
@@ -94,74 +102,30 @@ tsci_selection <- function(Y,
   # the noise of outcome model
   eps_hat <- rep(list(NA), Q)
 
+  # the position of the columns of W in Cov_aug_A1
+  pos_W <- seq(NCOL(vio_space) + 1, NCOL(Cov_aug_A1))
+
   ### fixed violation space, compute necessary inputs of selection part
   D_resid <- diag_M_list <- rep(list(NA), Q)
   for (index in seq_len(Q)) {
-    if (index == Q) {
-      if (intercept) {
-        reg_ml <- lm(Y_rep ~ D_rep + Cov_rep)
-        betaHat <- coef(reg_ml)[2]
-      } else {
-        reg_ml <- lm(Y_rep ~ D_rep + Cov_rep - 1)
-        betaHat <- coef(reg_ml)[1]
-      }
-      Coef_all[index] <- betaHat
-      reg_ml2 <- lm(Y_A1 - D_A1 * betaHat ~ Cov_aug_A1)
-      summary_ml <- summary(reg_ml2)
-      output$SecondStage_rse[index + 1] <- summary_ml$sigma
-      output$SecondStage_Rsquared[index + 1] <- 1 - var(summary_ml$residuals) / var(Y_A1)
-      eps_hat[[index]] <- resid(reg_ml2)
-      stat_outputs <- tsci_secondstage_stats(D_rep,
-        Cov_rep,
-        weight,
-        eps_hat[[index]],
-        delta_hat,
-        str_thol = str_thol
-      )
-    } else if (length(rm_ind[[index]]) >= p_outcome) {
-      if (intercept) {
-        reg_ml <- lm(Y_rep ~ D_rep)
-        betaHat <- coef(reg_ml)[2]
-      } else {
-        reg_ml <- lm(Y_rep ~ D_rep - 1)
-        betaHat <- coef(reg_ml)[1]
-      }
-      Coef_all[index] <- betaHat
-      reg_ml2 <- lm(Y_A1 - D_A1 * betaHat ~ 1)
-      summary_ml <- summary(reg_ml2)
-      output$SecondStage_rse[index + 1] <- summary_ml$sigma
-      output$SecondStage_Rsquared[index + 1] <- 1 - var(summary_ml$residuals) / var(Y_A1)
-      eps_hat[[index]] <- resid(reg_ml2)
-      stat_outputs <- tsci_secondstage_stats(D_rep,
-                                             matrix(1, nrow = n_A1),
-                                             weight,
-                                             eps_hat[[index]],
-                                             delta_hat,
-                                             str_thol = str_thol
-      )
-    }
-    else {
-      if (intercept) {
-        reg_ml <- lm(Y_rep ~ D_rep + Cov_rep[, -rm_ind[[index]]])
-        betaHat <- coef(reg_ml)[2]
-      } else {
-        reg_ml <- lm(Y_rep ~ D_rep + Cov_rep[, -rm_ind[[index]]] - 1)
-        betaHat <- coef(reg_ml)[1]
-      }
-      Coef_all[index] <- betaHat
-      reg_ml2 <- lm(Y_A1 - D_A1 * betaHat ~ Cov_aug_A1[, -rm_ind[[index]]])
-      summary_ml <- summary(reg_ml2)
-      output$SecondStage_rse[index + 1] <- summary_ml$sigma
-      output$SecondStage_Rsquared[index + 1] <- 1 - var(summary_ml$residuals) / var(Y_A1)
-      eps_hat[[index]] <- resid(reg_ml2)
-      stat_outputs <- tsci_secondstage_stats(D_rep,
-        Cov_rep[, -rm_ind[[index]]],
-        weight,
-        eps_hat[[index]],
-        delta_hat,
-        str_thol = str_thol
-      )
-    }
+    if (index == 1) pos_VW <- pos_W else pos_VW <- c(vio_ind[[index - 1]], pos_W)
+
+    reg_ml <- lm(Y_rep ~ D_rep + Cov_rep[, pos_VW] - 1)
+    betaHat <- coef(reg_ml)[1]
+    Coef_all[index] <- betaHat
+
+    reg_ml2 <- lm(Y_A1 - D_A1 * betaHat ~ Cov_aug_A1[, pos_VW] - 1)
+    summary_ml <- summary(reg_ml2)
+    output$SecondStage_rse[index + 1] <- summary_ml$sigma
+    output$SecondStage_Rsquared[index + 1] <- 1 - var(summary_ml$residuals) / var(Y_A1)
+    eps_hat[[index]] <- resid(reg_ml2)
+    stat_outputs <- tsci_secondstage_stats(D_rep,
+                                           Cov_rep[, pos_VW],
+                                           weight,
+                                           eps_hat[[index]],
+                                           delta_hat,
+                                           str_thol = str_thol)
+
     # the necessary statistics
     output$sd_all[index + 1] <- stat_outputs$sd
     output$iv_str[index] <- stat_outputs$iv_str
@@ -265,19 +229,13 @@ tsci_selection <- function(Y,
   }
 
   # OLS estimator
-  if (is.null(W)) {
-    summary_OLS <- summary(lm(Y ~ D))
-    output$SecondStage_rse[1] <- summary_OLS$sigma
-    output$SecondStage_Rsquared[1] <- summary_OLS$r.squared
-    OLS <- summary_OLS$coefficients
-  } else {
-    summary_OLS <- summary(lm(Y ~ D + W))
-    output$SecondStage_rse[1] <- summary_OLS$sigma
-    output$SecondStage_Rsquared[1] <- summary_OLS$r.squared
-    OLS <- summary_OLS$coefficients
-  }
-  Coef_OLS <- OLS[2, 1]
-  sd_OLS <- OLS[2, 2]
+  summary_OLS <- summary(lm(Y ~ D + W - 1))
+  output$SecondStage_rse[1] <- summary_OLS$sigma
+  output$SecondStage_Rsquared[1] <- 1 - var(summary_OLS$residuals) / var(Y)
+  OLS <- summary_OLS$coefficients
+
+  Coef_OLS <- OLS[1, 1]
+  sd_OLS <- OLS[1, 2]
   # add OLS to Coef_all
   output$Coef_all[1] <- Coef_OLS
   output$sd_all[1] <- sd_OLS

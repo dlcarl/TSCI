@@ -18,12 +18,12 @@
 #' @param W (transformed) observations of baseline covariate(s) used to fit the outcome model. Either a numeric vector of length n
 #' or a numeric matrix with dimension n by p_w or \code{NULL}
 #' (if no covariates should be included).
-#' @param vio_space either a numeric matrix with dimension n by q or a list with
-#' numeric vectors of length n and/or numeric matrices with n rows as elements to
-#' specify the violation space candidates.
-#' The violation space candidates (in form of matrices)
+#' @param vio_space  list with numeric vectors of length n and/or numeric matrices with n rows as elements to
+#' specify the violation space candidates. See Details for more information.
+#' @param create_nested_sequence logical. If \code{TRUE} the violation space candidates (in form of matrices)
 #' are defined sequentially starting with an empty violation matrix and subsequently
-#' adding the next column of the matrix or element of the list to the current violation matrix.
+#' adding the next element of \code{vio_space} to the current violation matrix.
+#' If \code{FALSE} the violation space candidates (in form of matrices) are defined as the elements of \code{vio_space}.
 #' See Details for more information.
 #' @param intercept logical. If \code{TRUE} an intercept is included in the outcome model.
 #' @param split_prop proportion of observations used to fit the outcome model. Has to be a value in (0, 1).
@@ -115,11 +115,10 @@
 #' The package \code{xgboost} is used for boosting. If any of \code{nrounds},
 #' \code{eta}, \code{max_depth}, \code{subsample} or \code{colsample_bytree} has more than one value,
 #' the best parameter combination is chosen by minimizing the cross-validation mean squared error. \cr \cr
-#' The violation space candidates are required to be in a nested sequence. The specification
-#' of suitable violation space candidates  is a crucial step because a poor approximation
+#' The violation space candidates should be in a nested sequence as otherwise nonsensical results can occur. The specification
+#' of suitable violation space candidates is a crucial step because a poor approximation
 #' of \eqn{h(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
-#' The function \code{create_monomials} can be used to create such a nested sequence for a
-#' predefined type of violation space candidates (monomials). If \eqn{h(Z_i X_i)} is not well-known, see also \code{Tsci_poly}. \cr \cr
+#' The function \code{\link[TSML]{create_monomials}} can be used to create a predefined sequence of violation space candidates (monomials).  \cr \cr
 #' \code{W} should be chosen to be flexible enough to approximate the functional form of how the covariates affect the outcome well
 #' as otherwise the treatment estimator might be biased. \cr \cr
 #' If \code{nsplits} is larger than 1, point estimates are aggregated by medians
@@ -145,6 +144,11 @@
 #' and structural parameters: Double/debiased machine learning.
 #' \emph{The Econometrics Journal}, 21(1), 2018. 4, 16, 18}
 #' }
+#'
+#' @seealso
+#' \code{\link[TSML]{tsci_forest}} for TSCI with random forest. \cr \cr
+#' \code{\link[TSML]{tsci_poly}} for TSCI with polynomial basis expansion. \cr \cr
+#' \code{\link[TSML]{tsci_secondstage}} for TSCI with user provided hat matrix. \cr \cr
 #'
 #' @export
 #'
@@ -201,6 +205,7 @@ tsci_boosting <- function(Y,
                           X = NULL,
                           W = X,
                           vio_space,
+                          create_nested_sequence = TRUE,
                           intercept = TRUE,
                           split_prop = 2 / 3,
                           nrounds = 50,
@@ -233,12 +238,9 @@ tsci_boosting <- function(Y,
     error_message <- paste(error_message, "W is not numeric.", sep = "\n")
   if (!is.logical(intercept))
     error_message <- paste(error_message, "intercept is neither TRUE nor FALSE.", sep = "\n")
-  if (!is.matrix(vio_space) & !is.list(vio_space))
-    error_message <- paste(error_message, "vio_space is neither a matrix nor a list", sep = "\n")
-  if (is.matrix(vio_space)) {
-    if (!is.numeric(vio_space))
-      error_message <- paste(error_message, "vio_space is not numeric", sep = "\n")
-  } else if (is.list(vio_space)) {
+  if (!is.list(vio_space)) {
+    error_message <- paste(error_message, "vio_space is not a list", sep = "\n")
+  } else {
     if (!is.numeric(unlist(vio_space)))
       error_message <- paste(error_message, "vio_space is not numeric", sep = "\n")
   }
@@ -272,6 +274,8 @@ tsci_boosting <- function(Y,
     error_message <- paste(error_message, "ncores is not numeric.", sep = "\n")
   if (!is.logical(raw_output))
     error_message <- paste(error_message, "raw_output is neither TRUE nor FALSE", sep = "\n")
+  if (!is.logical(create_nested_sequence))
+    error_message <- paste(error_message, "create_nested_sequence is neither TRUE nor FALSE.", sep = "\n")
 
   if (!is.null(error_message))
     stop(error_message)
@@ -288,12 +292,8 @@ tsci_boosting <- function(Y,
     if (!is.null(W))
       if(NROW(W) != n)
         error_message <- paste(error_message, "W has not the same amount of observations as Y.", sep = "\n")
-    if (is.matrix(vio_space))
-      if (NROW(vio_space) != n)
-        error_message <- paste(error_message, "vio_space has not the same amount of observations as Y.", sep = "\n")
-    if (is.list(vio_space))
-      if (length(unique(sapply(vio_space, FUN = function(variable) NROW(variable)))) > 1)
-        error_message <- paste(error_message, "vio_space has not the same amount of observations as Y.", sep = "\n")
+    if (length(unique(sapply(vio_space, FUN = function(variable) NROW(variable)))) > 1)
+      error_message <- paste(error_message, "vio_space has not the same amount of observations as Y.", sep = "\n")
   }
   if (any(is.na(Y)))
     error_message <- paste(error_message, "There are NA's in Y.", sep = "\n")
@@ -307,12 +307,8 @@ tsci_boosting <- function(Y,
   if (!is.null(W))
     if(any(is.na(W)))
       error_message <- paste(error_message, "There are NA's in W.", sep = "\n")
-  if (is.matrix(vio_space))
-    if(any(is.na(vio_space)))
-      error_message <- paste(error_message, "There are NA's in vio_space.", sep = "\n")
-  if (is.list(vio_space))
-    if(any(is.na(unlist(vio_space))))
-      error_message <- paste(error_message, "There are NA's in vio_space.", sep = "\n")
+  if(any(is.na(unlist(vio_space))))
+    error_message <- paste(error_message, "There are NA's in vio_space.", sep = "\n")
   if (split_prop <= 0 | split_prop >= 1)
     error_message <- paste(error_message, "split_prop is not in (0, 1).", sep = "\n")
   if (any(nrounds < 0))
@@ -389,6 +385,7 @@ tsci_boosting <- function(Y,
                              Z = Z,
                              W = W,
                              vio_space = vio_space,
+                             create_nested_sequence = create_nested_sequence,
                              A1_ind = A1_ind,
                              intercept = intercept,
                              str_thol = str_thol,
