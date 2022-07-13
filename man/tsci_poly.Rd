@@ -17,6 +17,8 @@ tsci_poly(
   max_order = 10,
   exact_order = NULL,
   order_selection_method = "backfitting",
+  max_iter = 100,
+  conv_tol = 10^-6,
   gcv = T,
   nfolds = 5,
   str_thol = 10,
@@ -70,6 +72,10 @@ single numeric value, all the polynomials of all instrumental variables use this
 \item{order_selection_method}{method used to select the best fitting order of polynomials
 for the treatment model. Must be either 'backfitting' or 'grid search'.
 'grid search' can be very slow if the number of instruments is large.}
+
+\item{max_iter}{number of iterations used in the backfitting algorithm if \code{order_selection_method} is 'backfitting'.}
+
+\item{conv_tol}{tolerance of convergence in the backfitting algorithm if \code{order_selection_method} is 'backfitting'.}
 
 \item{gcv}{logical. If \code{TRUE} the generalized cross validation mean squared error is used
 to determine the best fitting order of polynomials for the treatment model.

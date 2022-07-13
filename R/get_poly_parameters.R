@@ -3,6 +3,8 @@
 get_poly_parameters <- function(df_treatment,
                                 params_list,
                                 order_selection_method,
+                                max_iter,
+                                conv_tol,
                                 gcv,
                                 nfolds) {
   # this function is used to select the optimal order of the polynomials.
@@ -11,6 +13,8 @@ get_poly_parameters <- function(df_treatment,
     if (order_selection_method == "backfitting") {
       optimal_order <- backfitting(df = df_treatment,
                                    params_list = params_list,
+                                   max_iter = max_iter,
+                                   conv_tol = conv_tol,
                                    gcv = gcv,
                                    nfolds = nfolds)
     }

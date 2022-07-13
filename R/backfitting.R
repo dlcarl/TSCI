@@ -1,11 +1,11 @@
 #' @noRd
 backfitting <- function(df,
                         params_list,
+                        max_iter,
+                        conv_tol,
                         gcv,
                         nfolds) {
   # this function performs a backfitting approach to select the optimal order of the polynomials.
-  max_iter <- 100
-  tol <- 10^-6
   Y <- df[, 1]
   X <- df[, -1]
   n <- NROW(Y)
@@ -36,7 +36,7 @@ backfitting <- function(df,
       }
     }
     change <- sqrt(sum((g_X - g_old)^2)) / sqrt(sum(g_old^2))
-    if(change < tol) return(order_opt)
+    if(change < conv_tol) return(order_opt)
   }
   warning("backfitting did not converge. Try a larger value for 'max_iter'.")
   return(order_opt)
