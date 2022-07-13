@@ -1,12 +1,13 @@
-#' xxx
+#' Confidence Intervals of Treatment Effect Estimates for TSCI Fits.
 #'
-#' @param object xxx
-#' @param parm xxx
-#' @param level xxx
-#' @param ... xxx
+#' @param object a object of class 'tsci'.
+#' @param parm a specification of which parameters are to be given confidence intervals, either a vector of numbers or a vector of names.
+#' If missing, all parameters are considered.
+#' @param level the confidence level required.
+#' @param ... additional argument(s) for methods.
 #'
-#' @return xxx
-#' @exportS3Method
+#' @return a matrix containing the confidence intervals.
+#' @export
 confint.tsci <- function(object, parm = NULL, level = 0.95, ...) {
   stopifnot(inherits(object, "tsci"))
   alpha <- 1 - level

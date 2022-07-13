@@ -1,16 +1,9 @@
-#' Title xxx
-#'
-#' @param df xxx
-#' @param params_list xxx
-#' @param gcv xxx
-#' @param nfolds xxx
-#'
-#' @return xxx
 #' @noRd
 grid_search <- function(df,
                         params_list,
                         gcv,
                         nfolds) {
+  # this function performs a grid search of all parameter combinations to select the optimal order of the polynomials.
   Y <- df[, 1]
   X <- df[, -1]
   n <- NROW(Y)

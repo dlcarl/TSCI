@@ -2,22 +2,23 @@
 % Please edit documentation in R/confint-method.R
 \name{confint.tsci}
 \alias{confint.tsci}
-\title{xxx}
+\title{Confidence Intervals of Treatment Effect Estimates for TSCI Fits.}
 \usage{
 \method{confint}{tsci}(object, parm = NULL, level = 0.95, ...)
 }
 \arguments{
-\item{object}{xxx}
+\item{object}{a object of class 'tsci'.}
 
-\item{parm}{xxx}
+\item{parm}{a specification of which parameters are to be given confidence intervals, either a vector of numbers or a vector of names.
+If missing, all parameters are considered.}
 
-\item{level}{xxx}
+\item{level}{the confidence level required.}
 
-\item{...}{xxx}
+\item{...}{additional argument(s) for methods.}
 }
 \value{
-xxx
+a matrix containing the confidence intervals.
 }
 \description{
-xxx
+Confidence Intervals of Treatment Effect Estimates for TSCI Fits.
 }

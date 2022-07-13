@@ -1,12 +1,6 @@
-#' Title
-#'
-#' @param list_outputs xxx
-#' @param ind_start xxx
-#'
-#' @return xxx
 #' @noRd
-#'
 check_output <- function(list_outputs, ind_start) {
+  # this functions checks if errors occured in each sample split.
   n <- length(list_outputs)
   ind_na <- sapply(list_outputs, FUN = function(x) any(is.na(x$value)))
   prop_na <- sum(ind_na) / n

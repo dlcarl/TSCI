@@ -1,34 +1,11 @@
-#' Calculates the hat matrix of the boosting fit.
-#'
-#' @param df_treatment_A1 a data frame containing the subset of observations used to get the hat matrix of the treatment model.
-#' @param df_treatment_A2 a data frame containing the subset of observations used to train the treatment model.
-#' @param params a list containing the hyperparameters of the boosting method.
-#'
-#' @return a list containing the following the following components: \tabular{ll}{
-#' \code{weight} \tab the hat matrix. \cr
-#' \tab \cr
-#' \code{model} \tab the fitted boosting model. \cr
-#' }
 #' @noRd
 #' @importFrom xgboost xgb.DMatrix xgb.train
 #' @importFrom stats predict
 #' @importFrom Rfast mat.mult
-#'
-#' @examples
-#' Z <- rnorm(100)
-#' X <- rnorm(100)
-#' D <- 2 * Z + X + rnorm(100)
-#' Data <- data.frame("D" = D, "Z" = Z, "X" = X)
-#' df_treatment_A1 <- Data[c(1:50), ]
-#' df_treatment_A2 <- Data[-c(1:50), ]
-#' params_xgboost <- list("nrounds" = 10, "eta" = 0.3, "max_depth" = 2, "subsample" = 1,
-#'   "colsample_bytree" = 1)
-#' hat_matrix <- get_l2boost_hatmatrix(df_treatment_A1 = df_treatment_A1, df_treatment_A2 = df_treatment_A2,
-#'   params = params_xgboost)
-#' mean((df_treatment_A1$D - hat_matrix$weight %*% df_treatment_A1$D)^2)
 get_l2boost_hatmatrix <- function(df_treatment_A1,
                                    df_treatment_A2,
                                    params) {
+  # this function calculates the hat matrix of the treatment model for A1 using boosting.
   n_A1 <- NROW(df_treatment_A1)
   n_A2 <- NROW(df_treatment_A2)
 

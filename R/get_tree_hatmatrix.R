@@ -1,15 +1,6 @@
-#' Calculates the hat matrix of a tree.
-#'
-#' @param leaves A character or continuous vector specifying the leaf membership.
-#' Entries with the same values are assumed to belong in the same leaf.
-#'
-#' @return A n x n continuous vector. Hat matrix of the tree.
 #' @noRd
-#'
-#' @examples
-#' leaves <- c("A", "B", "B", "C", "B", "B", "A")
-#' get_tree_hatmatrix(leaves)
 get_tree_hatmatrix <- function(leaves) {
+  # this function returns the hat matrix of a single fitted tree.
   n <- length(leaves)
   # initialize weight matrix for a single tree
   weight.mat <- matrix(0, n, n)

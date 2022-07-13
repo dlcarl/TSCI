@@ -1,15 +1,8 @@
-#' Title
-#'
-#' @param df_treatment_A1 xxx
-#' @param df_treatment_A2 xxx
-#' @param params xxx
-#'
-#' @return xxx
 #' @noRd
-#' @importFrom fda create.bspline.basis eval.basis
 get_poly_hatmatrix <- function(df_treatment_A1,
                                   df_treatment_A2,
                                   params) {
+  # this function calculates the hat matrix of the treatment model for A1 using a polynomial basis expansion.
   params <- unlist(params)
   A <- matrix(1, nrow = NROW(df_treatment_A1))
   for (j in seq_len(length(params))) {

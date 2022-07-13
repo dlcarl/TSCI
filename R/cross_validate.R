@@ -1,12 +1,6 @@
-#' Title xxx
-#'
-#' @param Y xxx
-#' @param X  xxx
-#' @param nfolds xxx
-#'
-#' @return xxx
 #' @noRd
 cross_validate <- function(Y, X, nfolds) {
+  # this functions performs nfold cross validation.
   n <- NROW(X)
   Resample <- sample(n)
   sub_obs <- floor(n / nfolds)

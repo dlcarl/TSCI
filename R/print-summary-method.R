@@ -1,9 +1,3 @@
-#' Title
-#'
-#' @param x xxx
-#' @param ... xxx
-#'
-#' @return xxx
 #' @exportS3Method
 print.summary.tsci <- function(x, ...) {
 

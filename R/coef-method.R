@@ -1,9 +1,3 @@
-#' Title xxx
-#'
-#' @param object xxx
-#' @param ... xxx
-#'
-#' @return xxx
 #' @exportS3Method
 coef.tsci <- function(object,
                       ...) {

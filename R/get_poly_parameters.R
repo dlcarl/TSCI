@@ -1,10 +1,3 @@
-#' Title
-#'
-#' @param df_treatment xxx
-#' @param params_list xxx
-#' @param nfolds xxx
-#'
-#' @return xxx
 #' @noRd
 #' @importFrom stats lm coef
 get_poly_parameters <- function(df_treatment,
@@ -12,7 +5,7 @@ get_poly_parameters <- function(df_treatment,
                                 order_selection_method,
                                 gcv,
                                 nfolds) {
-
+  # this function is used to select the optimal order of the polynomials.
   # selects optimal order of the polynomials
   if (max(sapply(seq_len(length(params_list)), FUN = function(i) length(params_list[[i]]))) > 1) {
     if (order_selection_method == "backfitting") {

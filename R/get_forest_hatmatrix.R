@@ -1,30 +1,8 @@
-#' Title
-#'
-#' @param df_treatment_A1 a data frame containing the subset of observations used to get the hat matrix of the treatment model.
-#' @param df_treatment_A2 a data frame containing the subset of observations used to train the treatment model.
-#' @param params a list containing the hyperparameters of the boosting method.
-#'
-#' @return a list containing the following the following components: \tabular{ll}{
-#' \code{weight} \tab the hat matrix. \cr
-#' \tab \cr
-#' \code{forest_A2} \tab the fitted random forest model. \cr
-#' }
 #' @noRd
 #' @importFrom ranger ranger
 #' @importFrom stats predict
-#'
-#' @examples
-#' Z <- rnorm(100)
-#' X <- rnorm(100)
-#' D <- 2 * Z + X + rnorm(100)
-#' Data <- data.frame("D" = D, "Z" = Z, "X" = X)
-#' df_treatment_A1 <- Data[c(1:50), ]
-#' df_treatment_A2 <- Data[-c(1:50), ]
-#' params_forest <- list("num_trees" = 200, "mtry" = 1, "max_depth" = 0, "min_node_size" = 5)
-#' hat_matrix_forest <- get_forest_hatmatrix(df_treatment_A1 = df_treatment_A1, df_treatment_A2 = df_treatment_A2,
-#'   params = params_forest)
-#' mean((df_treatment_A1$D - hat_matrix_forest$weight %*% df_treatment_A1$D)^2)
 get_forest_hatmatrix <- function(df_treatment_A1, df_treatment_A2, params) {
+  # this function calculates the hat matrix of the treatment model for A1 using random forest.
   forest_A2 <- ranger(D ~ .,
                       data = df_treatment_A2,
                       num.trees = params$num_trees,

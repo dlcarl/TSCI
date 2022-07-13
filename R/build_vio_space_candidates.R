@@ -9,8 +9,10 @@
 #' @return A list containing:
 #' \describe{
 #'     \item{\code{vio_space}}{a \code{matrix} consisting of the columns of all violation space candidates.}
-#'     \item{\code{rm_ind}}{a \code{list} containing the indices of the violation space candidate.}
+#'     \item{\code{vio_ind}}{a \code{list} containing the indices of the violation space candidate.}
 #'     \item{\code{Q}}{the number of violation space candidates (including the null space).}
+#'     \item{\code{nested_sequence}}{logical. Indicates whether the sequence of violation space candidates is nested.}
+#' }
 #' @noRd
 #'
 #' @importFrom stats poly
