@@ -19,7 +19,5 @@ Imports:
     Rfast,
     stats,
     ranger,
-    Matrix,
     parallel,
-    MASS,
-    fda
+    MASS
