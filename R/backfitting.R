@@ -7,7 +7,7 @@ backfitting <- function(df,
                         nfolds) {
   # this function performs a backfitting approach to select the optimal order of the polynomials.
   Y <- df[, 1]
-  X <- df[, -1]
+  X <- df[, -1, drop = FALSE]
   n <- NROW(Y)
   p <- NCOL(X)
 

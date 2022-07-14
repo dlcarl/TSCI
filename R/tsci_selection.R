@@ -72,11 +72,11 @@ tsci_selection <- function(Y,
                            alpha) {
 
   if (intercept) {
-    W <- cbind(rep(1, NCOL(Y)), W)
-    W_A1 <- cbind(1, NCOL(Y_A1), W_A1)
+    W <- cbind(rep(1, NROW(Y)), W)
+    W_A1 <- cbind(rep(1, NROW(Y_A1)), W_A1)
   } else {
-    W <- cbind(rep(0, NCOL(Y)), W)
-    W_A1 <- cbind(0, NCOL(Y_A1), W_A1)
+    W <- cbind(rep(0, NROW(Y)), W)
+    W_A1 <- cbind(rep(0, NROW(Y_A1)), W_A1)
   }
 
   Cov_aug_A1 <- cbind(vio_space, W_A1)
@@ -109,7 +109,6 @@ tsci_selection <- function(Y,
   D_resid <- diag_M_list <- rep(list(NA), Q)
   for (index in seq_len(Q)) {
     if (index == 1) pos_VW <- pos_W else pos_VW <- c(vio_ind[[index - 1]], pos_W)
-
     reg_ml <- lm(Y_rep ~ D_rep + Cov_rep[, pos_VW] - 1)
     betaHat <- coef(reg_ml)[1]
     Coef_all[index] <- betaHat

@@ -26,7 +26,7 @@ tsci_secondstage_stats <- function(D_rep, Cov_rep, weight, eps_hat, delta_hat, s
   diag_M <- colSums(resid(lm(weight ~ Cov_rep))^2)
   trace_M <- sum(diag_M)
   D_rep2 <- weight %*% D_rep
-  D_resid <- resid(lm(D_rep ~ Cov_rep))
+  D_resid <- resid(lm(D_rep ~ Cov_rep - 1))
   D_RSS <- sum(D_resid^2)
   iv_str <- D_RSS / SigmaSqD
   # this is the numerator of the variance of betaHat

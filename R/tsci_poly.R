@@ -308,11 +308,10 @@ tsci_poly <- function(Y,
     vio_space <- create_monomials(Z = Z,
                                   degree = unlist(poly_CV$params)[seq_len(NCOL(Z))],
                                   type = "monomials_main")
-    create_nested_sequence = TRUE
+    create_nested_sequence <- TRUE
 
   }
-  list_vio_space <- build_vio_space_candidates(Z = Z,
-                                               vio_space = vio_space,
+  list_vio_space <- build_vio_space_candidates(vio_space = vio_space,
                                                create_nested_sequence = create_nested_sequence)
 
   if (!(list_vio_space$nested_sequence))

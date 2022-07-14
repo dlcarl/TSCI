@@ -1,6 +1,5 @@
 #' Builds violation space candidates.
 #'
-#' @param Z Z instrument variable with dimension n by 1.
 #' @param vio_space a \code{list} with vectors or matrices as elements.
 #' @param create_nested_sequence logical, if \code{TRUE} the sequence of violation spaces to test is build by starting with the empty space
 #' and obtaining the next larger violation space by iteratively adding the next
@@ -17,8 +16,7 @@
 #'
 #' @importFrom stats poly
 #'
-build_vio_space_candidates <- function(Z, vio_space, create_nested_sequence) {
-  n <- NROW(Z)
+build_vio_space_candidates <- function(vio_space, create_nested_sequence) {
   vio_space <- lapply(vio_space, as.matrix)
   Q <- length(vio_space) + 1
   # merge violation space candidates into one matrix and remove duplicated columns

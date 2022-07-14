@@ -57,8 +57,7 @@ tsci_multisplit <- function(df_treatment,
                             cl,
                             raw_output) {
   # if vio_space is a list, this function merges the list into a matrix and identifies the columns to include (resp. to exclude) for each violation space candidate.
-  list_vio_space <- build_vio_space_candidates(Z = Z,
-                                               vio_space = vio_space,
+  list_vio_space <- build_vio_space_candidates(vio_space = vio_space,
                                                create_nested_sequence = create_nested_sequence)
 
   if (!(list_vio_space$nested_sequence))

@@ -30,8 +30,7 @@ create_monomials <- function(Z, degree, type) {
   if (!is.numeric(degree))
     error_message <- paste(error_message, "degree is not numeric.", sep = "\n")
   if (!(type %in% c("monomials_main", "monomials_full")))
-    error_message <- paste(error_message, "No valid type
-                           selected. Choose either 'monomials_main' or 'monomials_full'.", sep = "\n")
+    error_message <- paste(error_message, "No valid type selected. Choose either 'monomials_main' or 'monomials_full'.", sep = "\n")
   if (length(degree) > 1 & length(degree) != NCOL(Z))
     error_message <- paste(error_message, "degree has invalid length.", sep = "\n")
 
