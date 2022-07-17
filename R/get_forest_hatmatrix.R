@@ -16,15 +16,10 @@ get_forest_hatmatrix <- function(df_treatment_A1, df_treatment_A2, params) {
   num_trees <- NCOL(leaves)
   forest_hatmatrix <- matrix(0, n_A1, n_A1)
   for (j in seq_len(num_trees)) {
-    tree_hatmatrix <- get_tree_hatmatrix(leaves = leaves[, j]) # weight matrix for single tree
-    if (params$self_predict == FALSE) {
-      diag(tree_hatmatrix) <- 0
-      tree_hatmatrix <-
-        apply(tree_hatmatrix, 1,
-              FUN = function(row_weights) {if (sum(row_weights) > 0) {
-                return(row_weights / sum(row_weights))} else {
-                  return(row_weights)}})
-    }
+    # weight matrix for single tree
+    tree_hatmatrix <- get_tree_hatmatrix(leaves = leaves[, j],
+                                         self_predict = params$self_predict)
+    # updating weight matrix of the tree
     forest_hatmatrix <- forest_hatmatrix + tree_hatmatrix / num_trees
   }
   return(list(

@@ -1,8 +1,8 @@
 test_that("violation space candidates are correct for 'monomials_main' for s = 1", {
-  set.seed(1)
   n <- 10
   s <- 1
-  Z <- matrix(rnorm(n * s), nrow = n, ncol = s)
+  df <- readRDS("df_create_monomials.rds")
+  Z <- matrix(df$Z[seq_len(n * s)], nrow = n, ncol = s)
   degree <- 3
   vio_space <- create_monomials(Z = Z, degre = degree, type = "monomials_main")
   expect_equal(vio_space[[1]], Z)
@@ -11,10 +11,10 @@ test_that("violation space candidates are correct for 'monomials_main' for s = 1
 })
 
 test_that("violation space candidates are correct for 'monomials_full' for s = 1", {
-  set.seed(1)
   n <- 10
   s <- 1
-  Z <- matrix(rnorm(n * s), nrow = n, ncol = s)
+  df <- readRDS("df_create_monomials.rds")
+  Z <- matrix(df$Z[seq_len(n * s)], nrow = n, ncol = s)
   degree <- 3
   vio_space <- create_monomials(Z = Z, degre = degree, type = "monomials_full")
   expect_equal(vio_space[[1]], Z)
@@ -23,10 +23,10 @@ test_that("violation space candidates are correct for 'monomials_full' for s = 1
 })
 
 test_that("violation space candidates are correct for 'monomials_main' for s > 1", {
-  set.seed(1)
   n <- 10
   s <- 3
-  Z <- matrix(rnorm(n * s), nrow = n, ncol = s)
+  df <- readRDS("df_create_monomials.rds")
+  Z <- matrix(df$Z[seq_len(n * s)], nrow = n, ncol = s)
   degree <- c(3, 1, 2)
   vio_space <- create_monomials(Z = Z, degre = degree, type = "monomials_main")
   expect_equal(vio_space[[1]], Z)
@@ -35,10 +35,10 @@ test_that("violation space candidates are correct for 'monomials_main' for s > 1
 })
 
 test_that("violation space candidates are correct for 'monomials_full' for s > 1", {
-  set.seed(1)
   n <- 10
   s <- 3
-  Z <- matrix(rnorm(n * s), nrow = n, ncol = s)
+  df <- readRDS("df_create_monomials.rds")
+  Z <- matrix(df$Z[seq_len(n * s)], nrow = n, ncol = s)
   degree <- c(3, 1, 2)
   vio_space <- create_monomials(Z = Z, degre = degree, type = "monomials_full")
   actual <- vio_space[[1]][, order(colMeans(vio_space[[1]]))]
