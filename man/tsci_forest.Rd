@@ -84,9 +84,9 @@ of each tree to zero to avoid self prediction and rescales the off-diagonal elem
 
 \item{nsplits}{number of times the data will be split. Has to be an integer larger or equal 1.}
 
-\item{mult_split_method}{method to calculate the standard errors and p-values
-and to construct the confidence intervals if multi-splitting is performed.
-Either 'DML' or 'FWER'. See Details.}
+\item{mult_split_method}{method to calculate the standard errors and p-values.
+and to construct the confidence intervals if multi-splitting is performed. Default is "FWER" if \code{nsplits} > 1 and
+"DML" otherwise. See Details.}
 
 \item{parallel}{One out of \code{"no"}, \code{"multicore"}, or \code{"snow"} specifying the parallelization method used.}
 
@@ -95,7 +95,8 @@ Either 'DML' or 'FWER'. See Details.}
 \item{cl}{either an parallel or snow cluster or \code{NULL}.}
 
 \item{raw_output}{logical. If \code{TRUE} the coefficient and standard error estimates of each split will be returned.
-This is only needed if \code{mult_split_method} equals "FWER" and the function \code{confint} will be used.}
+This is only needed if \code{mult_split_method} equals "FWER" and the function \code{confint} will be used. Default is
+\code{TRUE} if \code{mult_split_method} is \code{TRUE} and \code{FALSE} otherwise.}
 }
 \value{
 A list containing the following elements:

@@ -173,7 +173,7 @@ tsci_poly <- function(Y,
                       min_order = 1,
                       max_order = 10,
                       exact_order = NULL,
-                      order_selection_method = "backfitting",
+                      order_selection_method = c("backfitting", "grid search"),
                       max_iter = 100,
                       conv_tol = 10^-6,
                       gcv = T,
@@ -181,94 +181,34 @@ tsci_poly <- function(Y,
                       str_thol = 10,
                       alpha = 0.05) {
 
-  # check that input is in the correct format
-  error_message <- NULL
-  if (!is.numeric(Y))
-    error_message <- paste(error_message, "Y is not numeric.", sep = "\n")
-  if (!is.numeric(D))
-    error_message <- paste(error_message, "D is not numeric.", sep = "\n")
-  if (!is.numeric(Z))
-    error_message <- paste(error_message, "Z is not numeric.", sep = "\n")
-  if (!is.numeric(X) & !is.null(X))
-    error_message <- paste(error_message, "X is not numeric.", sep = "\n")
-  if (!is.numeric(W) & !is.null(W))
-    error_message <- paste(error_message, "W is not numeric.", sep = "\n")
-  if (!is.numeric(min_order) & !is.null(min_order))
-    error_message <- paste(error_message, "min_order is not numeric.", sep = "\n")
-  if (!is.numeric(max_order) & !is.null(max_order))
-    error_message <- paste(error_message, "max_order is not numeric.", sep = "\n")
-  if (!is.numeric(exact_order) & !is.null(exact_order))
-    error_message <- paste(error_message, "exact_order is not numeric.", sep = "\n")
-  if (!is.logical(gcv))
-    error_message <- paste(error_message, "gcv is neither TRUE nor FALSE.", sep = "\n")
-  if (!is.logical(intercept))
-    error_message <- paste(error_message, "intercept is neither TRUE nor FALSE.", sep = "\n")
-  if (!is.list(vio_space) & !is.null(vio_space)) {
-    error_message <- paste(error_message, "vio_space is neither NULL nor a list", sep = "\n")
-  } else if (is.list(vio_space)) {
-    if (!is.numeric(unlist(vio_space)))
-      error_message <- paste(error_message, "vio_space is not numeric", sep = "\n")
-  }
-  if (!is.logical(create_nested_sequence))
-    error_message <- paste(error_message, "create_nested_sequence is neither TRUE nor FALSE.", sep = "\n")
-
-  if (!is.null(error_message))
-    stop(error_message)
-
-  # check if inputs are possible
-  p <- NCOL(Z) + ifelse(is.null(X), 0, NCOL(X))
-  if (length(unique(sapply(list(Y, D, Z), FUN = function(variable) NROW(variable)))) > 1)
-    error_message <- paste(error_message, "Y, D and Z have not the same amount of observations.", sep = "\n")
-  else {
-    n <- NROW(Y)
-    if (!is.null(X))
-      if(NROW(X) != n)
-        error_message <- paste(error_message, "X has not the same amount of observations as Y.", sep = "\n")
-    if (!is.null(W))
-      if(NROW(W) != n)
-        error_message <- paste(error_message, "W has not the same amount of observations as Y.", sep = "\n")
-    if (is.list(vio_space))
-      if (length(unique(sapply(vio_space, FUN = function(variable) NROW(variable)))) > 1)
-        error_message <- paste(error_message, "vio_space has not the same amount of observations as Y.", sep = "\n")
-  }
-  if (any(is.na(Y)))
-    error_message <- paste(error_message, "There are NA's in Y.", sep = "\n")
-  if (any(is.na(D)))
-    error_message <- paste(error_message, "There are NA's in D.", sep = "\n")
-  if (any(is.na(Z)))
-    error_message <- paste(error_message, "There are NA's in Z.", sep = "\n")
-  if (!is.null(X))
-    if(any(is.na(X)))
-      error_message <- paste(error_message, "There are NA's in X.", sep = "\n")
-  if (!is.null(W))
-    if(any(is.na(W)))
-      error_message <- paste(error_message, "There are NA's in W.", sep = "\n")
-  if (is.list(vio_space))
-    if(any(is.na(unlist(vio_space))))
-      error_message <- paste(error_message, "There are NA's in vio_space.", sep = "\n")
-  if (alpha > 1)
-    error_message <- paste(error_message, "alpha cannot be larger than 1.", sep = "\n")
-  if (is.null(exact_order) & (is.null(min_order) | is.null(max_order)))
-    error_message <- paste(error_message, "Either exact_order or min_order and max_order must be specified.", sep = "\n")
-  if (length(max_order) != length(min_order))
-    error_message <- paste(error_message, "min_order and max_order must be of same length.", sep = "\n")
-  if (length(max_order) > 1 & length(max_order) != NCOL(Z))
-    error_message <- paste(error_message, "min_order and max_order have invalid length.", sep = "\n")
-  if (!is.null(min_order) & any(min_order < 1))
-    error_message <- paste(error_message, "Values in min_order cannot be smaller than 1.", sep = "\n")
-  if (!is.null(max_order) & any(max_order < min_order))
-    error_message <- paste(error_message, "Values in max_order cannot be smaller than values in min_order.", sep = "\n")
-  if (!(order_selection_method %in% c("backfitting", "grid search")))
-    error_message <- paste(error_message, "No valid order selection method
-                           selected. Choose either 'backfitting' or 'grid search'.", sep = "\n")
-  if (!is.null(error_message))
-    stop(error_message)
+  # checks that input is in the correct format
+  check_input(Y = Y,
+              D = D,
+              Z = Z,
+              X = X,
+              W = W,
+              vio_space = vio_space,
+              create_nested_sequence = create_nested_sequence,
+              intercept = intercept,
+              min_order = min_order,
+              max_order = max_order,
+              exact_order = exact_order,
+              max_iter = max_iter,
+              conv_tol = conv_tol,
+              gcv = gcv,
+              nfolds = nfolds,
+              str_thol = str_thol,
+              alpha = alpha,
+              tsci_method = "poly")
+  order_selection_method <- match.arg(order_selection_method)
 
 
   Y = as.matrix(Y); D = as.matrix(D); Z = as.matrix(Z)
   if (!is.null(X)) X <- as.matrix(X)
   if (!is.null(W)) W <- as.matrix(W)
 
+  n <- NROW(Y)
+  p <- NCOL(Z) + ifelse(is.null(X), 0, NCOL(X))
 
   # grid search
   if (is.null(exact_order)) {

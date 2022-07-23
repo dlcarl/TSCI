@@ -16,7 +16,7 @@ tsci_poly(
   min_order = 1,
   max_order = 10,
   exact_order = NULL,
-  order_selection_method = "backfitting",
+  order_selection_method = c("backfitting", "grid search"),
   max_iter = 100,
   conv_tol = 10^-6,
   gcv = T,

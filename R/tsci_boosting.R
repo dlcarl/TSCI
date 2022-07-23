@@ -46,13 +46,14 @@
 #' @param alpha the significance level.
 #' @param nsplits number of times the data will be split. Has to be an integer larger or equal 1.
 #' @param mult_split_method method to calculate the standard errors and p-values.
-#' and to construct the confidence intervals if multi-splitting is performed.
-#' Either 'DML' or 'FWER'. See Details.
+#' and to construct the confidence intervals if multi-splitting is performed. Default is "FWER" if \code{nsplits} > 1 and
+#' "DML" otherwise. See Details.
 #' @param parallel One out of \code{"no"}, \code{"multicore"}, or \code{"snow"} specifying the parallelization method used.
 #' @param ncores the number of cores to use.
 #' @param cl either an parallel or snow cluster or \code{NULL}.
 #' @param raw_output logical. If \code{TRUE} the coefficient and standard error estimates of each split will be returned.
-#' This is only needed if \code{mult_split_method} equals "FWER" and the function \code{confint} will be used.
+#' This is only needed if \code{mult_split_method} equals "FWER" and the function \code{confint} will be used. Default is
+#' \code{TRUE} if \code{mult_split_method} is \code{TRUE} and \code{FALSE} otherwise.
 #'
 #' @return
 #' A list containing the following elements:
@@ -219,130 +220,51 @@ tsci_boosting <- function(Y,
                           alpha = 0.05,
                           parallel = "no",
                           nsplits = 10,
-                          mult_split_method = ifelse(nsplits > 1, "FWER", "DML"),
+                          mult_split_method = c("FWER", "DML"),
                           ncores = 1,
                           cl = NULL,
-                          raw_output = ifelse(mult_split_method == "FWER", TRUE, FALSE)) {
+                          raw_output = NULL) {
 
   # checks that input is in the correct format
-  error_message <- NULL
-  if (!is.numeric(Y))
-    error_message <- paste(error_message, "Y is not numeric.", sep = "\n")
-  if (!is.numeric(D))
-    error_message <- paste(error_message, "D is not numeric.", sep = "\n")
-  if (!is.numeric(Z))
-    error_message <- paste(error_message, "Z is not numeric.", sep = "\n")
-  if (!is.numeric(X) & !is.null(X))
-    error_message <- paste(error_message, "X is not numeric.", sep = "\n")
-  if (!is.numeric(W) & !is.null(W))
-    error_message <- paste(error_message, "W is not numeric.", sep = "\n")
-  if (!is.logical(intercept))
-    error_message <- paste(error_message, "intercept is neither TRUE nor FALSE.", sep = "\n")
-  if (!is.list(vio_space)) {
-    error_message <- paste(error_message, "vio_space is not a list", sep = "\n")
-  } else {
-    if (!is.numeric(unlist(vio_space)))
-      error_message <- paste(error_message, "vio_space is not numeric", sep = "\n")
+  check_input(Y = Y,
+              D = D,
+              Z = Z,
+              X = X,
+              W = W,
+              vio_space = vio_space,
+              create_nested_sequence = create_nested_sequence,
+              intercept = intercept,
+              split_prop = split_prop,
+              nrounds = nrounds,
+              eta = eta,
+              max_depth = max_depth,
+              subsample = subsample,
+              colsample_bytree = colsample_bytree,
+              early_stopping = early_stopping,
+              nfolds = nfolds,
+              str_thol = str_thol,
+              alpha = alpha,
+              parallel = parallel,
+              nsplits = nsplits,
+              ncores = ncores,
+              cl = cl,
+              raw_output = raw_output,
+              tsci_method = "boosting")
+  if (missing(mult_split_method)) {
+    mult_split_method <- ifelse(nsplits > 1, "FWER", "DML")
   }
-  if (!is.numeric(split_prop))
-    error_message <- paste(error_message, "split_prop is not numeric.", sep = "\n")
-  if (!is.numeric(nrounds))
-    error_message <- paste(error_message, "nrounds is not numeric.", sep = "\n")
-  if (!is.numeric(eta))
-    error_message <- paste(error_message, "eta is not numeric.", sep = "\n")
-  if (!is.numeric(max_depth))
-    error_message <- paste(error_message, "max_depth is not numeric.", sep = "\n")
-  if (!is.numeric(subsample))
-    error_message <- paste(error_message, "subsample is not numeric.", sep = "\n")
-  if (!is.numeric(colsample_bytree))
-    error_message <- paste(error_message, "colsample_bytree is not numeric.", sep = "\n")
-  if (!is.logical(early_stopping))
-    error_message <- paste(error_message, "early_stopping is neither TRUE nor FALSE", sep = "\n")
-  if (!is.numeric(nfolds))
-    error_message <- paste(error_message, "nfolds is not numeric.", sep = "\n")
-  if (!is.numeric(str_thol))
-    error_message <- paste(error_message, "str_thol is not numeric.", sep = "\n")
-  if (!is.numeric(alpha))
-    error_message <- paste(error_message, "alpha is not numeric.", sep = "\n")
-  if (!is.character(mult_split_method))
-    error_message <- paste(error_message, "mult_split_method is not character.", sep = "\n")
-  if (!is.numeric(nsplits))
-    error_message <- paste(error_message, "nsplits is not numeric.", sep = "\n")
-  if (!is.character(parallel))
-    error_message <- paste(error_message, "parallel is not character.", sep = "\n")
-  if (!is.numeric(ncores))
-    error_message <- paste(error_message, "ncores is not numeric.", sep = "\n")
-  if (!is.logical(raw_output))
-    error_message <- paste(error_message, "raw_output is neither TRUE nor FALSE", sep = "\n")
-  if (!is.logical(create_nested_sequence))
-    error_message <- paste(error_message, "create_nested_sequence is neither TRUE nor FALSE.", sep = "\n")
-
-  if (!is.null(error_message))
-    stop(error_message)
-
-  # checks if inputs are possible
-  p <- NCOL(Z) + ifelse(is.null(X), 0, NCOL(X))
-  if (length(unique(sapply(list(Y, D, Z), FUN = function(variable) NROW(variable)))) > 1)
-    error_message <- paste(error_message, "Y, D and Z have not the same amount of observations.", sep = "\n")
-  else {
-    n <- NROW(Y)
-    if (!is.null(X))
-      if(NROW(X) != n)
-        error_message <- paste(error_message, "X has not the same amount of observations as Y.", sep = "\n")
-    if (!is.null(W))
-      if(NROW(W) != n)
-        error_message <- paste(error_message, "W has not the same amount of observations as Y.", sep = "\n")
-    if (length(unique(sapply(vio_space, FUN = function(variable) NROW(variable)))) > 1)
-      error_message <- paste(error_message, "vio_space has not the same amount of observations as Y.", sep = "\n")
+  mult_split_method <- match.arg(mult_split_method)
+  if (is.null(raw_output)) {
+    raw_output <- ifelse(mult_split_method == "FWER", TRUE, FALSE)
   }
-  if (any(is.na(Y)))
-    error_message <- paste(error_message, "There are NA's in Y.", sep = "\n")
-  if (any(is.na(D)))
-    error_message <- paste(error_message, "There are NA's in D.", sep = "\n")
-  if (any(is.na(Z)))
-    error_message <- paste(error_message, "There are NA's in Z.", sep = "\n")
-  if (!is.null(X))
-    if(any(is.na(X)))
-      error_message <- paste(error_message, "There are NA's in X.", sep = "\n")
-  if (!is.null(W))
-    if(any(is.na(W)))
-      error_message <- paste(error_message, "There are NA's in W.", sep = "\n")
-  if(any(is.na(unlist(vio_space))))
-    error_message <- paste(error_message, "There are NA's in vio_space.", sep = "\n")
-  if (split_prop <= 0 | split_prop >= 1)
-    error_message <- paste(error_message, "split_prop is not in (0, 1).", sep = "\n")
-  if (any(nrounds < 0))
-    error_message <- paste(error_message, "num_trees cannot be negative.", sep = "\n")
-  if (any(eta < 0))
-    error_message <- paste(error_message, "eta cannot be negative.", sep = "\n")
-  if (any(max_depth < 0))
-    error_message <- paste(error_message, "max_depth cannot be negative.", sep = "\n")
-  if (any(subsample < 0) | any(subsample > 1))
-    error_message <- paste(error_message, "subsample is not in [0, 1].", sep = "\n")
-  if (any(colsample_bytree < 0) | any(colsample_bytree > 1))
-    error_message <- paste(error_message, "colsample_bytree is not in [0, 1].", sep = "\n")
-  if (any(nfolds < 0))
-    error_message <- paste(error_message, "nfolds cannot be negative.", sep = "\n")
-  if (alpha > 1)
-    error_message <- paste(error_message, "alpha cannot be larger than 1.", sep = "\n")
-  if (!(mult_split_method %in% c("FWER", "DML")))
-    error_message <- paste(error_message, "No valid multi-splitting inference method
-                           selected. Choose either 'DML' or 'FWER'.", sep = "\n")
-  if (nsplits < 1)
-    error_message <- paste(error_message, "nsplits cannot be smaller than 1.", sep = "\n")
-  if (!(parallel %in% c("no", "multicore", "snow")))
-    error_message <- paste(error_message, "No valid parallelization method
-                           selected. Choose either 'no', 'multicore' or 'snow'.", sep = "\n")
-  if (ncores < 1)
-    error_message <- paste(error_message, "ncores cannot be smaller than 1.", sep = "\n")
-
-  if (!is.null(error_message))
-    stop(error_message)
 
   # stores variables as matrices as matrix multiplications will be performed later
   Y = as.matrix(Y); D = as.matrix(D); Z = as.matrix(Z)
   if (!is.null(X)) X <- as.matrix(X)
   if (!is.null(W)) W <- as.matrix(W)
+
+  n <- NROW(Y)
+  p <- NCOL(Z) + ifelse(is.null(X), 0, NCOL(X))
 
   # initializes parallelization setup
   do_parallel <- parallelization_setup(parallel = parallel, ncpus = ncores, cl = cl)

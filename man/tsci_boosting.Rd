@@ -25,10 +25,10 @@ tsci_boosting(
   alpha = 0.05,
   parallel = "no",
   nsplits = 10,
-  mult_split_method = ifelse(nsplits > 1, "FWER", "DML"),
+  mult_split_method = c("FWER", "DML"),
   ncores = 1,
   cl = NULL,
-  raw_output = ifelse(mult_split_method == "FWER", TRUE, FALSE)
+  raw_output = NULL
 )
 }
 \arguments{
@@ -93,15 +93,16 @@ choose the optimal number of boosting iteration using the cross-validation mean 
 \item{nsplits}{number of times the data will be split. Has to be an integer larger or equal 1.}
 
 \item{mult_split_method}{method to calculate the standard errors and p-values.
-and to construct the confidence intervals if multi-splitting is performed.
-Either 'DML' or 'FWER'. See Details.}
+and to construct the confidence intervals if multi-splitting is performed. Default is "FWER" if \code{nsplits} > 1 and
+"DML" otherwise. See Details.}
 
 \item{ncores}{the number of cores to use.}
 
 \item{cl}{either an parallel or snow cluster or \code{NULL}.}
 
 \item{raw_output}{logical. If \code{TRUE} the coefficient and standard error estimates of each split will be returned.
-This is only needed if \code{mult_split_method} equals "FWER" and the function \code{confint} will be used.}
+This is only needed if \code{mult_split_method} equals "FWER" and the function \code{confint} will be used. Default is
+\code{TRUE} if \code{mult_split_method} is \code{TRUE} and \code{FALSE} otherwise.}
 }
 \value{
 A list containing the following elements:
