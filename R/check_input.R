@@ -19,16 +19,20 @@ check_input <- function(Y,
   error_message <- NULL
 
   # input parameters shared by all tsci functions (except for X in tsci_secondstage)
-  if (!is.numeric(Y))
+  if (!is.numeric(as.matrix(Y)))
     error_message <- paste(error_message, "Y is not numeric.", sep = "\n")
-  if (!is.numeric(D))
+  if (!is.numeric(as.matrix(D)))
     error_message <- paste(error_message, "D is not numeric.", sep = "\n")
-  if (!is.numeric(Z))
+  if (!is.numeric(as.matrix(Z)))
     error_message <- paste(error_message, "Z is not numeric.", sep = "\n")
-  if (!is.numeric(X) & !is.null(X))
-    error_message <- paste(error_message, "X is not numeric.", sep = "\n")
-  if (!is.numeric(W) & !is.null(W))
-    error_message <- paste(error_message, "W is not numeric.", sep = "\n")
+  if (!is.null(X)) {
+    if (!is.numeric(X))
+      error_message <- paste(error_message, "X is not numeric.", sep = "\n")
+  }
+  if (!is.null(W)) {
+    if (!is.numeric(W))
+      error_message <- paste(error_message, "W is not numeric.", sep = "\n")
+  }
   if (is.null(vio_space) & tsci_method != "poly") {
     error_message <- paste(error_message, "vio_space must be provided", sep = "\n")
   } else {
