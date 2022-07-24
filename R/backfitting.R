@@ -5,7 +5,8 @@ backfitting <- function(df,
                         conv_tol,
                         gcv,
                         nfolds) {
-  # this function performs a backfitting approach to select the optimal order of the polynomials.
+  # this function performs a backfitting approach (as used in generalized additive models)
+  # to select the optimal order of the polynomials.
   Y <- df[, 1]
   X <- df[, -1, drop = FALSE]
   n <- NROW(Y)
@@ -22,6 +23,8 @@ backfitting <- function(df,
       order_j <- params_list[[j]]
       for (i in seq_len(length(order_j))) {
         A_j <- poly(X[, j], degree = order_j[i])
+        # either uses the generalized cross validation or k-fold cross validation to choose the
+        # best fitting order of the polynomial for each variable
         if (gcv) {
           fit <- lm(U_j ~ A_j - 1)
           mse_cv <- mean((U_j - fit$fitted.values)^2) / (1 - NCOL(A_j) / NROW(A_j))^2

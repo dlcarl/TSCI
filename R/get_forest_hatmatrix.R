@@ -13,14 +13,13 @@ get_forest_hatmatrix <- function(df_treatment_A1, df_treatment_A2, params) {
   )
   leaves <- predict(forest_A2, data = df_treatment_A1, type = "terminalNodes")$predictions
   n_A1 <- NROW(leaves)
-  num_trees <- NCOL(leaves)
   forest_hatmatrix <- matrix(0, n_A1, n_A1)
-  for (j in seq_len(num_trees)) {
+  for (j in seq_len(params$num_trees)) {
     # weight matrix for single tree
     tree_hatmatrix <- get_tree_hatmatrix(leaves = leaves[, j],
                                          self_predict = params$self_predict)
     # updating weight matrix of the tree
-    forest_hatmatrix <- forest_hatmatrix + tree_hatmatrix / num_trees
+    forest_hatmatrix <- forest_hatmatrix + tree_hatmatrix / params$num_trees
   }
   return(list(
     "weight" = forest_hatmatrix,

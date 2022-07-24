@@ -14,6 +14,7 @@
 #' @param alpha the significance level, default by 0.05.
 #' @param params a list containing the hyperparameters of the treatment model fitting method.
 #' @param function_hatmatrix a function to get the hat matrix of the treatment model.
+#' @param B number of bootstrap samples.
 #'
 #' @return The output of \code{tsci_selection}
 #'
@@ -30,7 +31,8 @@ tsci_fit <- function(df_treatment,
                      split_prop,
                      alpha,
                      params,
-                     function_hatmatrix) {
+                     function_hatmatrix,
+                     B = B) {
 
   # split data
   n <- NROW(df_treatment)
@@ -38,8 +40,6 @@ tsci_fit <- function(df_treatment,
   A1_ind <- sample(seq_len(n), n_A1)
   df_treatment_A1 <- df_treatment[A1_ind, ]
   df_treatment_A2 <- df_treatment[-A1_ind, ]
-  n <- length(Y)
-  n_A1 <- length(A1_ind)
 
   # fit treatment model and get hat matrix.
   model_treatment <- function_hatmatrix(
@@ -75,7 +75,8 @@ tsci_fit <- function(df_treatment,
     weight = model_treatment$weight,
     intercept = intercept,
     str_thol = str_thol,
-    alpha = alpha
+    alpha = alpha,
+    B = B
   )
 
   return(outputs)

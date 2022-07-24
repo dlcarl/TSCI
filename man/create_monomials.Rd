@@ -4,7 +4,7 @@
 \alias{create_monomials}
 \title{Monomials as Violation Space Candidates}
 \usage{
-create_monomials(Z, degree, type)
+create_monomials(Z, degree, type = c("monomials_main", "monomials_full"))
 }
 \arguments{
 \item{Z}{observations of the instrumental variable(s). Either a numeric vector of length n
@@ -14,7 +14,8 @@ or a numeric matrix with dimension n by s.}
 
 \item{type}{One out of \code{monomials_main} or \code{monomials_full}. \cr
 \code{monomials_main} creates the monomials for the polynomials of each instrumental variable up to degree \code{degree}. \cr
-\code{monomials_full} creates the monomials for the polynomials of a combination of all instrumental variables up to degree \code{degree}.}
+\code{monomials_full} creates the monomials for the polynomials of a combination of all instrumental variables up to degree \code{degree}. \cr
+Default is \code{monomials_full}.}
 }
 \value{
 A ordered list. Each element is a matrix consisting of the monomials to be added to

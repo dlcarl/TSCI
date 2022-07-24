@@ -20,6 +20,7 @@
 #' @param ncores numeric, the number of cores used if multi_splitting is \code{TRUE}. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.
 #' @param mult_split_method method to for inference if multi-splitting is performed. Either 'DML' or 'FWER'.
 #' @param cl Either an parallel or snow cluster or \code{NULL}.
+#' @param B number of bootstrap samples
 #'
 #' @return
 #'     \item{\code{Coef_all}}{the median over the multiple data splits of a series of point estimators of treatment effect corresponding to different violation spaces and the OLS}
@@ -55,11 +56,17 @@ tsci_multisplit <- function(df_treatment,
                             ncores,
                             mult_split_method,
                             cl,
-                            raw_output) {
-  # if vio_space is a list, this function merges the list into a matrix and identifies the columns to include (resp. to exclude) for each violation space candidate.
+                            raw_output,
+                            B = B) {
+  # merges the list vio_space into a matrix and identifies the columns to include
+  # for each violation space candidate.
   list_vio_space <- build_vio_space_candidates(vio_space = vio_space,
                                                create_nested_sequence = create_nested_sequence)
 
+  # if two violation space candidates lead to significant different estimates of
+  # the treatment effect the algorithm will select the violation space candidate
+  # that is further down the list. However, if the violation space candidates are not nested
+  # it is not clear which of the candidates covers the violation better.
   if (!(list_vio_space$nested_sequence))
     warning("Sequence of violation space candidates is not nested. Results might be nonsensical.")
 
@@ -78,6 +85,7 @@ tsci_multisplit <- function(df_treatment,
     params
     function_hatmatrix
     ncores
+    B
     function(colnames.cluster) {
       tryCatch_WEM(tsci_fit(
         df_treatment = df_treatment,
@@ -91,11 +99,12 @@ tsci_multisplit <- function(df_treatment,
         split_prop = split_prop,
         alpha = alpha,
         params = params,
-        function_hatmatrix = function_hatmatrix
+        function_hatmatrix = function_hatmatrix,
+        B = B
       ), tsci_fit_NA_return(Q = list_vio_space$Q))}
   })
 
-  # Perfroms calculations for each data split, check outputs for NAs and depending on the number of NAs performs a second round of data splits.
+  # Performs calculations for each data split, check outputs for NAs and depending on the number of NAs performs a second round of data splits.
   if (do_parallel) {
     if (parallel == "multicore") {
       list_outputs <- parallel::mclapply(seq_len(nsplits), tsci_parallel, mc.cores = ncores)
@@ -114,11 +123,15 @@ tsci_multisplit <- function(df_treatment,
 
   check_list_outputs <- check_output(list_outputs = list_outputs, ind_start = 1)
 
+  # if in more than 25% of the data splits the output statistics could not be calculated,
+  # then an error is raised as there might be something systematically wrong.
   if (check_list_outputs$prop_na > 0.25) {
     stop(paste0("In more then 25% of the sample splits the output statistics could not be calculated.",
                check_list_outputs$error_string), call. = FALSE)
   }
 
+  # if in less than 25% but at least in one data splits the output statistics could not be calculated,
+  # perfrom another set of 0.5 * nsplits data splits.
   if (check_list_outputs$prop_na > 0) {
     nsplits_new <- ceiling(nsplits * 0.5)
     if (do_parallel) {

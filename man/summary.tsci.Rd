@@ -4,7 +4,7 @@
 \alias{summary.tsci}
 \title{Summarizing Two Stage Curvature Identification Fits}
 \usage{
-\method{summary}{tsci}(object, ...)
+\method{summary}{tsci}(object, extended_output = FALSE, ...)
 }
 \arguments{
 \item{object}{a object of class 'tsci'.}

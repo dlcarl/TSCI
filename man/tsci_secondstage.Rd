@@ -15,7 +15,8 @@ tsci_secondstage(
   A1_ind = NULL,
   intercept = TRUE,
   str_thol = 10,
-  alpha = 0.05
+  alpha = 0.05,
+  B = 300
 )
 }
 \arguments{
@@ -52,6 +53,9 @@ If \code{NULL} all observations will be used.}
 \item{str_thol}{minimal value of the threshold of IV strength test.}
 
 \item{alpha}{the significance level.}
+
+\item{B}{number of bootstrap samples.
+Bootstrap methods are used to calculate the iv strength threshold and in the violation space selection.}
 }
 \value{
 A list containing the following elements:
@@ -59,14 +63,14 @@ A list containing the following elements:
 \item{\code{Coef_all}}{a series of point estimates of the treatment effect
 for the different violation space candidates and the OLS estimate.}
 \item{\code{sd_all}}{standard errors of Coef_all.}
-\item{\code{pvall_all}}{p-values of the treatment effect estimates for the
+\item{\code{pval_all}}{p-values of the treatment effect estimates for the
 different violation space candidates and for the OLS estimate.}
 \item{\code{CI_all}}{confidence intervals for the treatment effect for the
 different violation space candidates and for the OLS estimate.}
 \item{\code{Coef_robust}}{the point estimators of the treatment effect for
 the selected violation spaces.}
 \item{\code{sd_robust}}{the standard errors of Coef_robust.}
-\item{\code{pvall_all}}{p-values of the treatment effect estimates for the
+\item{\code{pval_robust}}{p-values of the treatment effect estimates for the
 selected violation spaces.}
 \item{\code{CI_robust}}{confidence intervals for the treatment effect for
 the selected violation spaces.}
@@ -101,15 +105,15 @@ selected violation space will be returned amongst other relevant statistics.
 }
 \details{
 The treatment and outcome models are assumed to be of the following forms:
-\deqn{D_i = g(Z_i, X_i) + \delta_i}
-\deqn{Y_i = \beta * D_i + h(Z_i, X_i) + \epsilon_i}
-where \eqn{g(Z_i, X_i)} is assumed to be estimated by the user and
-\eqn{h(Z_i X_i)} is approximated using the violation space candidates and by
+\deqn{D_i = f(Z_i, X_i) + \delta_i}
+\deqn{Y_i = \beta * D_i + g(Z_i, X_i) + \epsilon_i}
+where \eqn{f(Z_i, X_i)} is assumed to be estimated by the user and
+\eqn{g(Z_i X_i)} is approximated using the violation space candidates and by
 a linear combination of the columns in \code{W}. The errors are allowed to be heteroscedastic.
 \eqn{A1} is used to fit the outcome model. \cr \cr
 The violation space candidates should be in a nested sequence as otherwise nonsensical results can occur.
 The specification of suitable violation space candidates is a crucial step
-because a poor approximation of \eqn{h(Z_i, X_i)} might not address the bias
+because a poor approximation of \eqn{g(Z_i, X_i)} might not address the bias
 caused by the violation of the IV assumption sufficiently.
 The function \code{\link[TSML]{create_monomials}} can be used to create such a nested sequence for a
 predefined type of violation space candidates (monomials). \cr \cr

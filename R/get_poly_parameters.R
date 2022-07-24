@@ -30,7 +30,7 @@ get_poly_parameters <- function(df_treatment,
     optimal_order <- unlist(params_list)
   }
 
-  # performs k-fold CV for the chosen order of polynomials to get an out-of-sample MSE.
+  # performs k-fold CV for the chosen order of polynomials to get an out-of-sample MSE
   A <- matrix(1, nrow = NROW(df_treatment))
   for (j in seq_len(length(optimal_order))) {
     A <- cbind(A, poly(df_treatment[, j + 1], degree = optimal_order[j]))

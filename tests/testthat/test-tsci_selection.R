@@ -23,7 +23,8 @@ test_that("correct output for valid input", {
                            weight = weight,
                            intercept = FALSE,
                            str_thol = 10,
-                           alpha = 0.05)
+                           alpha = 0.05,
+                           B = 300)
   expect_lt(abs(output$Coef_robust[1] - fit$coefficients[1]), 0.1)
   expect_lt(abs(output$Coef_robust[2] - fit$coefficients[1]), 0.1)
   expect_lt(mean(abs(output$CI_robust[, 1] - confint(fit, parm = "mu_D"))), 0.1)

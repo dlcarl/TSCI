@@ -8,6 +8,8 @@
 #' @noRd
 #' @importFrom stats qnorm quantile
 get_DML_CI <- function(Coef, SE, level) {
+  # this functions returns the standard error, confidence interval and p-value
+  # applying the method introduced in introduced in Chernozhukov et al. (2018)
   alpha <- 1 - level
   Coef_med <- quantile(Coef, probs = 0.5)
   se <- quantile(sqrt(SE^2 + (Coef - Coef_med)^2), probs = 0.5)

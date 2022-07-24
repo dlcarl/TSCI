@@ -9,6 +9,7 @@ check_input <- function(Y,
                         intercept,
                         str_thol,
                         alpha,
+                        B,
                         tsci_method,
                         ...
                         ) {
@@ -51,6 +52,8 @@ check_input <- function(Y,
     error_message <- paste(error_message, "str_thol is not numeric.", sep = "\n")
   if (!is.numeric(alpha))
     error_message <- paste(error_message, "alpha is not numeric.", sep = "\n")
+  if (!is.numeric(B))
+    error_message <- paste(error_message, "B is not numeric.", sep = "\n")
 
   # input parameters of tsci_forest
   if (tsci_method == "random forest")

@@ -22,7 +22,8 @@ tsci_poly(
   gcv = T,
   nfolds = 5,
   str_thol = 10,
-  alpha = 0.05
+  alpha = 0.05,
+  B = 300
 )
 }
 \arguments{
@@ -86,6 +87,9 @@ If \code{FALSE} k-fold cross validation is used instead.}
 \item{str_thol}{minimal value of the threshold of IV strength test.}
 
 \item{alpha}{the significance level.}
+
+\item{B}{number of bootstrap samples.
+Bootstrap methods are used to calculate the iv strength threshold and in the violation space selection.}
 }
 \value{
 A list containing the following elements:
@@ -93,14 +97,14 @@ A list containing the following elements:
 \item{\code{Coef_all}}{a series of point estimates of the treatment effect
 for the different violation space candidates and the OLS estimate.}
 \item{\code{sd_all}}{standard errors of Coef_all.}
-\item{\code{pvall_all}}{p-values of the treatment effect estimates for the
+\item{\code{pval_all}}{p-values of the treatment effect estimates for the
 different violation space candidates and for the OLS estimate.}
 \item{\code{CI_all}}{confidence intervals for the treatment effect for the
 different violation space candidates and for the OLS estimate.}
 \item{\code{Coef_robust}}{the point estimators of the treatment effect for
 the selected violation spaces.}
 \item{\code{sd_robust}}{the standard errors of Coef_robust.}
-\item{\code{pvall_all}}{p-values of the treatment effect estimates for the
+\item{\code{pval_robust}}{p-values of the treatment effect estimates for the
 selected violation spaces.}
 \item{\code{CI_robust}}{confidence intervals for the treatment effect for
 the selected violation spaces.}
@@ -135,11 +139,11 @@ selected violation space will be returned amongst other relevant statistics.
 }
 \details{
 The treatment and outcome models are assumed to be of the following forms:
-\deqn{D_i = g(Z_i, X_i) + \delta_i}
-\deqn{Y_i = \beta * D_i + h(Z_i, X_i) + \epsilon_i}
-where \eqn{g(Z_i, X_i)} is estimated using a polynomial basis expansion of the instrumental variables
+\deqn{D_i = f(Z_i, X_i) + \delta_i}
+\deqn{Y_i = \beta * D_i + g(Z_i, X_i) + \epsilon_i}
+where \eqn{f(Z_i, X_i)} is estimated using a polynomial basis expansion of the instrumental variables
 and a linear combination of the baseline covariates and
-\eqn{h(Z_i X_i)} is approximated using the violation space candidates and by
+\eqn{g(Z_i X_i)} is approximated using the violation space candidates and by
 a linear combination the columns in \code{W}. The errors are allowed to be heteroscedastic. \cr \cr
 The violation space candidates should be in a nested sequence as otherwise nonsensical results can occur.
 If \code{vio_space} is \code{NULL} the violation space candidates are chosen to be a nested sequence

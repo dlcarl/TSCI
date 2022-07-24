@@ -14,6 +14,7 @@
 #' @param intercept logic, to include intercept in the outcome model or not.
 #' @param str_thol the minimal value of the threshold of IV strength test.
 #' @param alpha alpha the significance level.
+#' @param B number of bootstrap samples.
 #'
 #' @return
 #' \describe{
@@ -69,8 +70,14 @@ tsci_selection <- function(Y,
                            weight,
                            intercept,
                            str_thol,
-                           alpha) {
+                           alpha,
+                           B) {
+  # this function performs violation space selection and calculates the output statistics
+  # for better understanding what certain parts in the codes do (x) will refer to the
+  # corresponding equation in Guo and Bühlmann (2022)
 
+  # adding a column to W ensures that W is always a matrix even if no covariates should
+  # be included which avoids case distinctions further down in the code
   if (intercept) {
     W <- cbind(rep(1, NROW(Y)), W)
     W_A1 <- cbind(rep(1, NROW(Y_A1)), W_A1)
@@ -79,28 +86,32 @@ tsci_selection <- function(Y,
     W_A1 <- cbind(rep(0, NROW(Y_A1)), W_A1)
   }
 
+  # Cov_aug_A1 contains the columns that are used to approximate g(Z_i, X_i) in the outcome model (1)
   Cov_aug_A1 <- cbind(vio_space, W_A1)
+  # this is needed to estimate the treatment effect (11)
   Y_rep <- as.matrix(weight %*% Y_A1)
   D_rep <- as.matrix(weight %*% D_A1)
   Cov_rep <- as.matrix(weight %*% Cov_aug_A1)
   n_A1 <- NROW(Y_rep)
   p_outcome <- NCOL(Cov_aug_A1) # this is needed for a case distinction if there are no covariates.
 
-  # initialize output list
+  # initializes output list
   output <- tsci_fit_NA_return(Q = Q)
-  # calculate first stage residuals standard error and R-squared
+  # calculates first stage residuals standard error and R-squared
   output$FirstStage_rse[] <- sqrt(sum((weight %*% Y_A1 - Y_A1)^2)) / sqrt(n_A1 - sum(diag(weight)))
   output$FirstStage_Rsquared[] <- 1 - var((weight %*% Y_A1 - Y_A1)) / var(Y_A1)
 
-  # the non bias corrected beta estimates
+  # initializes a vector for the treatment effect estimates for each violation space candidate
   Coef_all <- rep(NA, Q)
 
-  # the noise of treatment model
+  # the noise of treatment model. Needed for the bias correction (12) and to estimate
+  # the iv strength (17) and iv threshold (18)
   delta_hat <- D_A1 - D_rep
   SigmaSqD <- mean(delta_hat^2)
 
-  # the noise of outcome model
-  eps_hat <- rep(list(NA), Q)
+  # the noise of outcome model. Needed for the bias correction (12) and to calculate the
+  # standard error of the treatment effect estimate (14)
+  eps_hat <- vector(mode = "list", length = Q)
 
   # the position of the columns of W in Cov_aug_A1
   pos_W <- seq(NCOL(vio_space) + 1, NCOL(Cov_aug_A1))
@@ -108,7 +119,9 @@ tsci_selection <- function(Y,
   ### fixed violation space, compute necessary inputs of selection part
   D_resid <- diag_M_list <- rep(list(NA), Q)
   for (index in seq_len(Q)) {
+    # the first violation space candidate is always the empty space (i.e. assuming no violation).
     if (index == 1) pos_VW <- pos_W else pos_VW <- c(vio_ind[[index - 1]], pos_W)
+    # the initial treatment effect estimate (11)
     reg_ml <- lm(Y_rep ~ D_rep + Cov_rep[, pos_VW] - 1)
     betaHat <- coef(reg_ml)[1]
     Coef_all[index] <- betaHat
@@ -118,12 +131,16 @@ tsci_selection <- function(Y,
     output$SecondStage_rse[index + 1] <- summary_ml$sigma
     output$SecondStage_Rsquared[index + 1] <- 1 - var(summary_ml$residuals) / var(Y_A1)
     eps_hat[[index]] <- resid(reg_ml2)
-    stat_outputs <- tsci_secondstage_stats(D_rep,
-                                           Cov_rep[, pos_VW],
-                                           weight,
-                                           eps_hat[[index]],
-                                           delta_hat,
-                                           str_thol = str_thol)
+    # tsci_secondstage_stats returns the standard error of the trace of the matrix M (11),
+    # the treatment effect estimate (14), the estimated iv strength (17), the iv strength threshold (18)
+    # and D_resid used for the violation space selection (20, 23)
+    stat_outputs <- tsci_secondstage_stats(D_rep = D_rep,
+                                           Cov_rep = Cov_rep[, pos_VW],
+                                           weight = weight,
+                                           eps_hat = eps_hat[[index]],
+                                           delta_hat = delta_hat,
+                                           str_thol = str_thol,
+                                           B = B)
 
     # the necessary statistics
     output$sd_all[index + 1] <- stat_outputs$sd
@@ -132,7 +149,8 @@ tsci_selection <- function(Y,
     D_resid[[index]] <- stat_outputs$D_resid
     diag_M_list[[index]] <- stat_outputs$diag_M
   }
-  # Residual sum of squares of D_rep~Cov_rep
+  # Residual sum of squares of D_rep~Cov_rep. The denominator of the initial treatment effect estimator
+  # (11) used for several equations
   D_RSS <- output$iv_str * SigmaSqD
 
   # violation space selection
@@ -140,49 +158,52 @@ tsci_selection <- function(Y,
   # Comparison and robust estimators
   Coef_robust <- sd_robust <- rep(NA, 2)
   names(Coef_robust) <- names(sd_robust) <- c("TSCI-comp", "TSCI-robust")
+  # checks for which violation space candidates the instruments are strong enough
   ivtest_vec <- (output$iv_str >= output$iv_thol)
   if (sum(ivtest_vec) == 0) {
+    # if even for the empty space the instruments are too weak than raise a warning
     warning("Weak IV, even if the IV is assumed to be valid; run OLS")
     Qmax <- -1
   } else {
     Qmax <- sum(ivtest_vec) - 1
     if (Qmax == 0) {
+      # if only for the empty space the instruments are strong enough than raise a warning as well
       warning("Weak IV, if the IV is invalid. We still test the IV invalidity.")
     }
   }
 
-  # Compute bias-corrected estimators
+  # computes bias-corrected estimators (12)
   for (i in seq_len(Q)) {
     output$Coef_all[i + 1] <- Coef_all[i] - sum(diag_M_list[[i]] * delta_hat * eps_hat[[i]]) / D_RSS[i]
   }
 
-  # If IV test fails at q0 or q1, we do not need to do selection
+  # if IV test fails at q0 (empty space) or q1, we do not need to do selection
   if (Qmax >= 1) { # selection
     eps_Qmax <- eps_hat[[Qmax + 1]]
     Coef_Qmax <- rep(NA, Q)
     for (i in seq_len(Q)) {
+      # corresponds to (19)
       Coef_Qmax[i] <- Coef_all[i] - sum(diag_M_list[[i]] * delta_hat * eps_Qmax) / D_RSS[i]
     }
 
     ### Selection
-    # define comparison matrix
+    # defines comparison matrix (20)
     H <- beta_diff <- matrix(0, Qmax, Qmax)
-    # compute H matrix
+    # computes H matrix (20)
     for (q1 in seq_len(Qmax) - 1) {
       for (q2 in (q1 + 1):(Qmax)) {
-        H[q1 + 1, q2] <- as.numeric(sum((weight %*% D_resid[[q1 + 1]])^2 * eps_Qmax^2) /
-          (D_RSS[q1 + 1]^2) + sum((weight %*% D_resid[[q2 + 1]])^2 * eps_Qmax^2) /
-            (D_RSS[q2 + 1]^2) -
-          2 * sum(eps_Qmax^2 * (weight %*% D_resid[[q1 + 1]]) * (weight %*% D_resid[[q2 + 1]])) /
-            (D_RSS[q1 + 1] * D_RSS[q2 + 1]))
+        H[q1 + 1, q2] <-
+          as.numeric(sum((weight %*% D_resid[[q1 + 1]])^2 * eps_Qmax^2) / (D_RSS[q1 + 1]^2) +
+                       sum((weight %*% D_resid[[q2 + 1]])^2 * eps_Qmax^2) / (D_RSS[q2 + 1]^2) -
+                       2 * sum(eps_Qmax^2 * (weight %*% D_resid[[q1 + 1]]) * (weight %*% D_resid[[q2 + 1]])) /
+                       (D_RSS[q1 + 1] * D_RSS[q2 + 1]))
       }
     }
-    # compute beta difference matrix, use Qmax
+    # computes beta difference matrix, use Qmax
     for (q in seq_len(Qmax) - 1) {
       beta_diff[q + 1, (q + 1):(Qmax)] <- abs(Coef_Qmax[q + 1] - Coef_Qmax[(q + 2):(Qmax + 1)]) # use bias-corrected estimator
     }
-    # bootstrap for the quantile of the differences
-    B <- 300
+    # bootstrap for the quantile of the differences (23)
     eps_Qmax_cent <- as.vector(eps_Qmax - mean(eps_Qmax))
     eps_rep_matrix <- weight %*% (eps_Qmax_cent * matrix(rnorm(n_A1 * B), ncol = B))
     diff_mat <- matrix(0, Qmax, Qmax)
@@ -198,9 +219,10 @@ tsci_selection <- function(Y,
               diff_mat <- abs(diff_mat) / sqrt(H)
               max(diff_mat, na.rm = TRUE)
             })
+    # corresponds to (24)
     z_alpha <- 1.01 * quantile(max_val, 0.975)
     diff_thol <- z_alpha * sqrt(H)
-    # comparison matrix
+    # comparison matrix (22)
     C_alpha <- ifelse(beta_diff <= diff_thol, 0, 1)
 
 

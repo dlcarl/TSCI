@@ -26,8 +26,9 @@ get_l2boost_hatmatrix <- function(df_treatment_A1,
   l2boost_hatmatrix <- matrix(0, n_A1, n_A1)
   for (iter in seq_len(params$nrounds)) {
     leaves_iter_A1 <- nodes_A1[, iter]
-    # calculates the hat matrix
+    # calculates the hat matrix of the tree
     tree_hatmatrix <- get_tree_hatmatrix(leaves_iter_A1)
+    # updates the hat matrix of the boosting fit. See Algorithm 3 in Guo and Bühlmann (2022)
     l2boost_hatmatrix <- l2boost_hatmatrix + params$eta *
       mat.mult(tree_hatmatrix, diag(n_A1) - l2boost_hatmatrix)
   }

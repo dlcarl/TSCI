@@ -1,6 +1,8 @@
 #' @noRd
 check_output <- function(list_outputs, ind_start) {
   # this functions checks if errors occured in each sample split.
+  # It returns the proportion and position of data splits in which NAs occured and
+  # the error message that were raised in this data splits
   n <- length(list_outputs)
   ind_na <- sapply(list_outputs, FUN = function(x) any(is.na(x$value)))
   prop_na <- sum(ind_na) / n

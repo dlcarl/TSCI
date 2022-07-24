@@ -11,13 +11,24 @@
 #' @noRd
 #' @importFrom stats qnorm quantile
 get_FWER_CI <- function(Coef, SE, level, gamma = 0.5) {
+  # this functions returns the confidence interval and p-value
+  # applying the method introduced in introduced in Meinshausen, Meier, Bühlmann (2009)
+
   alpha <- 1 - level
-  beta_min <- min(Coef - qnorm(1 - alpha / 2 * gamma)  * SE)
-  beta_max <- max(Coef + qnorm(1 - alpha / 2 * gamma)  * SE)
-  beta_range <- seq(beta_min, beta_max, length.out = 10^4)
-  p_val_med <- sapply(beta_range, FUN = function(beta_test) quantile(p_val(Coef, SE, beta_test), probs = gamma, names = FALSE))
-  lower <- beta_range[max(min(which(p_val_med > alpha * gamma)) - 1, 1)]
-  upper <- beta_range[min(max(which(p_val_med > alpha * gamma)) + 1,10^4)]
-  p_value <- min(1, quantile(p_val(Coef, SE, 0) / gamma, probs = gamma, names = FALSE))
+  # case distinction between the OLS estimate (for which the whole data set was used) and
+  # the estimates obtained via data splitting
+  if (length(unique(Coef)) == 1) {
+    lower <- Coef[1] - qnorm(1 - alpha / 2) * SE[1]
+    upper <- Coef[1] + qnorm(1 - alpha / 2) * SE[1]
+    p_value <- p_val(Coef[1], SE[1], 0)
+  } else {
+    beta_min <- min(Coef - qnorm(1 - alpha / 2 * gamma)  * SE)
+    beta_max <- max(Coef + qnorm(1 - alpha / 2 * gamma)  * SE)
+    beta_range <- seq(beta_min, beta_max, length.out = 10^4)
+    p_val_quant <- sapply(beta_range, FUN = function(beta_test) quantile(p_val(Coef, SE, beta_test), probs = gamma, names = FALSE))
+    lower <- beta_range[max(min(which(p_val_quant > alpha * gamma)) - 1, 1)]
+    upper <- beta_range[min(max(which(p_val_quant > alpha * gamma)) + 1,10^4)]
+    p_value <- min(1, quantile(p_val(Coef, SE, 0) / gamma, probs = gamma, names = FALSE))
+  }
   return(list(CI = c("lower" = lower, "upper" = upper), p_value = p_value))
 }

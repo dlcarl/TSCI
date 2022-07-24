@@ -49,6 +49,8 @@
 #' @param nfolds number of folds used for the k-fold cross-validation if \code{gcv} is \code{FALSE}.
 #' @param str_thol minimal value of the threshold of IV strength test.
 #' @param alpha the significance level.
+#' @param B number of bootstrap samples.
+#' Bootstrap methods are used to calculate the iv strength threshold and in the violation space selection.
 #'
 #' @return
 #' A list containing the following elements:
@@ -56,14 +58,14 @@
 #'     \item{\code{Coef_all}}{a series of point estimates of the treatment effect
 #'     for the different violation space candidates and the OLS estimate.}
 #'     \item{\code{sd_all}}{standard errors of Coef_all.}
-#'     \item{\code{pvall_all}}{p-values of the treatment effect estimates for the
+#'     \item{\code{pval_all}}{p-values of the treatment effect estimates for the
 #'     different violation space candidates and for the OLS estimate.}
 #'     \item{\code{CI_all}}{confidence intervals for the treatment effect for the
 #'     different violation space candidates and for the OLS estimate.}
 #'     \item{\code{Coef_robust}}{the point estimators of the treatment effect for
 #'     the selected violation spaces.}
 #'     \item{\code{sd_robust}}{the standard errors of Coef_robust.}
-#'     \item{\code{pvall_all}}{p-values of the treatment effect estimates for the
+#'     \item{\code{pval_robust}}{p-values of the treatment effect estimates for the
 #'     selected violation spaces.}
 #'     \item{\code{CI_robust}}{confidence intervals for the treatment effect for
 #'     the selected violation spaces.}
@@ -89,11 +91,11 @@
 #'}
 #'
 #' @details The treatment and outcome models are assumed to be of the following forms:
-#' \deqn{D_i = g(Z_i, X_i) + \delta_i}
-#' \deqn{Y_i = \beta * D_i + h(Z_i, X_i) + \epsilon_i}
-#' where \eqn{g(Z_i, X_i)} is estimated using a polynomial basis expansion of the instrumental variables
+#' \deqn{D_i = f(Z_i, X_i) + \delta_i}
+#' \deqn{Y_i = \beta * D_i + g(Z_i, X_i) + \epsilon_i}
+#' where \eqn{f(Z_i, X_i)} is estimated using a polynomial basis expansion of the instrumental variables
 #' and a linear combination of the baseline covariates and
-#' \eqn{h(Z_i X_i)} is approximated using the violation space candidates and by
+#' \eqn{g(Z_i X_i)} is approximated using the violation space candidates and by
 #' a linear combination the columns in \code{W}. The errors are allowed to be heteroscedastic. \cr \cr
 #' The violation space candidates should be in a nested sequence as otherwise nonsensical results can occur.
 #' If \code{vio_space} is \code{NULL} the violation space candidates are chosen to be a nested sequence
@@ -179,7 +181,8 @@ tsci_poly <- function(Y,
                       gcv = T,
                       nfolds = 5,
                       str_thol = 10,
-                      alpha = 0.05) {
+                      alpha = 0.05,
+                      B = 300) {
 
   # checks that input is in the correct format
   check_input(Y = Y,
@@ -199,6 +202,7 @@ tsci_poly <- function(Y,
               nfolds = nfolds,
               str_thol = str_thol,
               alpha = alpha,
+              B = B,
               tsci_method = "poly")
   order_selection_method <- match.arg(order_selection_method)
 
@@ -231,7 +235,7 @@ tsci_poly <- function(Y,
 
   params_list <- lapply(seq_len(p), FUN = function(i) seq(min_order[i], max_order[i], by = 1))
 
-  # Treatment model fitting
+  # treatment model fitting
   df_treatment <- data.frame(cbind(D, Z, X))
   names(df_treatment) <- c("D", paste("B", seq_len(p), sep = ""))
 
@@ -244,19 +248,26 @@ tsci_poly <- function(Y,
                                  gcv = gcv,
                                  nfolds = nfolds)
 
+
   if (is.null(vio_space)) {
     vio_space <- create_monomials(Z = Z,
                                   degree = unlist(poly_CV$params)[seq_len(NCOL(Z))],
                                   type = "monomials_main")
     create_nested_sequence <- TRUE
-
   }
+
   list_vio_space <- build_vio_space_candidates(vio_space = vio_space,
                                                create_nested_sequence = create_nested_sequence)
 
+  # if two violation space candidates lead to significant different estimates of
+  # the treatment effect the algorithm will select the violation space candidate
+  # that is further down the list. However, if the violation space candidates are not nested
+  # it is not clear which of the candidates covers the violation better.
   if (!(list_vio_space$nested_sequence))
     warning("Sequence of violation space candidates is not nested. Results might be nonsensical.")
 
+  # calculates the hat matrix for A1, performs violation space selection and estimates
+  # the treatment effect
   outputs <- tsci_fit(df_treatment = df_treatment,
                       Y = Y,
                       D = D,
@@ -268,9 +279,10 @@ tsci_poly <- function(Y,
                       split_prop = 1,
                       alpha = alpha,
                       params = poly_CV$params,
-                      function_hatmatrix = get_poly_hatmatrix)
+                      function_hatmatrix = get_poly_hatmatrix,
+                      B = B)
 
-  # Return output
+  # returns output
   outputs <- append(outputs,
                     list(mse = poly_CV$mse,
                          FirstStage_model = "OLS with Polynomials",

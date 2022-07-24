@@ -17,19 +17,22 @@
 #' @importFrom stats poly
 #'
 build_vio_space_candidates <- function(vio_space, create_nested_sequence) {
+  # this function merges the list vio_space to a matrix, removes duplicated rows,
+  # extracts the position of the columns of the matrix that define each violation space candidate and
+  # the number of violation space candidates (including the empty space)
   vio_space <- lapply(vio_space, as.matrix)
   Q <- length(vio_space) + 1
-  # merge violation space candidates into one matrix and remove duplicated columns
+  # merges violation space candidates into one matrix and remove duplicated columns
   vio_space_matrix <- Reduce(cbind, vio_space)
   duplicated_columns <- duplicated(t(vio_space_matrix))
   vio_space_matrix <- vio_space_matrix[, !duplicated_columns, drop = FALSE]
-  # identify the columns of the matrix that belong to each violation space candidate
+  # identifies the columns of the matrix that belong to each violation space candidate
   vio_ind <- lapply(seq_len(Q - 1), FUN = function(i) {
     which(apply(vio_space_matrix, 2, FUN = function(x) any(colMeans(x == vio_space[[i]]) == 1)))
   })
   vio_space <- vio_space_matrix
 
-  # check if sequence is nested
+  # checks if sequence is nested
   nested_sequence <- TRUE
   if (Q > 2) {
     for (i in 2:(Q - 1)) {
@@ -39,7 +42,10 @@ build_vio_space_candidates <- function(vio_space, create_nested_sequence) {
       }
     }
   }
-
+  # if violation space candidates should be nested it loops through the elements of the list
+  # vio_space and adds the position of the columns of the matrix that define the previous element of the list
+  # to the position of the columns of the matrix of the current element.
+  # Thus, it creates a nested sequence
   if (create_nested_sequence & !nested_sequence) {
     for (i in 2:(Q - 1)) {
       vio_ind[[i]] <- unique(c(vio_ind[[i]], vio_ind[[i - 1]]))

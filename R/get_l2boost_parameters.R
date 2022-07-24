@@ -24,6 +24,7 @@
 #' cv_fit <- get_l2boost_parameters(df_treatment_A2 = Data, params_grid = params_grid, nfolds = 10)
 #' cv_fit$params_A2
 get_l2boost_parameters <- function(df_treatment_A2, params_grid, nfolds) {
+  # this function applies cross validation to choose the best fitting parameter combination
   n_A2 <- NROW(df_treatment_A2)
 
   xgbD_A2 <- xgb.DMatrix(as.matrix(df_treatment_A2[, -1]), label = df_treatment_A2[, 1])
@@ -50,7 +51,9 @@ get_l2boost_parameters <- function(df_treatment_A2, params_grid, nfolds) {
     mse_cv <- temp_A2$evaluation_log$test_rmse_mean^2
 
     if (params_grid$early_stopping[i] == TRUE) {
-      # Search the boosting iteration with the smallest mse and chooses the smallest number of iteration with an mse not much bigger to save computation time when calculating weight matrix if improvement is very slow.
+      # Search the boosting iteration with the smallest mse and chooses the
+      # smallest number of iteration with an mse not much bigger to save
+      # computation time when calculating weight matrix if improvement is very slow.
       m <- min(which(mse_cv <= 1.01 * min(mse_cv)))
     } else {
       m <- params_grid$nrounds[i]

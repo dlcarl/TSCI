@@ -65,6 +65,8 @@ aggregate_output <- function(output_list, alpha, Q,  mult_split_method, raw_outp
 
 
   if (mult_split_method == "FWER") {
+    # calculates the p-values and confidence intervals using the "FWER" method
+    # introduced in Meinshausen, Meier, Bühlmann (2009)
     stats_all <-
       lapply(seq_len(NCOL(Coef_all_matrix)),
                            FUN = function(j) {get_FWER_CI(Coef = Coef_all_matrix[, j],
@@ -81,11 +83,13 @@ aggregate_output <- function(output_list, alpha, Q,  mult_split_method, raw_outp
     returnList$pval_robust[] <- unlist(lapply(stats_robust, FUN = function(x) x$p_value))
     returnList$CI_robust[] <- matrix(unlist(lapply(stats_robust, FUN = function(x) x$CI)), nrow = 2)
 
-    # this method does not provide standard error estimates.
+    # this method does not provide standard error estimates
     returnList$sd_all[] <- NA
     returnList$sd_robust[] <- NA
 
   } else if (mult_split_method == "DML") {
+    # calculates the standard errors, p-values and confidence intervals using the "DML" method
+    # introduced in Chernozhukov et al. (2018)
     stats_all <-
       lapply(seq_len(NCOL(Coef_all_matrix)),
              FUN = function(j) {get_DML_CI(Coef = Coef_all_matrix[, j],
@@ -104,7 +108,7 @@ aggregate_output <- function(output_list, alpha, Q,  mult_split_method, raw_outp
     returnList$pval_robust[] <- unlist(lapply(stats_robust, FUN = function(x) x$p_value))
     returnList$CI_robust[] <- matrix(unlist(lapply(stats_robust, FUN = function(x) x$CI)), nrow = 2)
   } else {
-    # if no valid inference method was selected, remove measures of uncertainty.
+    # if no valid inference method was selected, remove measures of uncertainty. Should never happen.
     returnList$sd_all[] <- rep(NA, times = NCOL(sd_all_matrix))
     returnList$pval_all[] <- rep(NA, times = NCOL(sd_all_matrix))
     returnList$CI_all[] <- matrix(NA, nrow = 2, ncol = NCOL(Coef_all_matrix))

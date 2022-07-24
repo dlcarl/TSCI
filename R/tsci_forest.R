@@ -52,6 +52,8 @@
 #' @param raw_output logical. If \code{TRUE} the coefficient and standard error estimates of each split will be returned.
 #' This is only needed if \code{mult_split_method} equals "FWER" and the function \code{confint} will be used. Default is
 #' \code{TRUE} if \code{mult_split_method} is \code{TRUE} and \code{FALSE} otherwise.
+#' @param B number of bootstrap samples.
+#' Bootstrap methods are used to calculate the iv strength threshold and in the violation space selection.
 #'
 #' @return
 #' A list containing the following elements:
@@ -59,14 +61,14 @@
 #'     \item{\code{Coef_all}}{a series of point estimates of the treatment effect
 #'     for the different violation space candidates and the OLS estimate.}
 #'     \item{\code{sd_all}}{standard errors of Coef_all.}
-#'     \item{\code{pvall_all}}{p-values of the treatment effect estimates for the
+#'     \item{\code{pval_all}}{p-values of the treatment effect estimates for the
 #'     different violation space candidates and for the OLS estimate.}
 #'     \item{\code{CI_all}}{confidence intervals for the treatment effect for the
 #'     different violation space candidates and for the OLS estimate.}
 #'     \item{\code{Coef_robust}}{the point estimators of the treatment effect for
 #'     the selected violation spaces.}
 #'     \item{\code{sd_robust}}{the standard errors of Coef_robust.}
-#'     \item{\code{pvall_all}}{p-values of the treatment effect estimates for the
+#'     \item{\code{pval_robust}}{p-values of the treatment effect estimates for the
 #'     selected violation spaces.}
 #'     \item{\code{CI_robust}}{confidence intervals for the treatment effect for
 #'     the selected violation spaces.}
@@ -103,10 +105,10 @@
 #'}
 #'
 #' @details The treatment and outcome models are assumed to be of the following forms:
-#' \deqn{D_i = g(Z_i, X_i) + \delta_i}
-#' \deqn{Y_i = \beta * D_i + h(Z_i, X_i) + \epsilon_i}
-#' where \eqn{g(Z_i, X_i)} is estimated using a random forest and
-#' \eqn{h(Z_i X_i)} is approximated using the violation space candidates and by
+#' \deqn{D_i = f(Z_i, X_i) + \delta_i}
+#' \deqn{Y_i = \beta * D_i + g(Z_i, X_i) + \epsilon_i}
+#' where \eqn{f(Z_i, X_i)} is estimated using a random forest and
+#' \eqn{g(Z_i X_i)} is approximated using the violation space candidates and by
 #' a linear combination of the columns in \code{W}. The errors are allowed to be heteroscedastic.
 #' To avoid overfitting bias the data is randomly split into two subsets \eqn{A1} and \eqn{A2}
 #' where the proportion of number of observations in the two sets is specified by \code{split_prop}.
@@ -116,7 +118,7 @@
 #' the best parameter combination is chosen by minimizing the out-of-bag mean squared error. \cr \cr
 #' The violation space candidates should be in a nested sequence as otherwise nonsensical results can occur. The specification
 #' of suitable violation space candidates is a crucial step because a poor approximation
-#' of \eqn{h(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
+#' of \eqn{g(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
 #' The function \code{\link[TSML]{create_monomials}} can be used to create a predefined sequence of violation space candidates (monomials).  \cr \cr
 #' \code{W} should be chosen to be flexible enough to approximate the functional form of how the covariates affect the outcome well
 #' as otherwise the treatment estimator might be biased.\cr \cr
@@ -215,13 +217,13 @@ tsci_forest <- function(Y,
                         str_thol = 10,
                         alpha = 0.05,
                         nsplits = 10,
-                        mult_split_method = ifelse(nsplits > 1, "FWER", "DML"),
+                        mult_split_method = c("FWER", "DML"),
                         parallel = "no",
                         ncores = 1,
                         cl = NULL,
-                        raw_output = ifelse(mult_split_method == "FWER", TRUE, FALSE)) {
+                        raw_output = NULL,
+                        B = 300) {
 
-  # checks that input is in the correct format
   # checks that input is in the correct format
   check_input(Y = Y,
               D = D,
@@ -244,11 +246,17 @@ tsci_forest <- function(Y,
               ncores = ncores,
               cl = cl,
               raw_output = raw_output,
+              B = B,
               tsci_method = "random forest")
+  # if data is split only once then the default aggregation method is "DML" as
+  # this gives the same results as not aggregating. Otherwise "FWER" is used
+  # because it controls for the family-wise error rate
   if (missing(mult_split_method)) {
     mult_split_method <- ifelse(nsplits > 1, "FWER", "DML")
   }
   mult_split_method <- match.arg(mult_split_method)
+  # if TRUE returns the estimate of the treatment effect and its standard error
+  # for each data split. Is needed for the confint method if mult_split_method is  "FWER"
   if (is.null(raw_output)) {
     raw_output <- ifelse(mult_split_method == "FWER", TRUE, FALSE)
   }
@@ -312,7 +320,8 @@ tsci_forest <- function(Y,
                              ncores = ncores,
                              mult_split_method = mult_split_method,
                              cl = cl,
-                             raw_output = raw_output)
+                             raw_output = raw_output,
+                             B = B)
 
   # returns output
   outputs <- append(outputs,

@@ -7,6 +7,7 @@
 #' @param eps_hat residuals in the outcome model
 #' @param delta_hat residuals in Random Forest corresponding to samples in A1
 #' @param str_thol the minimal value of the threshold of IV strength test
+#' @param B number of bootstrap samples
 #'
 #' @return:
 #'     \item{\code{sd}}{estimated standard error for betaHat}
@@ -18,24 +19,29 @@
 #'
 #' @importFrom stats resid lm rnorm quantile
 #'
-tsci_secondstage_stats <- function(D_rep, Cov_rep, weight, eps_hat, delta_hat, str_thol) {
+tsci_secondstage_stats <- function(D_rep, Cov_rep, weight, eps_hat, delta_hat, str_thol, B) {
+  # this function returns the standard error of the trace of the matrix M (11),
+  # the treatment effect estimate (14), the estimated iv strength (17), the iv strength threshold (18)
+  # and D_resid used for the violation space selection (20, 23)
+  # for better understanding what certain parts in the codes do (x) will refer to the
+  # corresponding equation in Guo and Bühlmann (2022)
   n_A1 <- length(D_rep)
-  # compute the trace of M_{RF}(V)
+  # computes the trace of M_{RF}(V)
   # the trace of M_{RF}(V) matrix can be computed as RSS of regressing each column of weight matrix on Cov.rep
   SigmaSqD <- mean(delta_hat^2)
-  diag_M <- colSums(resid(lm(weight ~ Cov_rep))^2)
+  diag_M <- colSums(resid(lm(weight ~ Cov_rep - 1))^2)
   trace_M <- sum(diag_M)
-  D_rep2 <- weight %*% D_rep
+  # estimates iv strength (17)
   D_resid <- resid(lm(D_rep ~ Cov_rep - 1))
   D_RSS <- sum(D_resid^2)
   iv_str <- D_RSS / SigmaSqD
-  # this is the numerator of the variance of betaHat
+  # standard error of the treatment effect estimate (14)
   sd <- sqrt(sum(eps_hat^2 * (weight %*% D_resid)^2)) / D_RSS
-  # bootstrap for the threshold of IV strength test
-  B <- 300
+  # bootstrap for the threshold of IV strength test (bellow 17)
+  D_rep2 <- weight %*% D_rep
   delta_cent <- as.vector(delta_hat - mean(delta_hat))
   delta_rep_matrix <- weight %*% (delta_cent * matrix(rnorm(n_A1 * B), ncol = B))
-  delta_resid_matrix <- resid(lm(delta_rep_matrix ~ Cov_rep))
+  delta_resid_matrix <- resid(lm(delta_rep_matrix ~ Cov_rep - 1))
   boot_vec <- apply(delta_resid_matrix, 2, FUN = function(delta_resid) sum(delta_resid^2) + 2 * sum(D_rep2 * delta_resid))
   iv_thol <- quantile(boot_vec, 0.975) /
     SigmaSqD + max(2 * trace_M, str_thol)

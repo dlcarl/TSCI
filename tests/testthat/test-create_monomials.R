@@ -60,8 +60,7 @@ test_that("wrong type of input", {
   n <- 10
   s <- 1
   Z <- matrix(rep("a", 10), nrow = n, ncol = s)
-  type <- "aaa"
   degree <- c(1, "b")
   expect_error(create_monomials(Z = Z, degre = degree, type = type),
-               "\nZ is not numeric.\ndegree is not numeric.\nNo valid type selected. Choose either 'monomials_main' or 'monomials_full'.\ndegree has invalid length.")
+               "\nZ is not numeric.\ndegree is not numeric.\n")
 })

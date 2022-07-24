@@ -5,7 +5,8 @@
 #' @param degree The degree up to which monomials should be created. Either a single numeric value or a numeric value of length s.
 #' @param type One out of \code{monomials_main} or \code{monomials_full}. \cr
 #' \code{monomials_main} creates the monomials for the polynomials of each instrumental variable up to degree \code{degree}. \cr
-#' \code{monomials_full} creates the monomials for the polynomials of a combination of all instrumental variables up to degree \code{degree}.
+#' \code{monomials_full} creates the monomials for the polynomials of a combination of all instrumental variables up to degree \code{degree}. \cr
+#' Default is \code{monomials_full}.
 #'
 #' @return A ordered list. Each element is a matrix consisting of the monomials to be added to
 #' the next violation space candidate.
@@ -21,7 +22,9 @@
 #' @examples
 #' Z <- matrix(rnorm(100 * 3), nrow = 100, ncol = 3)
 #' vio_space <- create_monomials(Z = Z, degree = 4, type = "monomials_full")
-create_monomials <- function(Z, degree, type) {
+create_monomials <- function(Z, degree, type = c("monomials_main", "monomials_full")) {
+  # this function creates a ordered list. Each element consists of a matrix where
+  # the columns are monomials of the same degree.
 
   # check if input is in the correct format and valid
   error_message <- NULL
@@ -29,15 +32,15 @@ create_monomials <- function(Z, degree, type) {
     error_message <- paste(error_message, "Z is not numeric.", sep = "\n")
   if (!is.numeric(degree))
     error_message <- paste(error_message, "degree is not numeric.", sep = "\n")
-  if (!(type %in% c("monomials_main", "monomials_full")))
-    error_message <- paste(error_message, "No valid type selected. Choose either 'monomials_main' or 'monomials_full'.", sep = "\n")
   if (length(degree) > 1 & length(degree) != NCOL(Z))
     error_message <- paste(error_message, "degree has invalid length.", sep = "\n")
 
   if (!is.null(error_message))
     stop(error_message)
 
-  # build monomials
+  type <- match.arg(type)
+
+  # builds monomials
   Z <- as.matrix(Z)
   n <- NROW(Z)
   p <- NCOL(Z)
@@ -47,6 +50,8 @@ create_monomials <- function(Z, degree, type) {
   monomials_degrees <- matrix(0, nrow = p, ncol = 1)
   for (q in seq_len(max(degree))) {
     if (type == "monomials_full") {
+      # starts with a constant. multiplies each instrumental variable with all columns
+      # obtained from the previous iteration for which degree is not reached.
       current_monomials_degrees <- matrix(NA, nrow = p, ncol = p * NCOL(monomials[[q]]))
       current_monomials <- matrix(NA, nrow = n, ncol = p * NCOL(monomials[[q]]))
       for (i in seq_len(NCOL(monomials[[q]]))) {
@@ -58,6 +63,7 @@ create_monomials <- function(Z, degree, type) {
         }
       }
     } else if (type == "monomials_main") {
+      # similar than how 'monomials_full' works but without interactions
       current_monomials_degrees <- matrix(NA, nrow = p, ncol = NCOL(monomials[[q]]))
       current_monomials <- matrix(NA, nrow = n, ncol = NCOL(monomials[[q]]))
       if (q == 1) {
@@ -77,6 +83,7 @@ create_monomials <- function(Z, degree, type) {
         }
       }
     }
+    # removes duplicated rows
     pos <- apply(current_monomials, 2, function(x) all(!is.na(x)))
     current_monomials <- current_monomials[, pos, drop = FALSE]
     current_monomials_degrees <- current_monomials_degrees[, pos, drop = FALSE]
