@@ -11,14 +11,13 @@ backfitting <- function(df,
   X <- df[, -1, drop = FALSE]
   n <- NROW(Y)
   p <- NCOL(X)
-
   mu <- mean(Y)
   g_X <- matrix(0, nrow = n, ncol = p)
   order_opt <- rep(NA, p)
   for (iter in seq_len(max_iter)) {
     g_old <- g_X
     for (j in seq_len(p)) {
-      U_j <- Y - mu - rowSums(g_X[, -j])
+      U_j <- Y - mu - rowSums(g_X[, -j, drop = FALSE])
       MSE_CV <- Inf
       order_j <- params_list[[j]]
       for (i in seq_len(length(order_j))) {

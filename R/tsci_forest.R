@@ -42,7 +42,7 @@
 #' of each tree to zero to avoid self prediction and rescales the off-diagonal elements accordingly.
 #' @param str_thol minimal value of the threshold of IV strength test.
 #' @param alpha the significance level.
-#' @param nsplits number of times the data will be split. Has to be an integer larger or equal 1.
+#' @param nsplits number of times the data will be split. Has to be an integer larger or equal 1. See Details.
 #' @param mult_split_method method to calculate the standard errors and p-values.
 #' and to construct the confidence intervals if multi-splitting is performed. Default is "FWER" if \code{nsplits} > 1 and
 #' "DML" otherwise. See Details.
@@ -116,12 +116,21 @@
 #' The package \code{ranger} is used to fit the random forest. If any of \code{num_trees},
 #' \code{max_depth} or \code{min_node_size} has more than one value,
 #' the best parameter combination is chosen by minimizing the out-of-bag mean squared error. \cr \cr
-#' The violation space candidates should be in a nested sequence as otherwise nonsensical results can occur. The specification
-#' of suitable violation space candidates is a crucial step because a poor approximation
+#' The violation space candidates should be in a nested sequence as the violation space selection is performed
+#' by comparing the treatment estimate of each violation space cnadidate with the estimates of all
+#' violation space candidates further down the list \code{vio_space}. Only if there
+#' was no significant difference found in all of those comparisons, the violation space
+#' candidate will be selected. The specification of suitable violation space candidates is a crucial step because a poor approximation
 #' of \eqn{g(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
 #' The function \code{\link[TSML]{create_monomials}} can be used to create a predefined sequence of violation space candidates (monomials).  \cr \cr
 #' \code{W} should be chosen to be flexible enough to approximate the functional form of how the covariates affect the outcome well
 #' as otherwise the treatment estimator might be biased.\cr \cr
+#' \code{nsplits} specifies the number of data splits that should be performed.
+#' For each data split the output statistics such as the point estimates of the
+#' treatment effects are calculated. Those statistics will then be aggregated
+#' to over the different data splits. It is recommended to perform multiple data splits
+#' as data splitting introduces additional randomness. By aggregating the results
+#' of multiple data splits the effects of this randomness can be decreased.
 #' If \code{nsplits} is larger than 1, point estimates are aggregated by medians
 #' and standard errors, p-values and confidence intervals are obtained by the method
 #' specified by the parameter \code{mult_split_method}. 'DML' uses the approach by

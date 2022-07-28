@@ -77,7 +77,11 @@
 #' \eqn{g(Z_i X_i)} is approximated using the violation space candidates and by
 #' a linear combination of the columns in \code{W}. The errors are allowed to be heteroscedastic.
 #' \eqn{A1} is used to fit the outcome model. \cr \cr
-#' The violation space candidates should be in a nested sequence as otherwise nonsensical results can occur.
+#' The violation space candidates should be in a nested sequence as the violation space selection is performed
+#' by comparing the treatment estimate of each violation space cnadidate with the estimates of all
+#' violation space candidates further down the list \code{vio_space}. Only if there
+#' was no significant difference found in all of those comparisons, the violation space
+#' candidate will be selected.
 #' The specification of suitable violation space candidates is a crucial step
 #' because a poor approximation of \eqn{g(Z_i, X_i)} might not address the bias
 #' caused by the violation of the IV assumption sufficiently.

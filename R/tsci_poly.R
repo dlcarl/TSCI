@@ -97,7 +97,11 @@
 #' and a linear combination of the baseline covariates and
 #' \eqn{g(Z_i X_i)} is approximated using the violation space candidates and by
 #' a linear combination the columns in \code{W}. The errors are allowed to be heteroscedastic. \cr \cr
-#' The violation space candidates should be in a nested sequence as otherwise nonsensical results can occur.
+#' The violation space candidates should be in a nested sequence as the violation space selection is performed
+#' by comparing the treatment estimate of each violation space cnadidate with the estimates of all
+#' violation space candidates further down the list \code{vio_space}. Only if there
+#' was no significant difference found in all of those comparisons, the violation space
+#' candidate will be selected.
 #' If \code{vio_space} is \code{NULL} the violation space candidates are chosen to be a nested sequence
 #' of polynomials of the instrumental variables up to the degrees used to fit the treatment model.
 #' This guarantees that the possible spaces the violation lives will be tested.
@@ -178,7 +182,7 @@ tsci_poly <- function(Y,
                       order_selection_method = c("backfitting", "grid search"),
                       max_iter = 100,
                       conv_tol = 10^-6,
-                      gcv = T,
+                      gcv = TRUE,
                       nfolds = 5,
                       str_thol = 10,
                       alpha = 0.05,
