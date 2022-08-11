@@ -9,6 +9,7 @@
 #' @param create_nested_sequence xxx
 #' @param A1_ind the indices of samples in A1 in the first split.
 #' @param intercept logical, including the intercept or not in the outcome model, default by TRUE.
+#' @param sel_method The selection method used to estimate the treatment effect. Either "comparison" or "conservative".
 #' @param iv_threshold minimal value of the threshold of IV strength test.
 #' @param threshold_boot logical. if \code{TRUE} it determines the threshold of the IV strength using a bootstrap approach.
 #' If \code{FALSE} it just used the value specified in \code{iv_threshold}.
@@ -47,6 +48,7 @@ tsci_multisplit <- function(df_treatment,
                             create_nested_sequence,
                             A1_ind,
                             intercept,
+                            sel_method,
                             iv_threshold,
                             threshold_boot,
                             alpha,
@@ -98,6 +100,7 @@ tsci_multisplit <- function(df_treatment,
         W = W,
         list_vio_space = list_vio_space,
         intercept = intercept,
+        sel_method = sel_method,
         iv_threshold = iv_threshold,
         threshold_boot = threshold_boot,
         split_prop = split_prop,

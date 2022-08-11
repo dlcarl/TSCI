@@ -9,6 +9,7 @@
 #' @param W (transformed) baseline covariates with dimension n by p_w used to fit the outcome model.
 #' @param vio_space vio_space a matrix or a list. If a matrix, then each column corresponds to a violation form of Z; If a list, then each element corresponds to a violation form of Z and must be a matrix of n rows, e.g. (Z^3,Z^2); If NULL, then default by the n by 3 matrix (Z^3, Z^2, Z). Violation form selection will be performed according to provided violation forms, for example, null violation space vs Z vs (Z^2, Z) vs (Z^3, Z^2, Z) in the default case.
 #' @param intercept logical, including the intercept or not in the outcome model, default by TRUE.
+#' @param sel_method The selection method used to estimate the treatment effect. Either "comparison" or "conservative".
 #' @param split_prop split_prop numeric, proportion of observations used to fit the outcome model.
 #' @param iv_threshold minimal value of the threshold of IV strength test, default by 10.
 #' @param threshold_boot logical. if \code{TRUE} it determines the threshold of the IV strength using a bootstrap approach.
@@ -29,6 +30,7 @@ tsci_fit <- function(df_treatment,
                      W,
                      list_vio_space,
                      intercept,
+                     sel_method,
                      iv_threshold,
                      threshold_boot,
                      split_prop,
@@ -77,6 +79,7 @@ tsci_fit <- function(df_treatment,
     Q = Q,
     weight = model_treatment$weight,
     intercept = intercept,
+    sel_method = sel_method,
     iv_threshold = iv_threshold,
     threshold_boot = threshold_boot,
     alpha = alpha,

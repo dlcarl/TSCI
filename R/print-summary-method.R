@@ -15,10 +15,10 @@ print.summary.tsci <- function(x, ...) {
 
   # print coefficients
   cat("\nTreatment effect estimate of selected violation space candidate:\n")
-  coefficients_df <- data.frame(lapply(x$coefficients, FUN = function(y) if (is.numeric(y)) {round(y, 5)}  else {y}))
-  rownames(coefficients_df) <- rownames(x$coefficients)
-  colnames(coefficients_df) <- colnames(x$coefficients)
-  print(coefficients_df)
+  coefficient_df <- data.frame(lapply(x$coefficient, FUN = function(y) if (is.numeric(y)) {round(y, 5)}  else {y}))
+  rownames(coefficient_df) <- rownames(x$coefficient)
+  colnames(coefficient_df) <- colnames(x$coefficient)
+  print(coefficient_df)
 
   if (x$extended_output) {
     cat("\nTreatment effect estimates of all violation space candidates:\n")
@@ -32,11 +32,6 @@ print.summary.tsci <- function(x, ...) {
 
   cat("\nStatistics about the treatment model:\n")
   cat(paste("Estimation method:", x$treatment_model$Estimation_Method, "\n"))
-  # cat(paste("Residual standard error:", round(x$treatment_model$Residual_Standard_Error, 4), "\n"))
-  # cat(paste("R-squared:", round(x$treatment_model$R_Squared, 4), "\n"))
-
-  # cat("\nStatistics about the outcome model:\n")
-  # print(round(x$outcome_model, 4))
 
   cat("\nStatistics about the violation space selection:\n")
   print(x$viospace_selection)

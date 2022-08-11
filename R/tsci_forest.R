@@ -26,6 +26,7 @@
 #' If \code{FALSE} the violation space candidates (in form of matrices) are defined as the elements of \code{vio_space}.
 #' See Details for more information.
 #' @param intercept logical. If \code{TRUE} an intercept is included in the outcome model.
+#' @param sel_method The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.
 #' @param split_prop proportion of observations used to fit the outcome model. Has to be a value in (0, 1).
 #' @param num_trees number of trees in random forests.
 #' Can either be a single integer value or a vector containing multiple integer values to try.
@@ -122,7 +123,10 @@
 #' by comparing the treatment estimate of each violation space cnadidate with the estimates of all
 #' violation space candidates further down the list \code{vio_space}. Only if there
 #' was no significant difference found in all of those comparisons, the violation space
-#' candidate will be selected. The specification of suitable violation space candidates is a crucial step because a poor approximation
+#' candidate will be selected. If \code{sel_method} is \code{TRUE} the treatment effect estimate of this
+#' violation space candidate will be returned. If \code{sel_method} is \code{FALSE} the treatment effect estimate
+#' of the successive violation space candidate will be returned except if this violation space candidate would lead
+#' to a too weak instrumental variable strength. The specification of suitable violation space candidates is a crucial step because a poor approximation
 #' of \eqn{g(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
 #' The function \code{\link[TSML]{create_monomials}} can be used to create a predefined sequence of violation space candidates (monomials).  \cr \cr
 #' \code{W} should be chosen to be flexible enough to approximate the functional form of how the covariates affect the outcome well
@@ -219,6 +223,7 @@ tsci_forest <- function(Y,
                         vio_space,
                         create_nested_sequence = TRUE,
                         intercept = TRUE,
+                        sel_method = c("comparison", "conservative"),
                         split_prop = 2 / 3,
                         num_trees = 200,
                         mtry = list(function(p) round(sqrt(p))),
@@ -268,6 +273,7 @@ tsci_forest <- function(Y,
     mult_split_method <- ifelse(nsplits > 1, "FWER", "DML")
   }
   mult_split_method <- match.arg(mult_split_method)
+  sel_method <- match.arg(sel_method)
   # if TRUE returns the estimate of the treatment effect and its standard error
   # for each data split. Is needed for the confint method if mult_split_method is  "FWER"
   if (is.null(raw_output)) {
@@ -322,6 +328,7 @@ tsci_forest <- function(Y,
                              create_nested_sequence = create_nested_sequence,
                              A1_ind = A1_ind,
                              intercept = intercept,
+                             sel_method = sel_method,
                              iv_threshold = iv_threshold,
                              threshold_boot = threshold_boot,
                              alpha = alpha,

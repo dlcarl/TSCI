@@ -22,14 +22,13 @@ test_that("correct output for valid input", {
                            Q = Q,
                            weight = weight,
                            intercept = FALSE,
+                           sel_method = "comparison",
                            iv_threshold = 10,
                            threshold_boot = FALSE,
                            alpha = 0.05,
                            B = 300)
-  expect_lt(abs(output$Coef_robust[1] - fit$coefficients[1]), 0.1)
-  expect_lt(abs(output$Coef_robust[2] - fit$coefficients[1]), 0.1)
-  expect_lt(mean(abs(output$CI_robust[, 1] - confint(fit, parm = "mu_D"))), 0.1)
-  expect_lt(mean(abs(output$CI_robust[, 2] - confint(fit, parm = "mu_D"))), 0.1)
+  expect_lt(abs(output$Coef_sel - fit$coefficients[1]), 0.1)
+  expect_lt(mean(abs(output$CI_sel[, 1] - confint(fit, parm = "mu_D"))), 0.1)
   expect_equal(unname(output$Qmax), c(0, 0, 1, 0, 0))
   expect_equal(unname(output$q_comp), c(0, 0, 1, 0, 0))
 })

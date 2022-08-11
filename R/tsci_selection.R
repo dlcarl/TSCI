@@ -12,6 +12,7 @@
 #' @param Q the number of violation spaces (including the null space).
 #' @param weight n_A1 by n_A1 weight matrix.
 #' @param intercept logic, to include intercept in the outcome model or not.
+#' @param sel_method The selection method used to estimate the treatment effect. Either "comparison" or "conservative".
 #' @param iv_threshold the minimal value of the threshold of IV strength test.
 #' @param threshold_boot logical. if \code{TRUE} it determines the threshold of the IV strength using a bootstrap approach.
 #' If \code{FALSE} it just used the value specified in \code{iv_threshold}.
@@ -23,16 +24,16 @@
 #'     \item{\code{Coef_all}}{a series of point estimates of the treatment effect
 #'     for the different violation space candidates and the OLS estimate.}
 #'     \item{\code{sd_all}}{standard errors of Coef_all.}
-#'     \item{\code{pvall_all}}{p-values of the treatment effect estimates for the
+#'     \item{\code{pval_all}}{p-values of the treatment effect estimates for the
 #'     different violation space candidates and for the OLS estimate.}
 #'     \item{\code{CI_all}}{confidence intervals for the treatment effect for the
 #'     different violation space candidates and for the OLS estimate.}
-#'     \item{\code{Coef_robust}}{the point estimators of the treatment effect for
+#'     \item{\code{Coef_sel}}{the point estimators of the treatment effect for
 #'     the selected violation spaces.}
-#'     \item{\code{sd_robust}}{the standard errors of Coef_robust.}
-#'     \item{\code{pvall_all}}{p-values of the treatment effect estimates for the
+#'     \item{\code{sd_sel}}{the standard errors of Coef_sel.}
+#'     \item{\code{pval_all}}{p-values of the treatment effect estimates for the
 #'     selected violation spaces.}
-#'     \item{\code{CI_robust}}{confidence intervals for the treatment effect for
+#'     \item{\code{CI_sel}}{confidence intervals for the treatment effect for
 #'     the selected violation spaces.}
 #'     \item{\code{iv_str}}{IV strength for the different violation space candidates.}
 #'     \item{\code{iv_thol}}{the threshold for the IV strength for the different violation space candidates.}
@@ -45,17 +46,13 @@
 #'     violation space candidates were the selected violation space.
 #'     The value of the element named "OLS" is the number of times the instrument
 #'     was too weak even for the empty violation space.}
-#'     \item{\code{q_robust}}{a named vector containing the number of times the
+#'     \item{\code{q_cons}}{a named vector containing the number of times the
 #'     violation space candidates were the selected violation space by the robust method.
 #'     The value of the element named "OLS" is the number of times the instrument
 #'     was too weak even for the empty violation space.}
 #'     \item{\code{invalidity}}{a named vector containing the number of times
 #'     the instrument was considered valid and invalid. The instrument is considered
 #'     invalid if the selected violation space is larger than the empty space.}
-#'     \item{\code{FirstStage_rse}}{residual standard error of the fitted treatment model.}
-#'     \item{\code{FirstStage_Rsquared}}{R-squared of the fitted treatment model.}
-#'     \item{\code{FirstStage_rse}}{a named vector containing the residual standard error of the fitted outcome model for each violation space candidate.}
-#'     \item{\code{FirstStage_Rsquared}}{a named vector containing the R-squared of the fitted outcome model for each violation space candidate.}
 #' }
 #' @noRd
 #'
@@ -71,6 +68,7 @@ tsci_selection <- function(Y,
                            Q,
                            weight,
                            intercept,
+                           sel_method,
                            iv_threshold,
                            threshold_boot,
                            alpha,
@@ -100,9 +98,6 @@ tsci_selection <- function(Y,
 
   # initializes output list
   output <- tsci_fit_NA_return(Q = Q)
-  # calculates first stage residuals standard error and R-squared
-  output$FirstStage_rse[] <- sqrt(sum((weight %*% Y_A1 - Y_A1)^2)) / sqrt(n_A1 - sum(diag(weight)))
-  output$FirstStage_Rsquared[] <- 1 - var((weight %*% Y_A1 - Y_A1)) / var(Y_A1)
 
   # initializes a vector for the treatment effect estimates for each violation space candidate
   Coef_all <- rep(NA, Q)
@@ -128,12 +123,7 @@ tsci_selection <- function(Y,
     reg_ml <- lm(Y_rep ~ D_rep + Cov_rep[, pos_VW] - 1)
     betaHat <- coef(reg_ml)[1]
     Coef_all[index] <- betaHat
-
-    reg_ml2 <- lm(Y_A1 - D_A1 * betaHat ~ Cov_aug_A1[, pos_VW] - 1)
-    summary_ml <- summary(reg_ml2)
-    output$SecondStage_rse[index + 1] <- summary_ml$sigma
-    output$SecondStage_Rsquared[index + 1] <- 1 - var(summary_ml$residuals) / var(Y_A1)
-    eps_hat[[index]] <- resid(reg_ml2)
+    eps_hat[[index]] <- resid(lm(Y_A1 - D_A1 * betaHat ~ Cov_aug_A1[, pos_VW] - 1))
     # tsci_selection_stats returns the standard error of the trace of the matrix M (11),
     # the treatment effect estimate (14), the estimated iv strength (17), the iv strength threshold (18)
     # and D_resid used for the violation space selection (20, 23)
@@ -160,8 +150,8 @@ tsci_selection <- function(Y,
   # violation space selection
   # all of the q below are from 0 to (Q-1), so use q+1 to index the columns
   # Comparison and robust estimators
-  Coef_robust <- sd_robust <- rep(NA, 2)
-  names(Coef_robust) <- names(sd_robust) <- c("TSCI-comp", "TSCI-robust")
+  Coef_sel <- sd_sel <- rep(NA, 2)
+  names(Coef_sel) <- names(sd_sel) <- c("TSCI-comp", "TSCI-robust")
   # checks for which violation space candidates the instruments are strong enough
   ivtest_vec <- (output$iv_str >= output$iv_thol)
   if (sum(ivtest_vec) == 0) {
@@ -255,8 +245,6 @@ tsci_selection <- function(Y,
 
   # OLS estimator
   summary_OLS <- summary(lm(Y ~ D + W - 1))
-  output$SecondStage_rse[1] <- summary_OLS$sigma
-  output$SecondStage_Rsquared[1] <- 1 - var(summary_OLS$residuals) / var(Y)
   OLS <- summary_OLS$coefficients
 
   Coef_OLS <- OLS[1, 1]
@@ -277,39 +265,35 @@ tsci_selection <- function(Y,
   ### estimated violation space and corresponding estimator
   output$Qmax[] <- 0
   output$q_comp[] <- 0
-  output$q_robust[] <- 0
+  output$q_cons[] <- 0
   if (Qmax >= 1) {
-    q_robust <- min(q_comp + 1, Qmax)
-    output$Coef_robust[1] <- output$Coef_all[q_comp + 2]
-    output$Coef_robust[2] <- output$Coef_all[q_robust + 2]
-    output$sd_robust[1] <- output$sd_all[q_comp + 2]
-    output$sd_robust[2] <- output$sd_all[q_robust + 2]
+    q_cons <- min(q_comp + 1, Qmax)
   } else if (Qmax == 0) {
     q_comp <- 0
-    q_robust <- 0
-    output$Coef_robust[1] <- output$Coef_all[q_comp + 2]
-    output$Coef_robust[2] <- output$Coef_all[q_robust + 2]
-    output$sd_robust[1] <- output$sd_all[q_comp + 2]
-    output$sd_robust[2] <- output$sd_all[q_robust + 2]
+    q_cons <- 0
   } else if (Qmax == -1) {
     q_comp <- -1
-    q_robust <- -1
-    output$Coef_robust[1] <- output$Coef_all[1]
-    output$Coef_robust[2] <- output$Coef_all[1]
-    output$sd_robust[1] <- output$sd_all[1]
-    output$sd_robust[2] <- output$sd_all[1]
+    q_cons <- -1
   }
+  if (sel_method == "comparison") {
+    output$Coef_sel[] <- output$Coef_all[q_comp + 2]
+    output$sd_sel[] <- output$sd_all[q_comp + 2]
+  } else if (sel_method == "conservative") {
+    output$Coef_sel[] <- output$Coef_all[q_cons + 2]
+    output$sd_sel[] <- output$sd_all[q_cons + 2]
+  }
+
   output$Qmax[Qmax + 2] <- 1
   output$q_comp[q_comp + 2] <- 1
-  output$q_robust[q_robust + 2] <- 1
+  output$q_cons[q_cons + 2] <- 1
 
-  output$CI_robust[] <- rbind(
-    output$Coef_robust + qnorm(alpha / 2) * output$sd_robust,
-    output$Coef_robust + qnorm(1 - alpha / 2) * output$sd_robust
+  output$CI_sel[] <- rbind(
+    output$Coef_sel + qnorm(alpha / 2) * output$sd_sel,
+    output$Coef_sel + qnorm(1 - alpha / 2) * output$sd_sel
   )
-  output$pval_robust[] <-
-    sapply(seq_len(length(output$Coef_robust)),
-      FUN = function(i) p_val(Coef = output$CI_robust[i], SE = output$sd_robust[i], beta_test = 0)
+  output$pval_sel[] <-
+    sapply(seq_len(length(output$Coef_sel)),
+      FUN = function(i) p_val(Coef = output$CI_sel[i], SE = output$sd_sel[i], beta_test = 0)
     )
   output
 }

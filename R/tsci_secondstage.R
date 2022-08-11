@@ -27,6 +27,7 @@
 #' Must be of same length as the number of rows and columns of \code{weight}.
 #' If \code{NULL} all observations will be used.
 #' @param intercept logical. If \code{TRUE} an intercept is included in the outcome model.
+#' @param sel_method The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.
 #' @param iv_threshold minimal value of the threshold of IV strength test.
 #' @param threshold_boot logical. if \code{TRUE} it determines the threshold of the IV strength using a bootstrap approach.
 #' If \code{FALSE} it just used the value specified in \code{iv_threshold}.
@@ -83,7 +84,10 @@
 #' by comparing the treatment estimate of each violation space cnadidate with the estimates of all
 #' violation space candidates further down the list \code{vio_space}. Only if there
 #' was no significant difference found in all of those comparisons, the violation space
-#' candidate will be selected.
+#' candidate will be selected. If \code{sel_method} is \code{TRUE} the treatment effect estimate of this
+#' violation space candidate will be returned. If \code{sel_method} is \code{FALSE} the treatment effect estimate
+#' of the successive violation space candidate will be returned except if this violation space candidate would lead
+#' to a too weak instrumental variable strength.
 #' The specification of suitable violation space candidates is a crucial step
 #' because a poor approximation of \eqn{g(Z_i, X_i)} might not address the bias
 #' caused by the violation of the IV assumption sufficiently.
@@ -172,11 +176,12 @@ tsci_secondstage <- function(Y,
                              weight,
                              A1_ind = NULL,
                              intercept = TRUE,
+                             sel_method = c("comparison", "conservative"),
                              iv_threshold = 10,
                              threshold_boot = FALSE,
                              alpha = 0.05,
                              B = 300) {
-
+  sel_method <- match.arg(sel_method)
   # check that input is in the correct format
   check_input(Y = Y,
               D = D,
@@ -234,6 +239,7 @@ tsci_secondstage <- function(Y,
     Q = Q,
     weight = weight,
     intercept = intercept,
+    sel_method = sel_method,
     iv_threshold = iv_threshold,
     threshold_boot = threshold_boot,
     alpha = alpha,

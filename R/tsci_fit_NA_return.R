@@ -7,40 +7,32 @@ tsci_fit_NA_return <- function(Q) {
   CI_all <- matrix(NA, nrow = 2, ncol = Q + 1)
   rownames(CI_all) <- c("lower", "upper")
   colnames(CI_all) <- names(Coef_all)
-  Coef_robust <- sd_robust <- pval_robust <- rep(NA, 2)
-  names(Coef_robust) <- names(sd_robust) <- names(pval_robust) <- c("TSCI-comp", "TSCI-robust")
-  CI_robust <- matrix(NA, nrow = 2, ncol = 2)
-  rownames(CI_robust) <- c("lower", "upper")
-  colnames(CI_robust) <- names(Coef_robust)
+  Coef_sel <- sd_sel <- pval_sel <- rep(NA, 1)
+  names(Coef_sel) <- names(sd_sel) <- names(pval_sel) <- c("TSCI-estimate")
+  CI_sel <- matrix(NA, nrow = 2, ncol = 1)
+  rownames(CI_sel) <- c("lower", "upper")
+  colnames(CI_sel) <- names(Coef_sel)
   iv_str <- iv_thol <- rep(NA, Q)
   names(iv_str) <- names(iv_thol) <- paste("q", seq(0, Q - 1), sep = "")
-  Qmax <- q_comp <- q_robust <- rep(NA, Q + 1)
-  names(Qmax) <- names(q_comp) <- names(q_robust) <- c("OLS", paste("q", seq(0, Q - 1), sep = ""))
+  Qmax <- q_comp <- q_cons <- rep(NA, Q + 1)
+  names(Qmax) <- names(q_comp) <- names(q_cons) <- c("OLS", paste("q", seq(0, Q - 1), sep = ""))
   invalidity <- rep(NA, 2)
   names(invalidity) <- c("valid", "invalid")
-  FirstStage_rse <- FirstStage_Rsquared <- NA
-  SecondStage_rse <- SecondStage_Rsquared <- rep(NA, Q + 1)
-  names(SecondStage_rse) <- names(SecondStage_Rsquared) <- c("OLS", paste("TSCI-Cor-q", seq(0, Q - 1), sep = ""))
-
 
   list(
     Coef_all = Coef_all,
     sd_all = sd_all,
     pval_all = pval_all,
     CI_all = CI_all,
-    Coef_robust = Coef_robust,
-    sd_robust = sd_robust,
-    pval_robust = pval_robust,
-    CI_robust = CI_robust,
+    Coef_sel = Coef_sel,
+    sd_sel = sd_sel,
+    pval_sel = pval_sel,
+    CI_sel = CI_sel,
     iv_str = iv_str,
     iv_thol = iv_thol,
     Qmax = Qmax,
     q_comp = q_comp,
-    q_robust = q_robust,
-    invalidity = invalidity,
-    FirstStage_rse = FirstStage_rse,
-    FirstStage_Rsquared = FirstStage_Rsquared,
-    SecondStage_rse = SecondStage_rse,
-    SecondStage_Rsquared = SecondStage_Rsquared
+    q_cons = q_cons,
+    invalidity = invalidity
   )
 }
