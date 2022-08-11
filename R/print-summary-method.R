@@ -13,6 +13,10 @@ print.summary.tsci <- function(x, ...) {
     cat(paste("Aggregation method:", x$mult_split_method, "\n"))
   }
 
+  # print invalidity test
+  cat("\nStatistics about the validity of the instrument(s):\n")
+  print(x$invalidity)
+
   # print coefficients
   cat("\nTreatment effect estimate of selected violation space candidate:\n")
   coefficient_df <- data.frame(lapply(x$coefficient, FUN = function(y) if (is.numeric(y)) {round(y, 5)}  else {y}))

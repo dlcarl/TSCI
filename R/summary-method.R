@@ -88,6 +88,7 @@ summary.tsci <- function(object,
 
 
   output_list <- list(coefficient = coef_df,
+                      invalidity = object$invalidity,
                       viospace_selection = ViolationSpace_DF,
                       treatment_model = TreatmentModel_df,
                       sample_size_A1 = object$n_A1,
