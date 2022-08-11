@@ -131,10 +131,10 @@ tsci_selection <- function(Y,
     output$SecondStage_rse[index + 1] <- summary_ml$sigma
     output$SecondStage_Rsquared[index + 1] <- 1 - var(summary_ml$residuals) / var(Y_A1)
     eps_hat[[index]] <- resid(reg_ml2)
-    # tsci_secondstage_stats returns the standard error of the trace of the matrix M (11),
+    # tsci_selection_stats returns the standard error of the trace of the matrix M (11),
     # the treatment effect estimate (14), the estimated iv strength (17), the iv strength threshold (18)
     # and D_resid used for the violation space selection (20, 23)
-    stat_outputs <- tsci_secondstage_stats(D_rep = D_rep,
+    stat_outputs <- tsci_selection_stats(D_rep = D_rep,
                                            Cov_rep = Cov_rep[, pos_VW],
                                            weight = weight,
                                            eps_hat = eps_hat[[index]],

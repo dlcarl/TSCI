@@ -19,7 +19,7 @@
 #'
 #' @importFrom stats resid lm rnorm quantile
 #'
-tsci_secondstage_stats <- function(D_rep, Cov_rep, weight, eps_hat, delta_hat, str_thol, B) {
+tsci_selection_stats <- function(D_rep, Cov_rep, weight, eps_hat, delta_hat, str_thol, B) {
   # this function returns the standard error of the trace of the matrix M (11),
   # the treatment effect estimate (14), the estimated iv strength (17), the iv strength threshold (18)
   # and D_resid used for the violation space selection (20, 23)
