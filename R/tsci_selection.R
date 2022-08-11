@@ -12,7 +12,7 @@
 #' @param Q the number of violation spaces (including the null space).
 #' @param weight n_A1 by n_A1 weight matrix.
 #' @param intercept logic, to include intercept in the outcome model or not.
-#' @param str_thol the minimal value of the threshold of IV strength test.
+#' @param iv_threshold the minimal value of the threshold of IV strength test.
 #' @param alpha alpha the significance level.
 #' @param B number of bootstrap samples.
 #'
@@ -69,7 +69,7 @@ tsci_selection <- function(Y,
                            Q,
                            weight,
                            intercept,
-                           str_thol,
+                           iv_threshold,
                            alpha,
                            B) {
   # this function performs violation space selection and calculates the output statistics
@@ -139,7 +139,7 @@ tsci_selection <- function(Y,
                                            weight = weight,
                                            eps_hat = eps_hat[[index]],
                                            delta_hat = delta_hat,
-                                           str_thol = str_thol,
+                                           iv_threshold = iv_threshold,
                                            B = B)
 
     # the necessary statistics

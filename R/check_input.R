@@ -7,7 +7,7 @@ check_input <- function(Y,
                         vio_space,
                         create_nested_sequence,
                         intercept,
-                        str_thol,
+                        iv_threshold,
                         alpha,
                         B,
                         tsci_method,
@@ -48,8 +48,8 @@ check_input <- function(Y,
     error_message <- paste(error_message, "intercept is neither TRUE nor FALSE.", sep = "\n")
   if (!is.logical(create_nested_sequence))
     error_message <- paste(error_message, "create_nested_sequence is neither TRUE nor FALSE.", sep = "\n")
-  if (!is.numeric(str_thol))
-    error_message <- paste(error_message, "str_thol is not numeric.", sep = "\n")
+  if (!is.numeric(iv_threshold))
+    error_message <- paste(error_message, "iv_threshold is not numeric.", sep = "\n")
   if (!is.numeric(alpha))
     error_message <- paste(error_message, "alpha is not numeric.", sep = "\n")
   if (!is.numeric(B))

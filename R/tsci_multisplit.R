@@ -9,7 +9,7 @@
 #' @param create_nested_sequence xxx
 #' @param A1_ind the indices of samples in A1 in the first split.
 #' @param intercept logical, including the intercept or not in the outcome model, default by TRUE.
-#' @param str_thol minimal value of the threshold of IV strength test.
+#' @param iv_threshold minimal value of the threshold of IV strength test.
 #' @param alpha the significance level.
 #' @param params a list containing the hyperparameters of the treatment model fitting method.
 #' @param function_hatmatrix a function to get the hat matrix of the treatment model.
@@ -45,7 +45,7 @@ tsci_multisplit <- function(df_treatment,
                             create_nested_sequence,
                             A1_ind,
                             intercept,
-                            str_thol,
+                            iv_threshold,
                             alpha,
                             params,
                             function_hatmatrix,
@@ -80,7 +80,7 @@ tsci_multisplit <- function(df_treatment,
     list_vio_space
     A1_ind
     intercept
-    str_thol
+    iv_threshold
     alpha
     params
     function_hatmatrix
@@ -95,7 +95,7 @@ tsci_multisplit <- function(df_treatment,
         W = W,
         list_vio_space = list_vio_space,
         intercept = intercept,
-        str_thol = str_thol,
+        iv_threshold = iv_threshold,
         split_prop = split_prop,
         alpha = alpha,
         params = params,

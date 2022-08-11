@@ -47,7 +47,7 @@
 #' to determine the best fitting order of polynomials for the treatment model.
 #' If \code{FALSE} k-fold cross validation is used instead.
 #' @param nfolds number of folds used for the k-fold cross-validation if \code{gcv} is \code{FALSE}.
-#' @param str_thol minimal value of the threshold of IV strength test.
+#' @param iv_threshold minimal value of the threshold of IV strength test.
 #' @param alpha the significance level.
 #' @param B number of bootstrap samples.
 #' Bootstrap methods are used to calculate the iv strength threshold and in the violation space selection.
@@ -184,7 +184,7 @@ tsci_poly <- function(Y,
                       conv_tol = 10^-6,
                       gcv = TRUE,
                       nfolds = 5,
-                      str_thol = 10,
+                      iv_threshold = 10,
                       alpha = 0.05,
                       B = 300) {
 
@@ -204,7 +204,7 @@ tsci_poly <- function(Y,
               conv_tol = conv_tol,
               gcv = gcv,
               nfolds = nfolds,
-              str_thol = str_thol,
+              iv_threshold = iv_threshold,
               alpha = alpha,
               B = B,
               tsci_method = "poly")
@@ -279,7 +279,7 @@ tsci_poly <- function(Y,
                       W = W,
                       list_vio_space = list_vio_space,
                       intercept = intercept,
-                      str_thol = str_thol,
+                      iv_threshold = iv_threshold,
                       split_prop = 1,
                       alpha = alpha,
                       params = poly_CV$params,

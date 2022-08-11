@@ -42,7 +42,7 @@
 #' @param early_stopping logical. If \code{TRUE} early stopping will be applied to
 #' choose the optimal number of boosting iteration using the cross-validation mean squared error.
 #' @param nfolds number of folds used for cross-validation to choose best parameter combination.
-#' @param str_thol minimal value of the threshold of IV strength test.
+#' @param iv_threshold minimal value of the threshold of IV strength test.
 #' @param alpha the significance level.
 #' @param nsplits number of times the data will be split. Has to be an integer larger or equal 1. See Details.
 #' @param mult_split_method method to calculate the standard errors and p-values.
@@ -227,7 +227,7 @@ tsci_boosting <- function(Y,
                           colsample_bytree = 1,
                           early_stopping = TRUE,
                           nfolds = 5,
-                          str_thol = 10,
+                          iv_threshold = 10,
                           alpha = 0.05,
                           parallel = "no",
                           nsplits = 10,
@@ -254,7 +254,7 @@ tsci_boosting <- function(Y,
               colsample_bytree = colsample_bytree,
               early_stopping = early_stopping,
               nfolds = nfolds,
-              str_thol = str_thol,
+              iv_threshold = iv_threshold,
               alpha = alpha,
               parallel = parallel,
               nsplits = nsplits,
@@ -328,7 +328,7 @@ tsci_boosting <- function(Y,
                              create_nested_sequence = create_nested_sequence,
                              A1_ind = A1_ind,
                              intercept = intercept,
-                             str_thol = str_thol,
+                             iv_threshold = iv_threshold,
                              alpha = alpha,
                              params = treeboost_CV$params_A2,
                              function_hatmatrix = get_l2boost_hatmatrix,

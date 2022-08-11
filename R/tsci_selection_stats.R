@@ -6,7 +6,7 @@
 #' @param weight n_A1 by n_A1 weight matrix
 #' @param eps_hat residuals in the outcome model
 #' @param delta_hat residuals in Random Forest corresponding to samples in A1
-#' @param str_thol the minimal value of the threshold of IV strength test
+#' @param iv_threshold the minimal value of the threshold of IV strength test
 #' @param B number of bootstrap samples
 #'
 #' @return:
@@ -19,7 +19,7 @@
 #'
 #' @importFrom stats resid lm rnorm quantile
 #'
-tsci_selection_stats <- function(D_rep, Cov_rep, weight, eps_hat, delta_hat, str_thol, B) {
+tsci_selection_stats <- function(D_rep, Cov_rep, weight, eps_hat, delta_hat, iv_threshold, B) {
   # this function returns the standard error of the trace of the matrix M (11),
   # the treatment effect estimate (14), the estimated iv strength (17), the iv strength threshold (18)
   # and D_resid used for the violation space selection (20, 23)
@@ -44,7 +44,7 @@ tsci_selection_stats <- function(D_rep, Cov_rep, weight, eps_hat, delta_hat, str
   delta_resid_matrix <- resid(lm(delta_rep_matrix ~ Cov_rep - 1))
   boot_vec <- apply(delta_resid_matrix, 2, FUN = function(delta_resid) sum(delta_resid^2) + 2 * sum(D_rep2 * delta_resid))
   iv_thol <- quantile(boot_vec, 0.975) /
-    SigmaSqD + max(2 * trace_M, str_thol)
+    SigmaSqD + max(2 * trace_M, iv_threshold)
   returnList <- list(
     sd = sd,
     D_resid = D_resid,

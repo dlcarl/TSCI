@@ -22,7 +22,7 @@ test_that("correct output for valid input", {
                            Q = Q,
                            weight = weight,
                            intercept = FALSE,
-                           str_thol = 10,
+                           iv_threshold = 10,
                            alpha = 0.05,
                            B = 300)
   expect_lt(abs(output$Coef_robust[1] - fit$coefficients[1]), 0.1)
