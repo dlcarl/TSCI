@@ -11,6 +11,8 @@
 #' @param intercept logical, including the intercept or not in the outcome model, default by TRUE.
 #' @param split_prop split_prop numeric, proportion of observations used to fit the outcome model.
 #' @param iv_threshold minimal value of the threshold of IV strength test, default by 10.
+#' @param threshold_boot logical. if \code{TRUE} it determines the threshold of the IV strength using a bootstrap approach.
+#' If \code{FALSE} it just used the value specified in \code{iv_threshold}.
 #' @param alpha the significance level, default by 0.05.
 #' @param params a list containing the hyperparameters of the treatment model fitting method.
 #' @param function_hatmatrix a function to get the hat matrix of the treatment model.
@@ -28,6 +30,7 @@ tsci_fit <- function(df_treatment,
                      list_vio_space,
                      intercept,
                      iv_threshold,
+                     threshold_boot,
                      split_prop,
                      alpha,
                      params,
@@ -75,6 +78,7 @@ tsci_fit <- function(df_treatment,
     weight = model_treatment$weight,
     intercept = intercept,
     iv_threshold = iv_threshold,
+    threshold_boot = threshold_boot,
     alpha = alpha,
     B = B
   )

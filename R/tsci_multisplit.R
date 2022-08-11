@@ -10,6 +10,8 @@
 #' @param A1_ind the indices of samples in A1 in the first split.
 #' @param intercept logical, including the intercept or not in the outcome model, default by TRUE.
 #' @param iv_threshold minimal value of the threshold of IV strength test.
+#' @param threshold_boot logical. if \code{TRUE} it determines the threshold of the IV strength using a bootstrap approach.
+#' If \code{FALSE} it just used the value specified in \code{iv_threshold}.
 #' @param alpha the significance level.
 #' @param params a list containing the hyperparameters of the treatment model fitting method.
 #' @param function_hatmatrix a function to get the hat matrix of the treatment model.
@@ -20,7 +22,7 @@
 #' @param ncores numeric, the number of cores used if multi_splitting is \code{TRUE}. \code{mclapply} form the package \code{parallel} will be called. Parallelization is not supported for Windows.
 #' @param mult_split_method method to for inference if multi-splitting is performed. Either 'DML' or 'FWER'.
 #' @param cl Either an parallel or snow cluster or \code{NULL}.
-#' @param B number of bootstrap samples
+#' @param B number of bootstrap samples.
 #'
 #' @return
 #'     \item{\code{Coef_all}}{the median over the multiple data splits of a series of point estimators of treatment effect corresponding to different violation spaces and the OLS}
@@ -46,6 +48,7 @@ tsci_multisplit <- function(df_treatment,
                             A1_ind,
                             intercept,
                             iv_threshold,
+                            threshold_boot,
                             alpha,
                             params,
                             function_hatmatrix,
@@ -96,6 +99,7 @@ tsci_multisplit <- function(df_treatment,
         list_vio_space = list_vio_space,
         intercept = intercept,
         iv_threshold = iv_threshold,
+        threshold_boot = threshold_boot,
         split_prop = split_prop,
         alpha = alpha,
         params = params,

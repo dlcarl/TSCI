@@ -48,6 +48,8 @@
 #' If \code{FALSE} k-fold cross validation is used instead.
 #' @param nfolds number of folds used for the k-fold cross-validation if \code{gcv} is \code{FALSE}.
 #' @param iv_threshold minimal value of the threshold of IV strength test.
+#' @param threshold_boot logical. if \code{TRUE} it determines the threshold of the IV strength using a bootstrap approach.
+#' If \code{FALSE} it just used the value specified in \code{iv_threshold}.
 #' @param alpha the significance level.
 #' @param B number of bootstrap samples.
 #' Bootstrap methods are used to calculate the iv strength threshold and in the violation space selection.
@@ -185,6 +187,7 @@ tsci_poly <- function(Y,
                       gcv = TRUE,
                       nfolds = 5,
                       iv_threshold = 10,
+                      threshold_boot = FALSE,
                       alpha = 0.05,
                       B = 300) {
 
@@ -205,6 +208,7 @@ tsci_poly <- function(Y,
               gcv = gcv,
               nfolds = nfolds,
               iv_threshold = iv_threshold,
+              threshold_boot = threshold_boot,
               alpha = alpha,
               B = B,
               tsci_method = "poly")
@@ -280,6 +284,7 @@ tsci_poly <- function(Y,
                       list_vio_space = list_vio_space,
                       intercept = intercept,
                       iv_threshold = iv_threshold,
+                      threshold_boot = threshold_boot,
                       split_prop = 1,
                       alpha = alpha,
                       params = poly_CV$params,

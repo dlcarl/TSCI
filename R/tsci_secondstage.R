@@ -28,6 +28,8 @@
 #' If \code{NULL} all observations will be used.
 #' @param intercept logical. If \code{TRUE} an intercept is included in the outcome model.
 #' @param iv_threshold minimal value of the threshold of IV strength test.
+#' @param threshold_boot logical. if \code{TRUE} it determines the threshold of the IV strength using a bootstrap approach.
+#' If \code{FALSE} it just used the value specified in \code{iv_threshold}.
 #' @param alpha the significance level.
 #' @param B number of bootstrap samples.
 #' Bootstrap methods are used to calculate the iv strength threshold and in the violation space selection.
@@ -171,6 +173,7 @@ tsci_secondstage <- function(Y,
                              A1_ind = NULL,
                              intercept = TRUE,
                              iv_threshold = 10,
+                             threshold_boot = FALSE,
                              alpha = 0.05,
                              B = 300) {
 
@@ -186,6 +189,7 @@ tsci_secondstage <- function(Y,
               A1_ind = A1_ind,
               intercept = intercept,
               iv_threshold = iv_threshold,
+              threshold_boot = threshold_boot,
               alpha = alpha,
               B = B,
               tsci_method = "user defined")
@@ -231,6 +235,7 @@ tsci_secondstage <- function(Y,
     weight = weight,
     intercept = intercept,
     iv_threshold = iv_threshold,
+    threshold_boot = threshold_boot,
     alpha = alpha,
     B = B
   )

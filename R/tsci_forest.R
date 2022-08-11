@@ -41,6 +41,8 @@
 #' @param self_predict logical, if \code{FALSE} it sets the diagonal of the hat matrix
 #' of each tree to zero to avoid self prediction and rescales the off-diagonal elements accordingly.
 #' @param iv_threshold minimal value of the threshold of IV strength test.
+#' @param threshold_boot logical. if \code{TRUE} it determines the threshold of the IV strength using a bootstrap approach.
+#' If \code{FALSE} it just used the value specified in \code{iv_threshold}.
 #' @param alpha the significance level.
 #' @param nsplits number of times the data will be split. Has to be an integer larger or equal 1. See Details.
 #' @param mult_split_method method to calculate the standard errors and p-values.
@@ -224,6 +226,7 @@ tsci_forest <- function(Y,
                         min_node_size = c(5, 10, 20),
                         self_predict = TRUE,
                         iv_threshold = 10,
+                        threshold_boot = FALSE,
                         alpha = 0.05,
                         nsplits = 10,
                         mult_split_method = c("FWER", "DML"),
@@ -249,6 +252,7 @@ tsci_forest <- function(Y,
               min_node_size = min_node_size,
               self_predict = self_predict,
               iv_threshold = iv_threshold,
+              threshold_boot = threshold_boot,
               alpha = alpha,
               parallel = parallel,
               nsplits = nsplits,
@@ -319,6 +323,7 @@ tsci_forest <- function(Y,
                              A1_ind = A1_ind,
                              intercept = intercept,
                              iv_threshold = iv_threshold,
+                             threshold_boot = threshold_boot,
                              alpha = alpha,
                              params = forest_OOB$params_A2,
                              function_hatmatrix = get_forest_hatmatrix,

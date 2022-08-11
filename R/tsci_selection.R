@@ -13,6 +13,8 @@
 #' @param weight n_A1 by n_A1 weight matrix.
 #' @param intercept logic, to include intercept in the outcome model or not.
 #' @param iv_threshold the minimal value of the threshold of IV strength test.
+#' @param threshold_boot logical. if \code{TRUE} it determines the threshold of the IV strength using a bootstrap approach.
+#' If \code{FALSE} it just used the value specified in \code{iv_threshold}.
 #' @param alpha alpha the significance level.
 #' @param B number of bootstrap samples.
 #'
@@ -70,6 +72,7 @@ tsci_selection <- function(Y,
                            weight,
                            intercept,
                            iv_threshold,
+                           threshold_boot,
                            alpha,
                            B) {
   # this function performs violation space selection and calculates the output statistics
@@ -135,12 +138,13 @@ tsci_selection <- function(Y,
     # the treatment effect estimate (14), the estimated iv strength (17), the iv strength threshold (18)
     # and D_resid used for the violation space selection (20, 23)
     stat_outputs <- tsci_selection_stats(D_rep = D_rep,
-                                           Cov_rep = Cov_rep[, pos_VW],
-                                           weight = weight,
-                                           eps_hat = eps_hat[[index]],
-                                           delta_hat = delta_hat,
-                                           iv_threshold = iv_threshold,
-                                           B = B)
+                                         Cov_rep = Cov_rep[, pos_VW],
+                                         weight = weight,
+                                         eps_hat = eps_hat[[index]],
+                                         delta_hat = delta_hat,
+                                         iv_threshold = iv_threshold,
+                                         threshold_boot = threshold_boot,
+                                         B = B)
 
     # the necessary statistics
     output$sd_all[index + 1] <- stat_outputs$sd

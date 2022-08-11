@@ -43,6 +43,8 @@
 #' choose the optimal number of boosting iteration using the cross-validation mean squared error.
 #' @param nfolds number of folds used for cross-validation to choose best parameter combination.
 #' @param iv_threshold minimal value of the threshold of IV strength test.
+#' @param threshold_boot logical. if \code{TRUE} it determines the threshold of the IV strength using a bootstrap approach.
+#' If \code{FALSE} it just used the value specified in \code{iv_threshold}.
 #' @param alpha the significance level.
 #' @param nsplits number of times the data will be split. Has to be an integer larger or equal 1. See Details.
 #' @param mult_split_method method to calculate the standard errors and p-values.
@@ -228,6 +230,7 @@ tsci_boosting <- function(Y,
                           early_stopping = TRUE,
                           nfolds = 5,
                           iv_threshold = 10,
+                          threshold_boot = FALSE,
                           alpha = 0.05,
                           parallel = "no",
                           nsplits = 10,
@@ -255,6 +258,7 @@ tsci_boosting <- function(Y,
               early_stopping = early_stopping,
               nfolds = nfolds,
               iv_threshold = iv_threshold,
+              threshold_boot = threshold_boot,
               alpha = alpha,
               parallel = parallel,
               nsplits = nsplits,
@@ -329,6 +333,7 @@ tsci_boosting <- function(Y,
                              A1_ind = A1_ind,
                              intercept = intercept,
                              iv_threshold = iv_threshold,
+                             threshold_boot = threshold_boot,
                              alpha = alpha,
                              params = treeboost_CV$params_A2,
                              function_hatmatrix = get_l2boost_hatmatrix,
