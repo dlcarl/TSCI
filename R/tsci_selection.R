@@ -162,13 +162,13 @@ tsci_selection <- function(Y,
   ivtest_vec <- (output$iv_str >= output$iv_thol)
   if (sum(ivtest_vec) == 0) {
     # if even for the empty space the instruments are too weak than raise a warning
-    warning("Weak IV, even if the IV is assumed to be valid; run OLS")
+    warning("Weak IV, even if the IV is assumed to be valid.")
     Qmax <- -1
   } else {
     Qmax <- sum(ivtest_vec) - 1
     if (Qmax == 0) {
       # if only for the empty space the instruments are strong enough than raise a warning as well
-      warning("Weak IV, if the IV is invalid. We still test the IV invalidity.")
+      warning("Weak IV, if the IV is invalid. Testing for violations not possible.")
     }
   }
 
