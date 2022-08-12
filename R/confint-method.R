@@ -14,7 +14,7 @@
 confint.tsci <- function(object, parm = NULL, level = 0.95, ...) {
   stopifnot(inherits(object, "tsci"))
   alpha <- 1 - level
-  conf_intervals <- t(cbind(object$CI_robust, object$CI_all))
+  conf_intervals <- t(cbind(object$CI_sel, object$CI_all))
 
   # checks if parm is of valid input and extracts the position of the coefficients
   # for which the CIs should be returned
@@ -39,14 +39,14 @@ confint.tsci <- function(object, parm = NULL, level = 0.95, ...) {
   # CIs need to be calculated if another confidence level as 1 - alpha is chosen
   if (level != (1 - object$alpha) & object$mult_split_method == "FWER") {
     if (is.null(object$coef_all_raw) |
-        is.null(object$coef_robust_raw) |
+        is.null(object$coef_sel_raw) |
         is.null(object$sd_all_raw) |
-        is.null(object$sd_robust_raw)) {
+        is.null(object$sd_sel_raw)) {
       stop("FWER controled confidence intervals cannot be calculated.
              Rerun the tsci fitting function with output_raw = TRUE")
     } else {
-      Coef_matrix <- cbind(object$coef_robust_raw, object$coef_all_raw)[, ind, drop = FALSE]
-      sd_matrix <- cbind(object$sd_robust_raw, object$sd_all_raw)[, ind, drop = FALSE]
+      Coef_matrix <- cbind(object$coef_sel_raw, object$coef_all_raw)[, ind, drop = FALSE]
+      sd_matrix <- cbind(object$sd_sel_raw, object$sd_all_raw)[, ind, drop = FALSE]
       conf_intervals <- t(sapply(seq_len(NCOL(Coef_matrix)),
                                  FUN = function(j) {get_FWER_CI(Coef = Coef_matrix[, j],
                                                                 SE = sd_matrix[, j],
@@ -54,12 +54,12 @@ confint.tsci <- function(object, parm = NULL, level = 0.95, ...) {
     }
   }
   if (level != (1 - object$alpha) & object$mult_split_method != "FWER") {
-    lower <- c(object$Coef_robust, object$Coef_all)[ind] - qnorm(1 - alpha / 2) * c(object$sd_robust, object$sd_all)[ind]
-    upper <- c(object$Coef_robust, object$Coef_all)[ind] + qnorm(1 - alpha / 2) * c(object$sd_robust, object$sd_all)[ind]
+    lower <- c(object$Coef_sel, object$Coef_all)[ind] - qnorm(1 - alpha / 2) * c(object$sd_sel, object$sd_all)[ind]
+    upper <- c(object$Coef_sel, object$Coef_all)[ind] + qnorm(1 - alpha / 2) * c(object$sd_sel, object$sd_all)[ind]
     conf_intervals <- cbind(lower, upper)
   }
   colnames(conf_intervals) <- c(paste(100 * alpha/2, "%"), paste(100*(1 - alpha/2), "%"))
-  rownames(conf_intervals) <- names(c(object$Coef_robust, object$Coef_all)[ind])
+  rownames(conf_intervals) <- names(c(object$Coef_sel, object$Coef_all)[ind])
 
   return(conf_intervals)
 }

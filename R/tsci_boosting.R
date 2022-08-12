@@ -122,7 +122,7 @@
 #' \code{eta}, \code{max_depth}, \code{subsample} or \code{colsample_bytree} has more than one value,
 #' the best parameter combination is chosen by minimizing the cross-validation mean squared error. \cr \cr
 #' The violation space candidates should be in a nested sequence as the violation space selection is performed
-#' by comparing the treatment estimate of each violation space cnadidate with the estimates of all
+#' by comparing the treatment estimate of each violation space candidate with the estimates of all
 #' violation space candidates further down the list \code{vio_space}. Only if there
 #' was no significant difference found in all of those comparisons, the violation space
 #' candidate will be selected. If \code{sel_method} is \code{TRUE} the treatment effect estimate of this

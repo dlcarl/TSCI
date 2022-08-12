@@ -13,6 +13,7 @@ tsci_poly(
   vio_space = NULL,
   create_nested_sequence = TRUE,
   intercept = TRUE,
+  sel_method = c("comparison", "conservative"),
   min_order = 1,
   max_order = 10,
   exact_order = NULL,
@@ -21,7 +22,8 @@ tsci_poly(
   conv_tol = 10^-6,
   gcv = TRUE,
   nfolds = 5,
-  str_thol = 10,
+  iv_threshold = 10,
+  threshold_boot = FALSE,
   alpha = 0.05,
   B = 300
 )
@@ -58,6 +60,8 @@ See Details for more information.}
 
 \item{intercept}{logical. If \code{TRUE} an intercept is included in the outcome model.}
 
+\item{sel_method}{The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.}
+
 \item{min_order}{either a single numeric value or a numeric vector of length s specifying
 the smallest order of polynomials to use in the selection of the treatment model. If a
 single numeric value, all the polynomials of all instrumental variables use this value.}
@@ -84,7 +88,10 @@ If \code{FALSE} k-fold cross validation is used instead.}
 
 \item{nfolds}{number of folds used for the k-fold cross-validation if \code{gcv} is \code{FALSE}.}
 
-\item{str_thol}{minimal value of the threshold of IV strength test.}
+\item{iv_threshold}{minimal value of the threshold of IV strength test.}
+
+\item{threshold_boot}{logical. if \code{TRUE} it determines the threshold of the IV strength using a bootstrap approach.
+If \code{FALSE} it just used the value specified in \code{iv_threshold}.}
 
 \item{alpha}{the significance level.}
 
@@ -146,10 +153,13 @@ and a linear combination of the baseline covariates and
 \eqn{g(Z_i X_i)} is approximated using the violation space candidates and by
 a linear combination the columns in \code{W}. The errors are allowed to be heteroscedastic. \cr \cr
 The violation space candidates should be in a nested sequence as the violation space selection is performed
-by comparing the treatment estimate of each violation space cnadidate with the estimates of all
+by comparing the treatment estimate of each violation space candidate with the estimates of all
 violation space candidates further down the list \code{vio_space}. Only if there
 was no significant difference found in all of those comparisons, the violation space
-candidate will be selected.
+candidate will be selected. If \code{sel_method} is \code{TRUE} the treatment effect estimate of this
+violation space candidate will be returned. If \code{sel_method} is \code{FALSE} the treatment effect estimate
+of the successive violation space candidate will be returned except if this violation space candidate would lead
+to a too weak instrumental variable strength.
 If \code{vio_space} is \code{NULL} the violation space candidates are chosen to be a nested sequence
 of polynomials of the instrumental variables up to the degrees used to fit the treatment model.
 This guarantees that the possible spaces the violation lives will be tested.

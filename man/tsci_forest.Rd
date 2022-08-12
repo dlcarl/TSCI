@@ -13,13 +13,15 @@ tsci_forest(
   vio_space,
   create_nested_sequence = TRUE,
   intercept = TRUE,
+  sel_method = c("comparison", "conservative"),
   split_prop = 2/3,
   num_trees = 200,
   mtry = list(function(p) round(sqrt(p))),
   max_depth = 0,
   min_node_size = c(5, 10, 20),
   self_predict = TRUE,
-  str_thol = 10,
+  iv_threshold = 10,
+  threshold_boot = FALSE,
   alpha = 0.05,
   nsplits = 10,
   mult_split_method = c("FWER", "DML"),
@@ -59,6 +61,8 @@ See Details for more information.}
 
 \item{intercept}{logical. If \code{TRUE} an intercept is included in the outcome model.}
 
+\item{sel_method}{The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.}
+
 \item{split_prop}{proportion of observations used to fit the outcome model. Has to be a value in (0, 1).}
 
 \item{num_trees}{number of trees in random forests.
@@ -79,7 +83,10 @@ Can either be a single integer value or a vector containing multiple integer val
 \item{self_predict}{logical, if \code{FALSE} it sets the diagonal of the hat matrix
 of each tree to zero to avoid self prediction and rescales the off-diagonal elements accordingly.}
 
-\item{str_thol}{minimal value of the threshold of IV strength test.}
+\item{iv_threshold}{minimal value of the threshold of IV strength test.}
+
+\item{threshold_boot}{logical. if \code{TRUE} it determines the threshold of the IV strength using a bootstrap approach.
+If \code{FALSE} it just used the value specified in \code{iv_threshold}.}
 
 \item{alpha}{the significance level.}
 
@@ -176,7 +183,10 @@ The violation space candidates should be in a nested sequence as the violation s
 by comparing the treatment estimate of each violation space cnadidate with the estimates of all
 violation space candidates further down the list \code{vio_space}. Only if there
 was no significant difference found in all of those comparisons, the violation space
-candidate will be selected. The specification of suitable violation space candidates is a crucial step because a poor approximation
+candidate will be selected. If \code{sel_method} is \code{TRUE} the treatment effect estimate of this
+violation space candidate will be returned. If \code{sel_method} is \code{FALSE} the treatment effect estimate
+of the successive violation space candidate will be returned except if this violation space candidate would lead
+to a too weak instrumental variable strength. The specification of suitable violation space candidates is a crucial step because a poor approximation
 of \eqn{g(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
 The function \code{\link[TSML]{create_monomials}} can be used to create a predefined sequence of violation space candidates (monomials).  \cr \cr
 \code{W} should be chosen to be flexible enough to approximate the functional form of how the covariates affect the outcome well

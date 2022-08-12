@@ -73,6 +73,7 @@ summary.tsci <- function(object,
 
     output_list <- list(coefficient = coef_df,
                         coefficients_all = coef_all_df,
+                        invalidity = object$invalidity,
                         iv_strength = IVStrength_df,
                         viospace_selection = ViolationSpace_DF,
                         treatment_model = TreatmentModel_df,

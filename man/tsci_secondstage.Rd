@@ -14,7 +14,9 @@ tsci_secondstage(
   weight,
   A1_ind = NULL,
   intercept = TRUE,
-  str_thol = 10,
+  sel_method = c("comparison", "conservative"),
+  iv_threshold = 10,
+  threshold_boot = FALSE,
   alpha = 0.05,
   B = 300
 )
@@ -50,7 +52,12 @@ If \code{NULL} all observations will be used.}
 
 \item{intercept}{logical. If \code{TRUE} an intercept is included in the outcome model.}
 
-\item{str_thol}{minimal value of the threshold of IV strength test.}
+\item{sel_method}{The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.}
+
+\item{iv_threshold}{minimal value of the threshold of IV strength test.}
+
+\item{threshold_boot}{logical. if \code{TRUE} it determines the threshold of the IV strength using a bootstrap approach.
+If \code{FALSE} it just used the value specified in \code{iv_threshold}.}
 
 \item{alpha}{the significance level.}
 
@@ -115,7 +122,10 @@ The violation space candidates should be in a nested sequence as the violation s
 by comparing the treatment estimate of each violation space cnadidate with the estimates of all
 violation space candidates further down the list \code{vio_space}. Only if there
 was no significant difference found in all of those comparisons, the violation space
-candidate will be selected.
+candidate will be selected. If \code{sel_method} is \code{TRUE} the treatment effect estimate of this
+violation space candidate will be returned. If \code{sel_method} is \code{FALSE} the treatment effect estimate
+of the successive violation space candidate will be returned except if this violation space candidate would lead
+to a too weak instrumental variable strength.
 The specification of suitable violation space candidates is a crucial step
 because a poor approximation of \eqn{g(Z_i, X_i)} might not address the bias
 caused by the violation of the IV assumption sufficiently.

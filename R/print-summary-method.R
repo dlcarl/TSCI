@@ -18,7 +18,7 @@ print.summary.tsci <- function(x, ...) {
   print(x$invalidity)
 
   # print coefficients
-  cat("\nTreatment effect estimate of selected violation space candidate:\n")
+  cat("\nTreatment effect estimate of selected violation space candidate(s):\n")
   coefficient_df <- data.frame(lapply(x$coefficient, FUN = function(y) if (is.numeric(y)) {round(y, 5)}  else {y}))
   rownames(coefficient_df) <- rownames(x$coefficient)
   colnames(coefficient_df) <- colnames(x$coefficient)

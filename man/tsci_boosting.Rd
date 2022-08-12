@@ -13,6 +13,7 @@ tsci_boosting(
   vio_space,
   create_nested_sequence = TRUE,
   intercept = TRUE,
+  sel_method = c("comparison", "conservative"),
   split_prop = 2/3,
   nrounds = 50,
   eta = 0.3,
@@ -21,7 +22,8 @@ tsci_boosting(
   colsample_bytree = 1,
   early_stopping = TRUE,
   nfolds = 5,
-  str_thol = 10,
+  iv_threshold = 10,
+  threshold_boot = FALSE,
   alpha = 0.05,
   parallel = "no",
   nsplits = 10,
@@ -61,6 +63,8 @@ See Details for more information.}
 
 \item{intercept}{logical. If \code{TRUE} an intercept is included in the outcome model.}
 
+\item{sel_method}{The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.}
+
 \item{split_prop}{proportion of observations used to fit the outcome model. Has to be a value in (0, 1).}
 
 \item{nrounds}{number of boosting iterations.
@@ -85,7 +89,10 @@ choose the optimal number of boosting iteration using the cross-validation mean 
 
 \item{nfolds}{number of folds used for cross-validation to choose best parameter combination.}
 
-\item{str_thol}{minimal value of the threshold of IV strength test.}
+\item{iv_threshold}{minimal value of the threshold of IV strength test.}
+
+\item{threshold_boot}{logical. if \code{TRUE} it determines the threshold of the IV strength using a bootstrap approach.
+If \code{FALSE} it just used the value specified in \code{iv_threshold}.}
 
 \item{alpha}{the significance level.}
 
@@ -178,11 +185,15 @@ where the proportion of number of observations in the two sets is specified by \
 The package \code{xgboost} is used for boosting. If any of \code{nrounds},
 \code{eta}, \code{max_depth}, \code{subsample} or \code{colsample_bytree} has more than one value,
 the best parameter combination is chosen by minimizing the cross-validation mean squared error. \cr \cr
-#' The violation space candidates should be in a nested sequence as the violation space selection is performed
-by comparing the treatment estimate of each violation space cnadidate with the estimates of all
+The violation space candidates should be in a nested sequence as the violation space selection is performed
+by comparing the treatment estimate of each violation space candidate with the estimates of all
 violation space candidates further down the list \code{vio_space}. Only if there
 was no significant difference found in all of those comparisons, the violation space
-candidate will be selected. The specification of suitable violation space candidates is a crucial step because a poor approximation
+candidate will be selected. If \code{sel_method} is \code{TRUE} the treatment effect estimate of this
+violation space candidate will be returned. If \code{sel_method} is \code{FALSE} the treatment effect estimate
+of the successive violation space candidate will be returned except if this violation space candidate would lead
+to a too weak instrumental variable strength.
+The specification of suitable violation space candidates is a crucial step because a poor approximation
 of \eqn{g(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
 The function \code{\link[TSML]{create_monomials}} can be used to create a predefined sequence of violation space candidates (monomials).  \cr \cr
 \code{W} should be chosen to be flexible enough to approximate the functional form of how the covariates affect the outcome well

@@ -137,7 +137,7 @@ tsci_selection <- function(Y,
                                          B = B)
 
     # the necessary statistics
-    output$sd_all[index + 1] <- stat_outputs$sd
+    output$sd_all[index] <- stat_outputs$sd
     output$iv_str[index] <- stat_outputs$iv_str
     output$iv_thol[index] <- stat_outputs$iv_thol
     D_resid[[index]] <- stat_outputs$D_resid
@@ -168,7 +168,7 @@ tsci_selection <- function(Y,
 
   # computes bias-corrected estimators (12)
   for (i in seq_len(Q)) {
-    output$Coef_all[i + 1] <- Coef_all[i] - sum(diag_M_list[[i]] * delta_hat * eps_hat[[i]]) / D_RSS[i]
+    output$Coef_all[i] <- Coef_all[i] - sum(diag_M_list[[i]] * delta_hat * eps_hat[[i]]) / D_RSS[i]
   }
 
   # if IV test fails at q0 (empty space) or q1, we do not need to do selection
@@ -227,20 +227,21 @@ tsci_selection <- function(Y,
     } else {
       q_comp <- min(which(sel_vec == 0)) - 1
     }
+  } else {
+    q_comp <- Qmax
   } # selection
 
   ### invalidity of TSLS
+  output$invalidity[] <- 0
   if (Qmax >= 1) {
     if (q_comp >= 1) {
-      output$invalidity[1] <- 0
       output$invalidity[2] <- 1
     } else {
       output$invalidity[1] <- 1
-      output$invalidity[2] <- 0
     }
   } else {
-    output$invalidity[1] <- 1
-    output$invalidity[2] <- 0
+    q_comp <- Qmax
+    output$invalidity[3] <- 1
   }
 
   # OLS estimator
@@ -249,9 +250,6 @@ tsci_selection <- function(Y,
 
   Coef_OLS <- OLS[1, 1]
   sd_OLS <- OLS[1, 2]
-  # add OLS to Coef_all
-  output$Coef_all[1] <- Coef_OLS
-  output$sd_all[1] <- sd_OLS
 
   # confidence intervals and p values for all violation spaces
   output$CI_all[] <-
@@ -266,22 +264,20 @@ tsci_selection <- function(Y,
   output$Qmax[] <- 0
   output$q_comp[] <- 0
   output$q_cons[] <- 0
-  if (Qmax >= 1) {
-    q_cons <- min(q_comp + 1, Qmax)
-  } else if (Qmax == 0) {
-    q_comp <- 0
-    q_cons <- 0
-  } else if (Qmax == -1) {
-    q_comp <- -1
-    q_cons <- -1
+  q_cons <- min(q_comp + 1, Qmax)
+  if (Qmax >= 0) {
+    if (sel_method == "comparison") {
+      output$Coef_sel[] <- output$Coef_all[q_comp + 1]
+      output$sd_sel[] <- output$sd_all[q_comp + 1]
+    } else if (sel_method == "conservative") {
+      output$Coef_sel[] <- output$Coef_all[q_cons + 1]
+      output$sd_sel[] <- output$sd_all[q_cons + 1]
+    }
+  } else {
+    output$Coef_sel[] <- Coef_OLS
+    output$sd_sel[] <- sd_OLS
   }
-  if (sel_method == "comparison") {
-    output$Coef_sel[] <- output$Coef_all[q_comp + 2]
-    output$sd_sel[] <- output$sd_all[q_comp + 2]
-  } else if (sel_method == "conservative") {
-    output$Coef_sel[] <- output$Coef_all[q_cons + 2]
-    output$sd_sel[] <- output$sd_all[q_cons + 2]
-  }
+
 
   output$Qmax[Qmax + 2] <- 1
   output$q_comp[q_comp + 2] <- 1
