@@ -252,24 +252,21 @@ tsci_selection <- function(Y,
       FUN = function(i) p_val(Coef = output$CI_all[i], SE = output$sd_all[i], beta_test = 0)
     )
 
+  # Even if the instrument is too weak, we still select the empty violation space.
+  if (Qmax == -1) Qmax <- q_comp <- q_cons <- 0
+
   ### estimated violation space and corresponding estimator.
   output$Qmax[] <- 0
   output$q_comp[] <- 0
   output$q_cons[] <- 0
   q_cons <- min(q_comp + 1, Qmax)
-  if (Qmax >= 0) {
-    if (sel_method == "comparison") {
-      output$Coef_sel[] <- output$Coef_all[q_comp + 1]
-      output$sd_sel[] <- output$sd_all[q_comp + 1]
-    } else if (sel_method == "conservative") {
-      output$Coef_sel[] <- output$Coef_all[q_cons + 1]
-      output$sd_sel[] <- output$sd_all[q_cons + 1]
-    }
-  } else {
-    # Even if the instrument is too weak, we still select the empty violation space.
-    Qmax <- q_comp <- q_cons <- 0
+  if (sel_method == "comparison") {
+    output$Coef_sel[] <- output$Coef_all[q_comp + 1]
+    output$sd_sel[] <- output$sd_all[q_comp + 1]
+  } else if (sel_method == "conservative") {
+    output$Coef_sel[] <- output$Coef_all[q_cons + 1]
+    output$sd_sel[] <- output$sd_all[q_cons + 1]
   }
-
 
   output$Qmax[Qmax + 1] <- 1
   output$q_comp[q_comp + 1] <- 1

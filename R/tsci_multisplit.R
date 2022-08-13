@@ -185,8 +185,8 @@ tsci_multisplit <- function(df_treatment,
                    nsplits_new,
                    " data splits were performed.",
                    error_string), call. = FALSE)
-  } else if (!is.null(error_string)) {
-    warning(error_string)
+  } else if (!is.null(check_list_outputs$error_string)) {
+    warning(check_list_outputs$error_string)
   }
 
   # aggregates outputs of data splits.
