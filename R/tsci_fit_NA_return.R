@@ -14,8 +14,8 @@ tsci_fit_NA_return <- function(Q) {
   colnames(CI_sel) <- names(Coef_sel)
   iv_str <- iv_thol <- rep(NA, Q)
   names(iv_str) <- names(iv_thol) <- paste("q", seq(0, Q - 1), sep = "")
-  Qmax <- q_comp <- q_cons <- rep(NA, Q + 1)
-  names(Qmax) <- names(q_comp) <- names(q_cons) <- c("weak_IV", paste("q", seq(0, Q - 1), sep = ""))
+  Qmax <- q_comp <- q_cons <- rep(NA, Q)
+  names(Qmax) <- names(q_comp) <- names(q_cons) <- paste("q", seq(0, Q - 1), sep = "")
   invalidity <- rep(NA, 3)
   names(invalidity) <- c("valid", "invalid", "non_testable")
 

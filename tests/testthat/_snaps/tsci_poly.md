@@ -20,12 +20,11 @@
       Estimation method: OLS with Polynomials 
       
       Statistics about the violation space selection:
-              q_comp q_cons Qmax
-      weak_IV      0      0    0
-      q0           0      0    0
-      q1           1      0    0
-      q2           0      1    0
-      q3           0      0    1
-      q4           0      0    0
-      q5           0      0    0
+         q_comp q_cons Qmax
+      q0      0      0    0
+      q1      1      0    0
+      q2      0      1    0
+      q3      0      0    1
+      q4      0      0    0
+      q5      0      0    0
 

@@ -22,11 +22,10 @@
       Estimation method: Random Forest 
       
       Statistics about the violation space selection:
-              q_comp q_cons Qmax
-      weak_IV      0      0    0
-      q0           0      0    0
-      q1           2      2    2
-      q2           0      0    0
-      q3           0      0    0
-      q4           0      0    0
+         q_comp q_cons Qmax
+      q0      0      0    0
+      q1      2      2    2
+      q2      0      0    0
+      q3      0      0    0
+      q4      0      0    0
 

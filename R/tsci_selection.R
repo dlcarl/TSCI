@@ -243,13 +243,6 @@ tsci_selection <- function(Y,
     output$invalidity[3] <- 1
   }
 
-  # OLS estimator.
-  summary_OLS <- summary(lm(Y ~ D + W - 1))
-  OLS <- summary_OLS$coefficients
-
-  Coef_OLS <- OLS[1, 1]
-  sd_OLS <- OLS[1, 2]
-
   # confidence intervals and p values for all violation spaces.
   output$CI_all[] <-
     rbind(output$Coef_all + qnorm(alpha / 2) * output$sd_all,
@@ -273,15 +266,14 @@ tsci_selection <- function(Y,
       output$sd_sel[] <- output$sd_all[q_cons + 1]
     }
   } else {
-    # if the instrument is too weak, use the OLS estimator of the outcome model instead.
-    output$Coef_sel[] <- Coef_OLS
-    output$sd_sel[] <- sd_OLS
+    # Even if the instrument is too weak, we still select the empty violation space.
+    Qmax <- q_comp <- q_cons <- 0
   }
 
 
-  output$Qmax[Qmax + 2] <- 1
-  output$q_comp[q_comp + 2] <- 1
-  output$q_cons[q_cons + 2] <- 1
+  output$Qmax[Qmax + 1] <- 1
+  output$q_comp[q_comp + 1] <- 1
+  output$q_cons[q_cons + 1] <- 1
 
   output$CI_sel[] <- rbind(
     output$Coef_sel + qnorm(alpha / 2) * output$sd_sel,
