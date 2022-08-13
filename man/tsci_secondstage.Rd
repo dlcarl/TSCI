@@ -48,7 +48,7 @@ See Details for more information.}
 
 \item{A1_ind}{indices of the observations that wil be used to fit the outcome model.
 Must be of same length as the number of rows and columns of \code{weight}.
-If \code{NULL} all observations will be used.}
+If \code{NULL}, all observations will be used.}
 
 \item{intercept}{logical. If \code{TRUE}, an intercept is included in the outcome model.}
 
