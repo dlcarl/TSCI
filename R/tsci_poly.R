@@ -28,32 +28,32 @@
 #' adding the next element of \code{vio_space} to the current violation matrix.
 #' If \code{FALSE,} the violation space candidates (in form of matrices) are defined as the empty space and the elements of \code{vio_space}.
 #' See Details for more information.
-#' @param intercept logical. If \code{TRUE} an intercept is included in the outcome model.
+#' @param intercept logical. If \code{TRUE}, an intercept is included in the outcome model.
 #' @param sel_method The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.
 #' @param min_order either a single numeric value or a numeric vector of length s specifying
 #' the smallest order of polynomials to use in the selection of the treatment model. If a
-#' single numeric value, all the polynomials of all instrumental variables use this value.
+#' single numeric value, the polynomials of all instrumental variables use this value.
 #' @param max_order either a single numeric value or a numeric vector of length s specifying
 #' the largest order of polynomials to use in the selection of the treatment model. If a
-#' single numeric value, all the polynomials of all instrumental variables use this value.
+#' single numeric value, the polynomials of all instrumental variables use this value.
 #' @param exact_order either a single numeric value or a numeric vector of length s specifying
 #' the exact order of polynomials to use in the treatment model. If a
-#' single numeric value, all the polynomials of all instrumental variables use this value.
+#' single numeric value, the polynomials of all instrumental variables use this value.
 #' @param order_selection_method method used to select the best fitting order of polynomials
 #' for the treatment model. Must be either 'backfitting' or 'grid search'.
 #' 'grid search' can be very slow if the number of instruments is large.
 #' @param max_iter number of iterations used in the backfitting algorithm if \code{order_selection_method} is 'backfitting'.
 #' @param conv_tol tolerance of convergence in the backfitting algorithm if \code{order_selection_method} is 'backfitting'.
-#' @param gcv logical. If \code{TRUE} the generalized cross validation mean squared error is used
+#' @param gcv logical. If \code{TRUE}, the generalized cross-validation mean squared error is used
 #' to determine the best fitting order of polynomials for the treatment model.
-#' If \code{FALSE} k-fold cross validation is used instead.
+#' If \code{FALSE}, k-fold cross-validation is used instead.
 #' @param nfolds number of folds used for the k-fold cross-validation if \code{gcv} is \code{FALSE}.
 #' @param iv_threshold minimal value of the threshold of IV strength test.
-#' @param threshold_boot logical. if \code{TRUE} it determines the threshold of the IV strength using a bootstrap approach.
-#' If \code{FALSE} it just used the value specified in \code{iv_threshold}.
+#' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
+#' If \code{FALSE}, it just uses the value specified in \code{iv_threshold}.
 #' @param alpha the significance level.
 #' @param B number of bootstrap samples.
-#' Bootstrap methods are used to calculate the iv strength threshold and for the violation space selection.
+#' Bootstrap methods are used to calculate the iv strength threshold if \code{threshold_boot} is \code{TRUE} and for the violation space selection.
 #'
 #' @return
 #' A list containing the following elements:
@@ -75,14 +75,15 @@
 #'     the selected violation space candidate(s).}
 #'     \item{\code{iv_str}}{IV strength using the different violation space candidates.}
 #'     \item{\code{iv_thol}}{the threshold for the IV strength using the different violation space candidates.}
-#'     \item{\code{Qmax}}{the median over the multiple data splits of the index of the
-#'     largest violation space selected by IV strength test.
-#'     If -1, the IV strength test fails for the empty violation space.
-#'     If 0, the IV Strength test fails for the first violation space.
-#'     In other cases, violation space selection is performed.}
-#'     \item{\code{q_comp}}{the median over the multiple data splits of the index of the selected violation space candidate by the comparison method.}
-#'     \item{\code{q_cons}}{the median over the multiple data splits of the index of the selected violation space candidate by the conservative method.}
-#'     \item{\code{invalidity}}{the number of data splits where the instrument was considered valid, invalid or too weak to test for violations.}
+#'     \item{\code{Qmax}}{the violation space candidate that was the largest violation space candidate
+#'     for which the IV strength was considered large enough determined by the IV strength test.
+#'     If 0, the IV Strength test failed for the first violation space candidate.
+#'     Otherwise, violation space selection was performed.}
+#'     \item{\code{q_comp}}{the violation space candidate that was selected by the comparison method over the multiple data splits.}
+#'     \item{\code{q_cons}}{the violation space candidate that was selected by the conservative method over the multiple data splits.}
+#'     \item{\code{invalidity}}{shows whether the instrumental variable(s) were considered valid, invalid or too weak to test for violations.
+#'     The instrumental variables are considered too weak to test for violations if the IV strength is already too weak using the first
+#'     violation space candidate (besides the empty violation space). Testing for violations is always performed by using the comparison method.}
 #'     \item{\code{mse}}{the out-of-sample mean squared error of the treatment model.}
 #'}
 #'

@@ -43,19 +43,19 @@
 #' of each tree to zero to avoid self-prediction and rescales the off-diagonal elements accordingly.
 #' @param iv_threshold minimal value of the threshold of IV strength test.
 #' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
-#' If \code{FALSE}, it just used the value specified in \code{iv_threshold}.
+#' If \code{FALSE}, it just uses the value specified in \code{iv_threshold}.
 #' @param alpha the significance level.
 #' @param nsplits number of times the data will be split. Has to be an integer larger or equal 1. See Details.
 #' @param mult_split_method method to calculate the standard errors, p-values and to construct the confidence intervals if multi-splitting is performed.
 #' Default is "DML" if \code{nsplits} == 1 and "FWER" otherwise. See Details.
-#' @param parallel One out of \code{"no"}, \code{"multicore"}, or \code{"snow"} specifying the parallelization method used.
+#' @param parallel one out of \code{"no"}, \code{"multicore"}, or \code{"snow"} specifying the parallelization method used.
 #' @param ncores the number of cores to use.
 #' @param cl either a parallel or snow cluster or \code{NULL}.
 #' @param raw_output logical. If \code{TRUE}, the coefficient and standard error estimates of each split will be returned.
 #' This is only needed for the use of the function \code{confint} if \code{mult_split_method} equals "FWER". Default is
 #' \code{TRUE} if \code{mult_split_method} is \code{TRUE} and \code{FALSE} otherwise.
 #' @param B number of bootstrap samples.
-#' Bootstrap methods are used to calculate the IV strength threshold and for the violation space selection.
+#' Bootstrap methods are used to calculate the IV strength threshold if \code{threshold_boot} is \code{TRUE} and for the violation space selection.
 #'
 #' @return
 #' A list containing the following elements:
@@ -79,9 +79,8 @@
 #'     \item{\code{iv_thol}}{the threshold for the IV strength using the different violation space candidates.}
 #'     \item{\code{Qmax}}{the frequency each violation space candidate was the largest violation space candidate
 #'     for which the IV strength was considered large enough determined by the IV strength test over the multiple data splits.
-#'     If -1, the IV strength test failed for the empty violation space.
 #'     If 0, the IV Strength test failed for the first violation space candidate.
-#'     In other cases, violation space selection was performed.}
+#'     Otherwise, violation space selection was performed.}
 #'     \item{\code{q_comp}}{the frequency each violation space candidate was selected by the comparison method over the multiple data splits.}
 #'     \item{\code{q_cons}}{the frequency each violation space candidate was selected by the conservative method over the multiple data splits.}
 #'     \item{\code{invalidity}}{the frequency the instrumental variable(s) were considered valid, invalid or too weak to test for violations.
