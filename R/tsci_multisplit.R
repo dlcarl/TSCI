@@ -6,13 +6,14 @@
 #' @param Z instrument variable with dimension n by 1.
 #' @param W (transformed) baseline covariates with dimension n by p_w used to fit the outcome model.
 #' @param vio_space vio_space a matrix or a list.
-#' @param create_nested_sequence xxx
+#' @param create_nested_sequence logical. If \code{TRUE}, a nested sequence of violation space
+#' candidates will be created.
 #' @param A1_ind the indices of samples in A1 in the first split.
 #' @param intercept logical, including the intercept or not in the outcome model, default by TRUE.
 #' @param sel_method The selection method used to estimate the treatment effect. Either "comparison" or "conservative".
 #' @param iv_threshold minimal value of the threshold of IV strength test.
-#' @param threshold_boot logical. if \code{TRUE} it determines the threshold of the IV strength using a bootstrap approach.
-#' If \code{FALSE} it just used the value specified in \code{iv_threshold}.
+#' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
+#' If \code{FALSE}, the value specified in \code{iv_threshold} is used only.
 #' @param alpha the significance level.
 #' @param params a list containing the hyperparameters of the treatment model fitting method.
 #' @param function_hatmatrix a function to get the hat matrix of the treatment model.
@@ -26,17 +27,21 @@
 #' @param B number of bootstrap samples.
 #'
 #' @return
-#'     \item{\code{Coef_all}}{the median over the multiple data splits of a series of point estimators of treatment effect corresponding to different violation spaces and the OLS}
-#'     \item{\code{sd_all}}{standard errors of Coef_all}
-#'     \item{\code{CI_all}}{confidence intervals for the treatment effect corresponding to different violation spaces and the OLS}
-#'     \item{\code{Coef_robust}}{the median over the multiple data splits of the point estimators corresponding to the violation space selected by the robust comparison}
-#'     \item{\code{sd_robust}}{the standard errors of Coef_robust}
-#'     \item{\code{CI_robust}}{confidence intervals for the treatment effect with the violation space selected by the robust comparison}
-#'     \item{\code{iv_str}}{the median over the multiple data splits of IV strength corresponding to different violation spaces}
-#'     \item{\code{iv_thol}}{the median over the multiple data splits of the threshold of IV strength test corresponding to different violation spaces}
-#'     \item{\code{Qmax}}{the median over the multiple data splits of the index of largest violation space selected by IV strength test. If -1, the IV strength test fails for null violation space and run OLS. If 0, the IV Strength test fails for the first violation space and run TSRF only for null violation space. In other cases, violation space selection is performed}
-#'     \item{\code{q_hat}}{the median over the multiple data splits of the index of estimated violation space corresponding to Qmax}
-#'     \item{\code{invalidity}}{the median over the multiple data splits of invalidity of TSLS. If TRUE, the IV is invalid; Otherwise, the IV is valid}
+#'     \item{\code{Coef_all}}{the median over the multiple data splits of a series of point estimators of treatment effect corresponding to different violation spaces.}
+#'     \item{\code{sd_all}}{standard errors of Coef_all.}
+#'     \item{\code{CI_all}}{confidence intervals for the treatment effect corresponding to different violation spaces.}
+#'     \item{\code{pval_all}}{p values for the treatment effect corresponding to different violation spaces.}
+#'     \item{\code{Coef_sel}}{the median over the multiple data splits of the point estimator of the selected violation space.}
+#'     \item{\code{sd_sel}}{the standard error of Coef_sel.}
+#'     \item{\code{CI_sel}}{confidence intervals for the treatment effect of the selected violation space.}
+#'     \item{\code{pval_sel}}{p value for the treatment effect of the selected violation space.}
+#'     \item{\code{iv_str}}{the median over the multiple data splits of IV strength corresponding to different violation spaces.}
+#'     \item{\code{iv_thol}}{the median over the multiple data splits of the threshold of IV strength test corresponding to different violation spaces.}
+#'     \item{\code{Qmax}}{the median over the multiple data splits of the index of largest violation space selected by IV strength test. If -1, the IV strength test fails for the empty violation space.
+#'     If 0, the IV Strength test fails for the first violation space. In other cases, violation space selection is performed.}
+#'     \item{\code{q_comp}}{the median over the multiple data splits of the index of the selected violation space candidate by the comparison method.}
+#'     \item{\code{q_cons}}{the median over the multiple data splits of the index of the selected violation space candidate by the conservative method.}
+#'     \item{\code{invalidity}}{the number of data splits where the instrument was considered valid, invalid or too weak to test for violations.}
 #' @noRd
 #'
 tsci_multisplit <- function(df_treatment,
@@ -70,10 +75,10 @@ tsci_multisplit <- function(df_treatment,
 
   # if two violation space candidates lead to significant different estimates of
   # the treatment effect the algorithm will select the violation space candidate
-  # that is further down the list. However, if the violation space candidates are not nested
+  # that is further down the list. However, if the violation space candidates are not nested,
   # it is not clear which of the candidates covers the violation better.
   if (!(list_vio_space$nested_sequence))
-    warning("Sequence of violation space candidates is not nested. Results might be nonsensical.")
+    warning("Sequence of violation space candidates is not nested. Results should be interpreted with care.")
 
   # sets up local environment for the calculations for each data split to handle potential error and warning messages better.
   tsci_parallel <- local({
@@ -138,7 +143,7 @@ tsci_multisplit <- function(df_treatment,
   }
 
   # if in less than 25% but at least in one data splits the output statistics could not be calculated,
-  # perfrom another set of 0.5 * nsplits data splits.
+  # perform another set of 0.5 * nsplits data splits.
   if (check_list_outputs$prop_na > 0) {
     nsplits_new <- ceiling(nsplits * 0.5)
     if (do_parallel) {

@@ -23,9 +23,7 @@ Suggests:
 Config/testthat/edition: 3
 Imports: 
     xgboost,
-    rpart,
     Rfast,
     stats,
     ranger,
-    parallel,
-    MASS
+    parallel

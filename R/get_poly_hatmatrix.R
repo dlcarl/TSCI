@@ -1,6 +1,7 @@
 #' @noRd
 get_poly_hatmatrix <- function(df_treatment_A1, params, ...) {
-  # this function calculates the hat matrix of the treatment model for A1 using a polynomial basis expansion.
+  # this function calculates the hat matrix of the treatment model for A1
+  # using a polynomial basis expansion.
   params <- unlist(params)
   A <- matrix(1, nrow = NROW(df_treatment_A1))
   for (j in seq_len(length(params))) {

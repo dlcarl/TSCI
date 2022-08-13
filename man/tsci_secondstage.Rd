@@ -38,10 +38,10 @@ or a numeric matrix with dimension n by p_w or \code{NULL}
 \item{vio_space}{list with numeric vectors of length n and/or numeric matrices with n rows as elements to
 specify the violation space candidates. See Details for more information.}
 
-\item{create_nested_sequence}{logical. If \code{TRUE} the violation space candidates (in form of matrices)
+\item{create_nested_sequence}{logical. If \code{TRUE}, the violation space candidates (in form of matrices)
 are defined sequentially starting with an empty violation matrix and subsequently
 adding the next element of \code{vio_space} to the current violation matrix.
-If \code{FALSE} the violation space candidates (in form of matrices) are defined as the elements of \code{vio_space}.
+If \code{FALSE,} the violation space candidates (in form of matrices) are defined as the empty space and the elements of \code{vio_space}.
 See Details for more information.}
 
 \item{weight}{the hat matrix of the treatment model.}
@@ -62,43 +62,36 @@ If \code{FALSE} it just used the value specified in \code{iv_threshold}.}
 \item{alpha}{the significance level.}
 
 \item{B}{number of bootstrap samples.
-Bootstrap methods are used to calculate the iv strength threshold and in the violation space selection.}
+Bootstrap methods are used to calculate the iv strength threshold and for the violation space selection.}
 }
 \value{
 A list containing the following elements:
 \describe{
 \item{\code{Coef_all}}{a series of point estimates of the treatment effect
-for the different violation space candidates and the OLS estimate.}
-\item{\code{sd_all}}{standard errors of Coef_all.}
-\item{\code{pval_all}}{p-values of the treatment effect estimates for the
-different violation space candidates and for the OLS estimate.}
-\item{\code{CI_all}}{confidence intervals for the treatment effect for the
-different violation space candidates and for the OLS estimate.}
-\item{\code{Coef_robust}}{the point estimators of the treatment effect for
-the selected violation spaces.}
-\item{\code{sd_robust}}{the standard errors of Coef_robust.}
-\item{\code{pval_robust}}{p-values of the treatment effect estimates for the
-selected violation spaces.}
-\item{\code{CI_robust}}{confidence intervals for the treatment effect for
-the selected violation spaces.}
-\item{\code{iv_str}}{IV strength for the different violation space candidates.}
-\item{\code{iv_thol}}{the threshold for the different violation space candidates.}
-\item{\code{Qmax}}{a named vector containing the number of times the
-violation space candidates were the largest acceptable violation space by
-the IV strength test.
-The value of the element named "OLS" is the number of times the instrument
-was too weak even for the empty violation space.}
-\item{\code{q_comp}}{a named vector containing the number of times the
-violation space candidates were the selected violation space.
-The value of the element named "OLS" is the number of times the instrument
-was too weak even for the empty violation space.}
-\item{\code{q_robust}}{a named vector containing the number of times the
-violation space candidates were the selected violation space by the robust method.
-The value of the element named "OLS" is the number of times the instrument
-was too weak even for the empty violation space.}
-\item{\code{invalidity}}{a named vector containing the number of times
-the instrument was considered valid and invalid. The instrument is considered
-invalid if the selected violation space is larger than the empty space.}
+obtained by the different violation space candidates.}
+\item{\code{sd_all}}{standard errors of the estimates of the treatmnet effect
+obtained by the different violation space candidates.}
+\item{\code{pval_all}}{p-values of the treatment effect estimates obtained by the
+different violation space candidates.}
+\item{\code{CI_all}}{confidence intervals for the treatment effect obtained by the
+different violation space candidates.}
+\item{\code{Coef_sel}}{the point estimator of the treatment effect obtained by
+the selected violation space candidate(s).}
+\item{\code{sd_sel}}{the standard error of Coef_sel.}
+\item{\code{pval_sel}}{p-value of the treatment effect estimate obtained by the
+selected violation space candidate(s).}
+\item{\code{CI_sel}}{confidence interval for the treatment effect obtained by
+the selected violation space candidate(s).}
+\item{\code{iv_str}}{IV strength using the different violation space candidates.}
+\item{\code{iv_thol}}{the threshold for the IV strength using the different violation space candidates.}
+\item{\code{Qmax}}{the median over the multiple data splits of the index of the
+largest violation space selected by IV strength test.
+If -1, the IV strength test fails for the empty violation space.
+If 0, the IV Strength test fails for the first violation space.
+In other cases, violation space selection is performed.}
+\item{\code{q_comp}}{the median over the multiple data splits of the index of the selected violation space candidate by the comparison method.}
+\item{\code{q_cons}}{the median over the multiple data splits of the index of the selected violation space candidate by the conservative method.}
+\item{\code{invalidity}}{the number of data splits where the instrument was considered valid, invalid or too weak to test for violations.}
 \item{\code{mse}}{the out-of-sample mean squared error of the treatment model.}
 }
 }
@@ -113,26 +106,26 @@ selected violation space will be returned amongst other relevant statistics.
 \details{
 The treatment and outcome models are assumed to be of the following forms:
 \deqn{D_i = f(Z_i, X_i) + \delta_i}
-\deqn{Y_i = \beta * D_i + g(Z_i, X_i) + \epsilon_i}
-where \eqn{f(Z_i, X_i)} is assumed to be estimated by the user and
-\eqn{g(Z_i X_i)} is approximated using the violation space candidates and by
-a linear combination of the columns in \code{W}. The errors are allowed to be heteroscedastic.
-\eqn{A1} is used to fit the outcome model. \cr \cr
+\deqn{Y_i = \beta * D_i + h(Z_i, X_i) + \phi(X_i) + \epsilon_i}
+where \eqn{f(Z_i, X_i)} is estimated using a random forest,
+\eqn{h(Z_i X_i)} is approximated using the hat matrix \code{weight} provided by the user and
+\eqn{\phi(X_i)} is approximated by a linear combination of the columns in \code{W}.
+The errors are allowed to be heteroscedastic. \eqn{A1} is used to perform violation space selection
+and to estimate the treatment effect. \cr \cr
 The violation space candidates should be in a nested sequence as the violation space selection is performed
-by comparing the treatment estimate of each violation space cnadidate with the estimates of all
-violation space candidates further down the list \code{vio_space}. Only if there
-was no significant difference found in all of those comparisons, the violation space
-candidate will be selected. If \code{sel_method} is \code{TRUE} the treatment effect estimate of this
-violation space candidate will be returned. If \code{sel_method} is \code{FALSE} the treatment effect estimate
-of the successive violation space candidate will be returned except if this violation space candidate would lead
-to a too weak instrumental variable strength.
-The specification of suitable violation space candidates is a crucial step
-because a poor approximation of \eqn{g(Z_i, X_i)} might not address the bias
-caused by the violation of the IV assumption sufficiently.
+by comparing the treatment estimate obtained by each violation space candidate with the estimates of all
+violation space candidates further down the list \code{vio_space} that provide enough IV strength. Only if no
+significant difference was found in all of those comparisons, the violation space
+candidate will be selected. If \code{sel_method} is 'comparison', the treatment effect estimate of this
+violation space candidate will be returned. If \code{sel_method} is 'conservative', the treatment effect estimate
+of the successive violation space candidate will be returned provided that the IV strength is large enough.
+The specification of suitable violation space candidates is a crucial step because a poor approximation
+of \eqn{g(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently well.
 The function \code{\link[TSML]{create_monomials}} can be used to create such a nested sequence for a
 predefined type of violation space candidates (monomials). \cr \cr
 }
 \examples{
+\dontrun{
 # dimension
 p <- 10
 # sample size
@@ -175,14 +168,9 @@ weight <- A \%*\% chol2inv(chol(t(A) \%*\% A)) \%*\% t(A)
 
 # Two Stage User Defined
 vio_space <- create_monomials(Z, 4, "monomials_main")
-output <- tsci_secondstage(Y, D, Z, X, vio_space = vio_space, weight = weight)
-# point estimates
-output$Coef_robust
-# standard errors
-output$sd_robust
-# confidence intervals
-output$CI_robust
-
+output_UP <- tsci_secondstage(Y, D, Z, X, vio_space = vio_space, weight = weight)
+summary(output_UP)
+}
 }
 \references{
 \itemize{

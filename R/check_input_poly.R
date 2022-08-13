@@ -7,6 +7,8 @@ check_input_poly <- function(error_message,
                              exact_order,
                              gcv,
                              ...) {
+  # this function checks if the input that is specific for tsci_poly
+  # is in the correct format and the values are valid.
   if (!check_values) {
     if (!is.numeric(min_order) & !is.null(min_order))
       error_message <- paste(error_message, "min_order is not numeric.", sep = "\n")

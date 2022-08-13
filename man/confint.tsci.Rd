@@ -9,11 +9,10 @@
 \arguments{
 \item{object}{a object of class 'tsci'.}
 
-\item{parm}{a specification of which parameters are to be given confidence intervals,
-either a vector of numbers or a vector of names or 'all'.
-If missing, the confidence interval for the selected violation space candidate of the
-robust method is returned. If 'all', the confidence intervals for all violation space candidates
-are returned.}
+\item{parm}{a specification of the parameters for which confidence intervals should be calculated.
+Either a vector of numbers or a vector of names or 'all'.
+If missing, the confidence interval of treatment effect estimate by violation space selection is returned.
+If 'all', the confidence intervals for all violation space candidates are returned.}
 
 \item{level}{the confidence level required.}
 

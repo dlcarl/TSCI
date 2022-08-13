@@ -5,6 +5,8 @@ check_input_secondstage <- function(error_message,
                                     A1_ind,
                                     weight,
                                     ...) {
+  # this function checks if the input that is specific for tsci_secondstage
+  # is in the correct format and the values are valid.
   if (!check_values) {
     if (!is.numeric(A1_ind) & !is.null(A1_ind))
       error_message <- paste(error_message, "A1_ind is neither numeric nor NULL.", sep = "\n")

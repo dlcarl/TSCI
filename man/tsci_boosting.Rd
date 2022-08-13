@@ -55,10 +55,10 @@ or a numeric matrix with dimension n by p_w or \code{NULL}
 \item{vio_space}{list with numeric vectors of length n and/or numeric matrices with n rows as elements to
 specify the violation space candidates. See Details for more information.}
 
-\item{create_nested_sequence}{logical. If \code{TRUE} the violation space candidates (in form of matrices)
+\item{create_nested_sequence}{logical. If \code{TRUE}, the violation space candidates (in form of matrices)
 are defined sequentially starting with an empty violation matrix and subsequently
 adding the next element of \code{vio_space} to the current violation matrix.
-If \code{FALSE} the violation space candidates (in form of matrices) are defined as the elements of \code{vio_space}.
+If \code{FALSE,} the violation space candidates (in form of matrices) are defined as the empty space and the elements of \code{vio_space}.
 See Details for more information.}
 
 \item{intercept}{logical. If \code{TRUE} an intercept is included in the outcome model.}
@@ -100,60 +100,50 @@ If \code{FALSE} it just used the value specified in \code{iv_threshold}.}
 
 \item{nsplits}{number of times the data will be split. Has to be an integer larger or equal 1. See Details.}
 
-\item{mult_split_method}{method to calculate the standard errors and p-values.
-and to construct the confidence intervals if multi-splitting is performed. Default is "FWER" if \code{nsplits} > 1 and
-"DML" otherwise. See Details.}
+\item{mult_split_method}{method to calculate the standard errors, p-values and to construct the confidence intervals if multi-splitting is performed.
+Default is "DML" if \code{nsplits} == 1 and "FWER" otherwise. See Details.}
 
 \item{ncores}{the number of cores to use.}
 
-\item{cl}{either an parallel or snow cluster or \code{NULL}.}
+\item{cl}{either a parallel or snow cluster or \code{NULL}.}
 
-\item{raw_output}{logical. If \code{TRUE} the coefficient and standard error estimates of each split will be returned.
-This is only needed if \code{mult_split_method} equals "FWER" and the function \code{confint} will be used. Default is
+\item{raw_output}{logical. If \code{TRUE}, the coefficient and standard error estimates of each split will be returned.
+This is only needed for the use of the function \code{confint} if \code{mult_split_method} equals "FWER". Default is
 \code{TRUE} if \code{mult_split_method} is \code{TRUE} and \code{FALSE} otherwise.}
 
 \item{B}{number of bootstrap samples.
-Bootstrap methods are used to calculate the iv strength threshold and in the violation space selection.}
+Bootstrap methods are used to calculate the IV strength threshold and for the violation space selection.}
 }
 \value{
 A list containing the following elements:
 \describe{
 \item{\code{Coef_all}}{a series of point estimates of the treatment effect
-for the different violation space candidates and the OLS estimate.}
-\item{\code{sd_all}}{standard errors of Coef_all.}
-\item{\code{pval_all}}{p-values of the treatment effect estimates for the
-different violation space candidates and for the OLS estimate.}
-\item{\code{CI_all}}{confidence intervals for the treatment effect for the
-different violation space candidates and for the OLS estimate.}
-\item{\code{Coef_robust}}{the point estimators of the treatment effect for
-the selected violation spaces.}
-\item{\code{sd_robust}}{the standard errors of Coef_robust.}
-\item{\code{pval_robust}}{p-values of the treatment effect estimates for the
-selected violation spaces.}
-\item{\code{CI_robust}}{confidence intervals for the treatment effect for
-the selected violation spaces.}
-\item{\code{iv_str}}{IV strength for the different violation space candidates.}
-\item{\code{iv_thol}}{the threshold for the different violation space candidates.}
-\item{\code{Qmax}}{a named vector containing the number of times the
-violation space candidates were the largest acceptable violation space by
-the IV strength test.
-The value of the element named "OLS" is the number of times the instrument
-was too weak even for the empty violation space.}
-\item{\code{q_comp}}{a named vector containing the number of times the
-violation space candidates were the selected violation space.
-The value of the element named "OLS" is the number of times the instrument
-was too weak even for the empty violation space.}
-\item{\code{q_robust}}{a named vector containing the number of times the
-violation space candidates were the selected violation space by the robust method.
-The value of the element named "OLS" is the number of times the instrument
-was too weak even for the empty violation space.}
-\item{\code{invalidity}}{a named vector containing the number of times
-the instrument was considered valid and invalid. The instrument is considered
-invalid if the selected violation space is larger than the empty space.}
-\item{\code{FirstStage_rse}}{residual standard error of the fitted treatment model.}
-\item{\code{FirstStage_Rsquared}}{R-squared of the fitted treatment model.}
-\item{\code{FirstStage_rse}}{a named vector containing the residual standard error of the fitted outcome model for each violation space candidate.}
-\item{\code{FirstStage_Rsquared}}{a named vector containing the R-squared of the fitted outcome model for each violation space candidate.}
+obtained by the different violation space candidates.}
+\item{\code{sd_all}}{standard errors of the estimates of the treatmnet effect
+obtained by the different violation space candidates.}
+\item{\code{pval_all}}{p-values of the treatment effect estimates obtained by the
+different violation space candidates.}
+\item{\code{CI_all}}{confidence intervals for the treatment effect obtained by the
+different violation space candidates.}
+\item{\code{Coef_sel}}{the point estimator of the treatment effect obtained by
+the selected violation space candidate(s).}
+\item{\code{sd_sel}}{the standard error of Coef_sel.}
+\item{\code{pval_sel}}{p-value of the treatment effect estimate obtained by the
+selected violation space candidate(s).}
+\item{\code{CI_sel}}{confidence interval for the treatment effect obtained by
+the selected violation space candidate(s).}
+\item{\code{iv_str}}{IV strength using the different violation space candidates.}
+\item{\code{iv_thol}}{the threshold for the IV strength using the different violation space candidates.}
+\item{\code{Qmax}}{the frequency each violation space candidate was the largest violation space candidate
+for which the IV strength was considered large enough determined by the IV strength test over the multiple data splits.
+If -1, the IV strength test failed for the empty violation space.
+If 0, the IV Strength test failed for the first violation space candidate.
+In other cases, violation space selection was performed.}
+\item{\code{q_comp}}{the frequency each violation space candidate was selected by the comparison method over the multiple data splits.}
+\item{\code{q_cons}}{the frequency each violation space candidate was selected by the conservative method over the multiple data splits.}
+\item{\code{invalidity}}{the frequency the instrumental variable(s) were considered valid, invalid or too weak to test for violations.
+The instrumental variables are considered too weak to test for violations if the IV strength is already too weak using the first
+violation space candidate (besides the empty violation space). Testing for violations is always performed by using the comparison method.}
 \item{\code{mse}}{the out-of-sample mean squared error of the fitted treatment model.}
 \item{\code{FirstStage_model}}{the method used to fit the treatment model.}
 \item{\code{FirstStage_params}}{the hyperparameter combination used to fit the treatment model.}
@@ -166,7 +156,7 @@ invalid if the selected violation space is larger than the empty space.}
 }
 \description{
 \code{tsci_boosting} implements Two Stage Curvature Identification
-(Guo and Bühlmann 2022) with boosting. Through a data-dependent way it
+(Guo and Bühlmann 2022) with boosting. Through a data-dependent way, it
 tests for the smallest sufficiently large violation space among a pre-specified
 sequence of nested violation space candidates. Point and uncertainty estimates
 of the treatment effect for all violation space candidates including the
@@ -175,46 +165,47 @@ selected violation space will be returned amongst other relevant statistics.
 \details{
 The treatment and outcome models are assumed to be of the following forms:
 \deqn{D_i = f(Z_i, X_i) + \delta_i}
-\deqn{Y_i = \beta * D_i + g(Z_i, X_i) + \epsilon_i}
-where \eqn{f(Z_i, X_i)} is estimated using L2 boosting with regression trees as base learners and
-\eqn{g(Z_i X_i)} is approximated using the violation space candidates and by
+\deqn{Y_i = \beta * D_i + h(Z_i, X_i) + \phi(X_i) + \epsilon_i}
+where \eqn{f(Z_i, X_i)} is estimated using L2 boosting with regression trees as base learners,
+\eqn{h(Z_i X_i)} is approximated using the violation space candidates and \eqn{\phi(X_i)} is approximated by
 a linear combination of the columns in \code{W}. The errors are allowed to be heteroscedastic.
 To avoid overfitting bias the data is randomly split into two subsets \eqn{A1} and \eqn{A2}
-where the proportion of number of observations in the two sets is specified by \code{split_prop}.
-\eqn{A2} is used to train the boosting model and \eqn{A1} is used to fit the outcome model. \cr \cr
+where the proportion of observations in the two sets is specified by \code{split_prop}.
+\eqn{A2} is used to train the random forest and \eqn{A1} is used to perform violation space selection
+and to estimate the treatment effect. \cr \cr
 The package \code{xgboost} is used for boosting. If any of \code{nrounds},
 \code{eta}, \code{max_depth}, \code{subsample} or \code{colsample_bytree} has more than one value,
 the best parameter combination is chosen by minimizing the cross-validation mean squared error. \cr \cr
 The violation space candidates should be in a nested sequence as the violation space selection is performed
-by comparing the treatment estimate of each violation space candidate with the estimates of all
-violation space candidates further down the list \code{vio_space}. Only if there
-was no significant difference found in all of those comparisons, the violation space
-candidate will be selected. If \code{sel_method} is \code{TRUE} the treatment effect estimate of this
-violation space candidate will be returned. If \code{sel_method} is \code{FALSE} the treatment effect estimate
-of the successive violation space candidate will be returned except if this violation space candidate would lead
-to a too weak instrumental variable strength.
+by comparing the treatment estimate obtained by each violation space candidate with the estimates of all
+violation space candidates further down the list \code{vio_space} that provide enough IV strength. Only if no
+significant difference was found in all of those comparisons, the violation space
+candidate will be selected. If \code{sel_method} is 'comparison', the treatment effect estimate of this
+violation space candidate will be returned. If \code{sel_method} is 'conservative', the treatment effect estimate
+of the successive violation space candidate will be returned provided that the IV strength is large enough.
 The specification of suitable violation space candidates is a crucial step because a poor approximation
-of \eqn{g(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently.
+of \eqn{g(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently well.
 The function \code{\link[TSML]{create_monomials}} can be used to create a predefined sequence of violation space candidates (monomials).  \cr \cr
-\code{W} should be chosen to be flexible enough to approximate the functional form of how the covariates affect the outcome well
+\code{W} should be chosen to be flexible enough to approximate the functional form of \eqn{\phi} well
 as otherwise the treatment estimator might be biased. \cr \cr
 \code{nsplits} specifies the number of data splits that should be performed.
 For each data split the output statistics such as the point estimates of the
-treatment effects are calculated. Those statistics will then be aggregated
-to over the different data splits. It is recommended to perform multiple data splits
+treatment effect are calculated. Those statistics will then be aggregated
+over the different data splits. It is recommended to perform multiple data splits
 as data splitting introduces additional randomness. By aggregating the results
-of multiple data splits the effects of this randomness can be decreased.
-If \code{nsplits} is larger than 1, point estimates are aggregated by medians
-and standard errors, p-values and confidence intervals are obtained by the method
+of multiple data splits, the effects of this randomness can be decreased.
+If \code{nsplits} is larger than 1, point estimates are aggregated by medians.
+Standard errors, p-values and confidence intervals are obtained by the method
 specified by the parameter \code{mult_split_method}. 'DML' uses the approach by
 Chernozhukov et al. (2018). 'FWER' uses the approach by Meinshausen et al. (2009)
 and controls for the family-wise error rate. 'FWER' does not provide standard errors.
-For large sample sizes a large values for \code{nsplits} can lead to a high
+For large sample sizes, a large values for \code{nsplits} can lead to a high
 running time as for each split a new hat matrix must be calculated.
 The same parameter combination for the boosting model is used for all n splits and
 is selected by a separate data split.
 }
 \examples{
+\dontrun{
 # dimension
 p <- 10
 # sample size
@@ -255,12 +246,8 @@ Y <- D * beta + tau * Z + X \%*\% gamma + Error[, 2]
 # Two Stage L2 Boosting
 vio_space <- create_monomials(Z, 4, "monomials_main")
 output_BO <- tsci_boosting(Y, D, Z, X, vio_space = vio_space)
-# point estimates
-output_BO$Coef_robust
-# standard errors
-output_BO$sd_robust
-# confidence intervals
-output_BO$CI_robust
+summary(output_BO)
+}
 }
 \references{
 \itemize{

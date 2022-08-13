@@ -17,10 +17,10 @@ check_input <- function(Y,
   # This functions checks if the input parameters are in a valid format and
   # if the input values are possible.
 
-  # initialize error message
+  # initializes error message.
   error_message <- NULL
 
-  # input parameters shared by all tsci functions (except for X in tsci_secondstage)
+  # checks input parameters shared by all tsci functions (except for X in tsci_secondstage).
   if (!is.numeric(as.matrix(Y)))
     error_message <- paste(error_message, "Y is not numeric.", sep = "\n")
   if (!is.numeric(as.matrix(D)))
@@ -36,13 +36,13 @@ check_input <- function(Y,
       error_message <- paste(error_message, "W is not numeric.", sep = "\n")
   }
   if (is.null(vio_space) & tsci_method != "poly") {
-    error_message <- paste(error_message, "vio_space must be provided", sep = "\n")
+    error_message <- paste(error_message, "vio_space must be provided.", sep = "\n")
   } else {
     if (!is.null(vio_space) & !is.list(vio_space)) {
-      error_message <- paste(error_message, "vio_space is not a list", sep = "\n")
+      error_message <- paste(error_message, "vio_space is not a list.", sep = "\n")
     } else if (is.list(vio_space)) {
       if (!is.numeric(unlist(vio_space)))
-        error_message <- paste(error_message, "vio_space is not numeric", sep = "\n")
+        error_message <- paste(error_message, "vio_space is not numeric.", sep = "\n")
     }
   }
   if (!is.logical(intercept))
@@ -58,39 +58,40 @@ check_input <- function(Y,
   if (!is.numeric(B))
     error_message <- paste(error_message, "B is not numeric.", sep = "\n")
 
-  # input parameters of tsci_forest
+  # checks input parameters of tsci_forest.
   if (tsci_method == "random forest")
     error_message <- check_input_forest(error_message = error_message,
                                         check_values = FALSE,
                                         ...)
 
 
-  # input parameters of tsci_boosting
+  # checks input parameters of tsci_boosting.
   if (tsci_method == "boosting")
   error_message <- check_input_boosting(error_message = error_message,
                                         check_values = FALSE,
                                         ...)
 
-  # input parameters of tsci_poly
+  # checks input parameters of tsci_poly.
   if (tsci_method == "poly")
     error_message <- check_input_poly(error_message = error_message,
                                       check_values = FALSE,
                                       Z = Z,
                                       ...)
 
-  # input parameters used when the user provides the hat matrix
+  # checks input parameters of tsci_secondstage.
   if (tsci_method == "user defined")
     error_message <- check_input_secondstage(error_message = error_message,
                                              check_values = FALSE,
                                              Y = Y,
                                              ...)
 
-  # if at least one input parameter was not in the correct format raise error.
+  # Raises error if at least one input parameter was not in the correct format.
   if (!is.null(error_message))
     stop(error_message)
 
-  # if all input parameters are of valid format check further if the values themselves are possible
-  # input parameters shared by all tsci functions
+  # if all input parameters are of valid format checks further if the values themselves are possible.
+
+  # checks input parameters shared by all tsci functions.
   if (length(unique(sapply(list(Y, D, Z), FUN = function(variable) NROW(variable)))) > 1) {
     error_message <- paste(error_message, "Y, D and Z have not the same number of observations.", sep = "\n")
   } else {
@@ -120,34 +121,34 @@ check_input <- function(Y,
   if (alpha > 1)
     error_message <- paste(error_message, "alpha cannot be larger than 1.", sep = "\n")
 
-  # input parameters of tsci_forest
+  # checks input parameters of tsci_forest.
   if (tsci_method == "random forest")
     error_message <- check_input_forest(error_message = error_message,
                                         check_values = TRUE,
                                         ...)
 
 
-  # input parameters of tsci_boosting
+  # checks input parameters of tsci_boosting.
   if (tsci_method == "boosting")
     error_message <- check_input_boosting(error_message = error_message,
                                           check_values = TRUE,
                                           ...)
 
-  # input parameters of tsci_poly
+  # checks input parameters of tsci_poly.
   if (tsci_method == "poly")
     error_message <- check_input_poly(error_message = error_message,
                                       check_values = TRUE,
                                       Z = Z,
                                       ...)
 
-  # input parameters used when the user provides the hat matrix
+  # checks input parameters used when the user provides the hat matrix.
   if (tsci_method == "user defined")
     error_message <- check_input_secondstage(error_message = error_message,
                                              check_values = TRUE,
                                              Y = Y,
                                              ...)
 
-  # if at least one input parameter had non possible values raise error.
+  # Raises error if at least one input parameter had non possible values.
   if (!is.null(error_message))
     stop(error_message)
 }

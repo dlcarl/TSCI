@@ -1,8 +1,8 @@
 #' @noRd
 check_output <- function(list_outputs, ind_start) {
-  # this functions checks if errors occured in each sample split.
-  # It returns the proportion and position of data splits in which NAs occured and
-  # the error message that were raised in this data splits
+  # this functions checks if errors occurred in each sample split.
+  # it returns the proportion and position of data splits in which NA's occurred and
+  # the error messages that were raised in this data splits.
   n <- length(list_outputs)
   ind_na <- sapply(list_outputs, FUN = function(x) any(is.na(x$value)))
   prop_na <- sum(ind_na) / n
@@ -13,7 +13,7 @@ check_output <- function(list_outputs, ind_start) {
   for (i in seq_len(n)) {
     if(!is.null(errors[[i]]) | !is.null(messages[[i]]) | !is.null(warnings[[i]])){
       error_string <- paste(error_string, paste("split", i + ind_start - 1),
-                            "The following errors occured:",
+                            "The following errors occurred:",
                             errors[[i]],
                             "The following warnings were raised:",
                             warnings[[i]],

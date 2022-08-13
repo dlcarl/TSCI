@@ -1,17 +1,18 @@
 #' Confidence Intervals of Treatment Effect Estimates for TSCI Fits.
 #'
 #' @param object a object of class 'tsci'.
-#' @param parm a specification of which parameters are to be given confidence intervals,
-#' either a vector of numbers or a vector of names or 'all'.
-#' If missing, the confidence interval for the selected violation space candidate of the
-#' robust method is returned. If 'all', the confidence intervals for all violation space candidates
-#' are returned.
+#' @param parm a specification of the parameters for which confidence intervals should be calculated.
+#' Either a vector of numbers or a vector of names or 'all'.
+#' If missing, the confidence interval of treatment effect estimate by violation space selection is returned.
+#' If 'all', the confidence intervals for all violation space candidates are returned.
 #' @param level the confidence level required.
 #' @param ... additional argument(s) for methods.
 #'
 #' @return a matrix containing the confidence intervals.
 #' @export
 confint.tsci <- function(object, parm = NULL, level = 0.95, ...) {
+  # this functions calculates the confidence intervals for the treatment effect estimates at
+  # the desired level.
   stopifnot(inherits(object, "tsci"))
   alpha <- 1 - level
   conf_intervals <- t(cbind(object$CI_sel, object$CI_all))
@@ -36,14 +37,14 @@ confint.tsci <- function(object, parm = NULL, level = 0.95, ...) {
   }
   conf_intervals <- conf_intervals[ind, , drop = FALSE]
 
-  # CIs need to be calculated if another confidence level as 1 - alpha is chosen
+  # CIs need to be calculated if another confidence level as 1 - alpha is chosen.
   if (level != (1 - object$alpha) & object$mult_split_method == "FWER") {
     if (is.null(object$coef_all_raw) |
         is.null(object$coef_sel_raw) |
         is.null(object$sd_all_raw) |
         is.null(object$sd_sel_raw)) {
       stop("FWER controled confidence intervals cannot be calculated.
-             Rerun the tsci fitting function with output_raw = TRUE")
+             Rerun the tsci fitting function with 'output_raw' = TRUE.")
     } else {
       Coef_matrix <- cbind(object$coef_sel_raw, object$coef_all_raw)[, ind, drop = FALSE]
       sd_matrix <- cbind(object$sd_sel_raw, object$sd_all_raw)[, ind, drop = FALSE]

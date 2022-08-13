@@ -26,7 +26,7 @@ create_monomials <- function(Z, degree, type = c("monomials_main", "monomials_fu
   # this function creates a ordered list. Each element consists of a matrix where
   # the columns are monomials of the same degree.
 
-  # check if input is in the correct format and valid
+  # checks if input is in the correct format and valid.
   error_message <- NULL
   if (!is.numeric(Z))
     error_message <- paste(error_message, "Z is not numeric.", sep = "\n")
@@ -40,7 +40,7 @@ create_monomials <- function(Z, degree, type = c("monomials_main", "monomials_fu
 
   type <- match.arg(type)
 
-  # builds monomials
+  # builds monomials.
   Z <- as.matrix(Z)
   n <- NROW(Z)
   p <- NCOL(Z)
@@ -51,7 +51,7 @@ create_monomials <- function(Z, degree, type = c("monomials_main", "monomials_fu
   for (q in seq_len(max(degree))) {
     if (type == "monomials_full") {
       # starts with a constant. multiplies each instrumental variable with all columns
-      # obtained from the previous iteration for which degree is not reached.
+      # obtained from the previous iteration for which 'degree' is not reached.
       current_monomials_degrees <- matrix(NA, nrow = p, ncol = p * NCOL(monomials[[q]]))
       current_monomials <- matrix(NA, nrow = n, ncol = p * NCOL(monomials[[q]]))
       for (i in seq_len(NCOL(monomials[[q]]))) {
@@ -63,7 +63,7 @@ create_monomials <- function(Z, degree, type = c("monomials_main", "monomials_fu
         }
       }
     } else if (type == "monomials_main") {
-      # similar than how 'monomials_full' works but without interactions
+      # works similar as 'monomials_full' but without interactions.
       current_monomials_degrees <- matrix(NA, nrow = p, ncol = NCOL(monomials[[q]]))
       current_monomials <- matrix(NA, nrow = n, ncol = NCOL(monomials[[q]]))
       if (q == 1) {
@@ -83,7 +83,7 @@ create_monomials <- function(Z, degree, type = c("monomials_main", "monomials_fu
         }
       }
     }
-    # removes duplicated rows
+    # removes duplicate rows.
     pos <- apply(current_monomials, 2, function(x) all(!is.na(x)))
     current_monomials <- current_monomials[, pos, drop = FALSE]
     current_monomials_degrees <- current_monomials_degrees[, pos, drop = FALSE]

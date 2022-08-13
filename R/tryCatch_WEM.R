@@ -13,7 +13,7 @@
 #' @param expr expression to be evaluated.
 #' @param ret.obj ret.obj return argument ret.obj (input) if an error occcurs.
 #'
-#' @return a list with value, error warning and message
+#' @return a list with value, error warning and message.
 #' @noRd
 #'
 tryCatch_WEM <- function(expr, ret.obj) {
@@ -35,13 +35,13 @@ tryCatch_WEM <- function(expr, ret.obj) {
     ret.obj # Return argument ret.obj if an error occcurs.
   }
 
-  # evaluate the expression
+  # evaluates the expression
   warn <- err <- msg <- NULL
   value <- withCallingHandlers(tryCatch(expr,
                                         error = errhandler),
                                message = msghandler,
                                warning = warhandler)
 
-  # return a list with value, error warning and message:
+  # returns a list with value, error warning and message:
   list(value = value, error = err, warning = warn, message = msg)
 }

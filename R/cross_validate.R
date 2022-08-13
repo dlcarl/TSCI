@@ -1,6 +1,6 @@
 #' @noRd
 cross_validate <- function(Y, X, nfolds) {
-  # this functions performs nfolds cross validation.
+  # this functions performs k-fold cross-validation.
   n <- NROW(X)
   Resample <- sample(n)
   sub_obs <- floor(n / nfolds)

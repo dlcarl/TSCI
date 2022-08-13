@@ -7,6 +7,8 @@ check_input_data_splitting <- function(error_message,
                                        ncores,
                                        raw_output,
                                        ...) {
+  # this function checks if the input that is specific for multi-splitting
+  # is in the correct format and the values are valid.
   if (!check_values) {
     if (!is.numeric(split_prop))
       error_message <- paste(error_message, "split_prop is not numeric.", sep = "\n")

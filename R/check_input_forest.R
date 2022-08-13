@@ -7,6 +7,8 @@ check_input_forest <- function(error_message,
                                min_node_size,
                                self_predict,
                                ...) {
+  # this function checks if the input that is specific for tsci_forest
+  # is in the correct format and the values are valid.
   if (!check_values) {
     if (!is.numeric(num_trees))
       error_message <- paste(error_message, "num_trees is not numeric.", sep = "\n")

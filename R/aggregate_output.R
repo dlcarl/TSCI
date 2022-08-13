@@ -3,14 +3,14 @@
 #' @param output_list a list with four elements: \code{value}, \code{error}, \code{warning} and \code{message}.
 #' @param alpha the significance level.
 #' @param Q the number of tested violation spaces.
-#' @param mult_split_method method to for inference if multi-splitting is performed. Either 'DML' or 'FWER'.
+#' @param mult_split_method method used for inference if multi-splitting is performed. Either 'DML' or 'FWER'.
 #'
-#' @return a list with the aggregated statistics.
+#' @return a list containing the aggregated statistics.
 #' @noRd
 #' @importFrom stats median
 aggregate_output <- function(output_list, alpha, Q,  mult_split_method, raw_output) {
 
-  # creates list with NAs
+  # creates list with NAs.
   returnList <- tsci_fit_NA_return(Q)
 
 
@@ -54,7 +54,7 @@ aggregate_output <- function(output_list, alpha, Q,  mult_split_method, raw_outp
 
   if (mult_split_method == "FWER") {
     # calculates the p-values and confidence intervals using the "FWER" method
-    # introduced in Meinshausen, Meier, Bühlmann (2009)
+    # introduced in Meinshausen, Meier, Bühlmann (2009).
     stats_all <-
       lapply(seq_len(NCOL(Coef_all_matrix)),
                            FUN = function(j) {get_FWER_CI(Coef = Coef_all_matrix[, j],
@@ -71,13 +71,13 @@ aggregate_output <- function(output_list, alpha, Q,  mult_split_method, raw_outp
     returnList$pval_sel[] <- unlist(lapply(stats_sel, FUN = function(x) x$p_value))
     returnList$CI_sel[] <- matrix(unlist(lapply(stats_sel, FUN = function(x) x$CI)), nrow = 2)
 
-    # this method does not provide standard error estimates
+    # this method does not provide standard error estimates.
     returnList$sd_all[] <- NA
     returnList$sd_sel[] <- NA
 
   } else if (mult_split_method == "DML") {
     # calculates the standard errors, p-values and confidence intervals using the "DML" method
-    # introduced in Chernozhukov et al. (2018)
+    # introduced in Chernozhukov et al. (2018).
     stats_all <-
       lapply(seq_len(NCOL(Coef_all_matrix)),
              FUN = function(j) {get_DML_CI(Coef = Coef_all_matrix[, j],
