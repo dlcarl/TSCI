@@ -182,7 +182,7 @@ tsci_poly <- function(Y,
                       gcv = TRUE,
                       nfolds = 5,
                       iv_threshold = 10,
-                      threshold_boot = FALSE,
+                      threshold_boot = TRUE,
                       alpha = 0.05,
                       B = 300) {
 

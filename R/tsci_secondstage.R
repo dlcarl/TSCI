@@ -167,7 +167,7 @@ tsci_secondstage <- function(Y,
                              intercept = TRUE,
                              sel_method = c("comparison", "conservative"),
                              iv_threshold = 10,
-                             threshold_boot = FALSE,
+                             threshold_boot = TRUE,
                              alpha = 0.05,
                              B = 300) {
   sel_method <- match.arg(sel_method)
