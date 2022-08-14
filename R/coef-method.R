@@ -4,5 +4,5 @@ coef.tsci <- function(object,
                       ...) {
   stopifnot(inherits(object, "tsci"))
   if (all) return(c(object$Coef_sel, object$Coef_all))
-  return(object$Coef_sel[2])
+  return(object$Coef_sel)
 }

@@ -47,7 +47,5 @@ print.summary.tsci <- function(x, ...) {
     cat("\nStatistics about the IV strength:\n")
     print(round(x$iv_strength, 2))
   }
-
   invisible(x)
-
 }

@@ -33,6 +33,4 @@ check_input_data_splitting <- function(error_message,
       error_message <- paste(error_message, "ncores cannot be smaller than 1.", sep = "\n")
     return(error_message)
   }
-
-
 }
