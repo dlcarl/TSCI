@@ -23,7 +23,7 @@ tsci_boosting(
   early_stopping = TRUE,
   nfolds = 5,
   iv_threshold = 10,
-  threshold_boot = FALSE,
+  threshold_boot = TRUE,
   alpha = 0.05,
   parallel = "no",
   nsplits = 10,

@@ -28,11 +28,11 @@ check_input <- function(Y,
   if (!is.numeric(as.matrix(Z)))
     error_message <- paste(error_message, "Z is not numeric.", sep = "\n")
   if (!is.null(X)) {
-    if (!is.numeric(X))
+    if (!is.numeric(as.matrix(X)))
       error_message <- paste(error_message, "X is not numeric.", sep = "\n")
   }
   if (!is.null(W)) {
-    if (!is.numeric(W))
+    if (!is.numeric(as.matrix(W)))
       error_message <- paste(error_message, "W is not numeric.", sep = "\n")
   }
   if (is.null(vio_space) & tsci_method != "poly") {

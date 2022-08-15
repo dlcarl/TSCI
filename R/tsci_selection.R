@@ -115,7 +115,6 @@ tsci_selection <- function(Y,
 
   # the position of the columns of W in Cov_aug_A1.
   pos_W <- seq(NCOL(vio_space) + 1, NCOL(Cov_aug_A1))
-
   ### fixed violation space, compute necessary inputs of selection part.
   D_resid <- diag_M_list <- rep(list(NA), Q)
   for (index in seq_len(Q)) {

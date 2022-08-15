@@ -68,7 +68,6 @@ tsci_fit <- function(df_treatment,
   vio_ind <- list_vio_space$vio_ind
   Q <- list_vio_space$Q
 
-
   # estimates treatment effect using TSCI.
   outputs <- tsci_selection(
     Y = Y,

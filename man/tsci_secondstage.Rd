@@ -16,7 +16,7 @@ tsci_secondstage(
   intercept = TRUE,
   sel_method = c("comparison", "conservative"),
   iv_threshold = 10,
-  threshold_boot = FALSE,
+  threshold_boot = TRUE,
   alpha = 0.05,
   B = 300
 )

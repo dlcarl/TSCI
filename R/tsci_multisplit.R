@@ -72,7 +72,6 @@ tsci_multisplit <- function(df_treatment,
   # for each violation space candidate.
   list_vio_space <- build_vio_space_candidates(vio_space = vio_space,
                                                create_nested_sequence = create_nested_sequence)
-
   # if two violation space candidates lead to significant different estimates of
   # the treatment effect the algorithm will select the violation space candidate
   # that is further down the list. However, if the violation space candidates are not nested,
