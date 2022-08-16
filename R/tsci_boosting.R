@@ -90,7 +90,6 @@
 #'     violation space candidate (besides the empty violation space). Testing for violations is always performed by using the comparison method.}
 #'     \item{\code{mse}}{the out-of-sample mean squared error of the fitted treatment model.}
 #'     \item{\code{FirstStage_model}}{the method used to fit the treatment model.}
-#'     \item{\code{FirstStage_params}}{the hyperparameter combination used to fit the treatment model.}
 #'     \item{\code{n_A1}}{number of observations in A1.}
 #'     \item{\code{n_A2}}{number of observations in A2.}
 #'     \item{\code{nsplits}}{number of data splits performed.}
@@ -136,8 +135,6 @@
 #' and controls for the family-wise error rate. 'FWER' does not provide standard errors.
 #' For large sample sizes, a large values for \code{nsplits} can lead to a high
 #' running time as for each split a new hat matrix must be calculated.
-#' The same parameter combination for the boosting model is used for all n splits and
-#' is selected by a separate data split.
 #'
 #' @references
 #' \itemize{
@@ -299,19 +296,9 @@ tsci_boosting <- function(Y,
   df_treatment <- data.frame(cbind(D, Z, X))
   names(df_treatment) <- c("D", paste("B", seq_len(p), sep = ""))
 
-  # splits the data into two parts A1 and A2.
-  # A2 will be used to train the treatment model and the hat matrix will be calculated for A1.
+  # size of A1 and A2.
   n_A1 <- round(split_prop * n)
   n_A2 <- n - n_A1
-  A1_ind <- sample(seq_len(n), n_A1)
-  df_treatment_A1 <- df_treatment[A1_ind, ]
-  df_treatment_A2 <- df_treatment[-A1_ind, ]
-
-  # grid search through params_grid to identify the hyperparameter combination that minimizes the CV MSE.
-  treeboost_CV <- get_l2boost_parameters(
-    df_treatment_A2 = df_treatment_A2,
-    params_grid = params_grid,
-    nfolds = nfolds)
 
   # calls tsci_multisplit which splits the data n_splits time into A1 and A2.
   # fits the treatment model with A2, calculates the hat matrix for A1
@@ -323,13 +310,12 @@ tsci_boosting <- function(Y,
                              W = W,
                              vio_space = vio_space,
                              create_nested_sequence = create_nested_sequence,
-                             A1_ind = A1_ind,
                              intercept = intercept,
                              sel_method = sel_method,
                              iv_threshold = iv_threshold,
                              threshold_boot = threshold_boot,
                              alpha = alpha,
-                             params = treeboost_CV$params_A2,
+                             params_grid = params_grid,
                              function_hatmatrix = get_l2boost_hatmatrix,
                              split_prop = split_prop,
                              parallel = parallel,
@@ -343,9 +329,7 @@ tsci_boosting <- function(Y,
 
   # returns output.
   outputs <- append(outputs,
-                    list(mse = treeboost_CV$mse,
-                         FirstStage_model = "L2 Gradient Tree Boosting",
-                         FirstStage_params = treeboost_CV$params_A2,
+                    list(FirstStage_model = "L2 Gradient Tree Boosting",
                          n_A1 = n_A1,
                          n_A2 = n_A2,
                          nsplits = nsplits,

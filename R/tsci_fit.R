@@ -1,6 +1,6 @@
 #' Two Stage Curvature Identification
 #'
-#' @description \code{tsci_fit} performs two stage curvature identification for pre-selected treatment model hyperparameters.
+#' @description \code{tsci_fit} performs two stage curvature identification.
 #' The function randomly splits the data in two sets \code{A1} and \code{A2}.
 #' \code{A2} is used to fit the treatment model given the hyperparameters.
 #' \code{A1} is used to fit the outcome model, identify the violation space and to estimate the treatment effect.
@@ -18,9 +18,10 @@
 #' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
 #' If \code{FALSE}, the value specified in \code{iv_threshold} is used only.
 #' @param alpha the significance level, default by 0.05.
-#' @param params a list containing the hyperparameters of the treatment model fitting method.
+#' @param params_grid a data frame containing the hyperparameter combinations of the treatment model fitting method.
 #' @param function_hatmatrix a function to get the hat matrix of the treatment model.
 #' @param B number of bootstrap samples.
+#' @param ... additional arguments passed to \code{function_hatmatrix}.
 #'
 #' @return The output of \code{tsci_selection}
 #'
@@ -38,9 +39,12 @@ tsci_fit <- function(df_treatment,
                      threshold_boot,
                      split_prop,
                      alpha,
-                     params,
+                     params_grid,
                      function_hatmatrix,
-                     B = B) {
+                     B = B,
+                     ...) {
+  # this function randomly splits the data in two sets A1 and A2 and performs
+  # two stage curvature identification.
 
   # splits data.
   n <- NROW(df_treatment)
@@ -49,11 +53,12 @@ tsci_fit <- function(df_treatment,
   df_treatment_A1 <- df_treatment[A1_ind, ]
   df_treatment_A2 <- df_treatment[-A1_ind, ]
 
-  # fits treatment model and get hat matrix.
+  # fits treatment model and gets hat matrix.
   model_treatment <- function_hatmatrix(
     df_treatment_A1 = df_treatment_A1,
     df_treatment_A2 = df_treatment_A2,
-    params = params
+    params_grid = params_grid,
+    ...
   )
 
   Y_A1 <- Y[A1_ind, ]
@@ -87,6 +92,7 @@ tsci_fit <- function(df_treatment,
     alpha = alpha,
     B = B
   )
+  outputs$mse[] <- model_treatment$mse
 
   return(outputs)
 }

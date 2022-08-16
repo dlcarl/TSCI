@@ -50,6 +50,13 @@ aggregate_output <- function(output_list, alpha, Q,  mult_split_method, raw_outp
   returnList$invalidity[] <-
     apply(matrix(unlist(lapply(output_list, FUN = function(x) x$value$invalidity), use.names = FALSE),
                  ncol = length(returnList$invalidity), byrow = TRUE), 2, sum)
+  mse <-
+    unlist(lapply(output_list, FUN = function(x) x$value$mse))
+  if (any(mse == -1)) {
+    returnList$mse[] <- NA
+  } else {
+      returnList$mse[] <- median(mse)
+    }
 
 
   if (mult_split_method == "FWER") {

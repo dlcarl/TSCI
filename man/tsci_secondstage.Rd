@@ -93,7 +93,6 @@ Otherwise, violation space selection was performed.}
 \item{\code{invalidity}}{shows whether the instrumental variable(s) were considered valid, invalid or too weak to test for violations.
 The instrumental variables are considered too weak to test for violations if the IV strength is already too weak using the first
 violation space candidate (besides the empty violation space). Testing for violations is always performed by using the comparison method.}
-\item{\code{mse}}{the out-of-sample mean squared error of the treatment model.}
 }
 }
 \description{

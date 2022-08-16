@@ -8,14 +8,13 @@
 #' @param vio_space vio_space a matrix or a list.
 #' @param create_nested_sequence logical. If \code{TRUE}, a nested sequence of violation space
 #' candidates will be created.
-#' @param A1_ind the indices of samples in A1 in the first split.
 #' @param intercept logical, including the intercept or not in the outcome model, default by TRUE.
 #' @param sel_method The selection method used to estimate the treatment effect. Either "comparison" or "conservative".
 #' @param iv_threshold minimal value of the threshold of IV strength test.
 #' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
 #' If \code{FALSE}, the value specified in \code{iv_threshold} is used only.
 #' @param alpha the significance level.
-#' @param params a list containing the hyperparameters of the treatment model fitting method.
+#' @param params_grid a data frame containing the hyperparameter combinations of the treatment model fitting method.
 #' @param function_hatmatrix a function to get the hat matrix of the treatment model.
 #' @param split_prop numeric, proportion of observations used to fit the outcome model.
 #' @param nsplits numeric, number of times the data will be split.
@@ -51,13 +50,12 @@ tsci_multisplit <- function(df_treatment,
                             W,
                             vio_space,
                             create_nested_sequence,
-                            A1_ind,
                             intercept,
                             sel_method,
                             iv_threshold,
                             threshold_boot,
                             alpha,
-                            params,
+                            params_grid,
                             function_hatmatrix,
                             split_prop,
                             parallel,
@@ -68,6 +66,10 @@ tsci_multisplit <- function(df_treatment,
                             cl,
                             raw_output,
                             B = B) {
+  # this function is used to perform multiple data splitting. It sets up a local
+  # environment for the calculations for each data splits to handle potential
+  # error and warning messages better.
+
   # merges the list vio_space into a matrix and identifies the columns to include
   # for each violation space candidate.
   list_vio_space <- build_vio_space_candidates(vio_space = vio_space,
@@ -79,7 +81,7 @@ tsci_multisplit <- function(df_treatment,
   if (!(list_vio_space$nested_sequence))
     warning("Sequence of violation space candidates is not nested. Results should be interpreted with care.")
 
-  # sets up local environment for the calculations for each data split to handle potential error and warning messages better.
+  # sets up local environment.
   tsci_parallel <- local({
     df_treatment
     Y
@@ -87,11 +89,10 @@ tsci_multisplit <- function(df_treatment,
     Z
     W
     list_vio_space
-    A1_ind
     intercept
     iv_threshold
     alpha
-    params
+    params_grid
     function_hatmatrix
     ncores
     B
@@ -109,7 +110,7 @@ tsci_multisplit <- function(df_treatment,
         threshold_boot = threshold_boot,
         split_prop = split_prop,
         alpha = alpha,
-        params = params,
+        params_grid = params_grid,
         function_hatmatrix = function_hatmatrix,
         B = B
       ), tsci_fit_NA_return(Q = list_vio_space$Q))}
@@ -133,7 +134,6 @@ tsci_multisplit <- function(df_treatment,
   } else list_outputs <- lapply(seq_len(nsplits), tsci_parallel)
 
   check_list_outputs <- check_output(list_outputs = list_outputs, ind_start = 1)
-
   # if in more than 25% of the data splits the output statistics could not be calculated,
   # then an error is raised as there might be something systematically wrong.
   if (check_list_outputs$prop_na > 0.25) {

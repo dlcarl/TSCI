@@ -237,20 +237,11 @@ tsci_poly <- function(Y,
     min_order <- c(min_order, rep(1, NCOL(X)))
   }
 
-  params_list <- lapply(seq_len(p), FUN = function(i) seq(min_order[i], max_order[i], by = 1))
+  poly_orders <- lapply(seq_len(p), FUN = function(i) seq(min_order[i], max_order[i], by = 1))
 
   # treatment model fitting.
   df_treatment <- data.frame(cbind(D, Z, X))
   names(df_treatment) <- c("D", paste("B", seq_len(p), sep = ""))
-
-  # hyperparameter tuning.
-  poly_CV <- get_poly_parameters(df_treatment = df_treatment,
-                                 params_list = params_list,
-                                 order_selection_method = order_selection_method,
-                                 max_iter = max_iter,
-                                 conv_tol,
-                                 gcv = gcv,
-                                 nfolds = nfolds)
 
 
   if (is.null(vio_space)) {
@@ -284,15 +275,18 @@ tsci_poly <- function(Y,
                       threshold_boot = threshold_boot,
                       split_prop = 1,
                       alpha = alpha,
-                      params = poly_CV$params,
+                      params_grid = poly_orders,
                       function_hatmatrix = get_poly_hatmatrix,
-                      B = B)
+                      B = B,
+                      order_selection_method = order_selection_method,
+                      max_iter = max_iter,
+                      conv_tol = conv_tol,
+                      gcv = gcv,
+                      nfolds = nfolds)
 
   # returns output.
   outputs <- append(outputs,
-                    list(mse = poly_CV$mse,
-                         FirstStage_model = "OLS with Polynomials",
-                         FirstStage_params = poly_CV$params,
+                    list(FirstStage_model = "OLS with Polynomials",
                          n_A1 = n,
                          n_A2 = 0,
                          nsplits = 0,

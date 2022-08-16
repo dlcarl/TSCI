@@ -145,7 +145,6 @@ The instrumental variables are considered too weak to test for violations if the
 violation space candidate (besides the empty violation space). Testing for violations is always performed by using the comparison method.}
 \item{\code{mse}}{the out-of-sample mean squared error of the fitted treatment model.}
 \item{\code{FirstStage_model}}{the method used to fit the treatment model.}
-\item{\code{FirstStage_params}}{the hyperparameter combination used to fit the treatment model.}
 \item{\code{n_A1}}{number of observations in A1.}
 \item{\code{n_A2}}{number of observations in A2.}
 \item{\code{nsplits}}{number of data splits performed.}
@@ -200,8 +199,6 @@ Chernozhukov et al. (2018). 'FWER' uses the approach by Meinshausen et al. (2009
 and controls for the family-wise error rate. 'FWER' does not provide standard errors.
 For large sample sizes, a large values for \code{nsplits} can lead to a high
 running time as for each split a new hat matrix must be calculated.
-The same parameter combination for the boosting model is used for all n splits and
-is selected by a separate data split.
 }
 \examples{
 \dontrun{

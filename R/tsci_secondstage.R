@@ -64,7 +64,6 @@
 #'     \item{\code{invalidity}}{shows whether the instrumental variable(s) were considered valid, invalid or too weak to test for violations.
 #'     The instrumental variables are considered too weak to test for violations if the IV strength is already too weak using the first
 #'     violation space candidate (besides the empty violation space). Testing for violations is always performed by using the comparison method.}
-#'     \item{\code{mse}}{the out-of-sample mean squared error of the treatment model.}
 #'}
 #'
 #' @details The treatment and outcome models are assumed to be of the following forms:
@@ -238,6 +237,7 @@ tsci_secondstage <- function(Y,
     alpha = alpha,
     B = B
   )
+  outputs$mse[] <- NA
   outputs <- append(outputs,
                     list(FirstStage_model = "Specified by User",
                          n_A1 = n_A1,
