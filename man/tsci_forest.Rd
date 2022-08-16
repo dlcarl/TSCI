@@ -16,8 +16,8 @@ tsci_forest(
   sel_method = c("comparison", "conservative"),
   split_prop = 2/3,
   num_trees = 200,
-  mtry = list(function(p) round(sqrt(p)), function(p) round(p/3), function(p)
-    round(p/2), function(p) round(2 * p/3)),
+  mtry = list(function(p) round(sqrt(p)), function(p) max(c(1, round(p/3))),
+    function(p) max(c(1, round(p/2))), function(p) round(2 * p/3)),
   max_depth = 0,
   min_node_size = c(5, 10, 20),
   self_predict = TRUE,

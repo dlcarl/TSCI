@@ -40,7 +40,7 @@
 #' the exact order of polynomials to use in the treatment model. If a
 #' single numeric value, the polynomials of all instrumental variables use this value.
 #' @param order_selection_method method used to select the best fitting order of polynomials
-#' for the treatment model. Must be either 'backfitting' or 'grid search'.
+#' for the treatment model. Must be either 'grid search' or 'backfitting'.
 #' 'grid search' can be very slow if the number of instruments is large.
 #' @param max_iter number of iterations used in the backfitting algorithm if \code{order_selection_method} is 'backfitting'.
 #' @param conv_tol tolerance of convergence in the backfitting algorithm if \code{order_selection_method} is 'backfitting'.
@@ -176,10 +176,10 @@ tsci_poly <- function(Y,
                       min_order = 1,
                       max_order = 10,
                       exact_order = NULL,
-                      order_selection_method = c("backfitting", "grid search"),
+                      order_selection_method = c("grid search", "backfitting"),
                       max_iter = 100,
                       conv_tol = 10^-6,
-                      gcv = TRUE,
+                      gcv = FALSE,
                       nfolds = 5,
                       iv_threshold = 10,
                       threshold_boot = TRUE,
@@ -237,11 +237,22 @@ tsci_poly <- function(Y,
     min_order <- c(min_order, rep(1, NCOL(X)))
   }
 
-  poly_orders <- lapply(seq_len(p), FUN = function(i) seq(min_order[i], max_order[i], by = 1))
+  params_list <- lapply(seq_len(p), FUN = function(i) seq(min_order[i], max_order[i], by = 1))
 
-  # treatment model fitting.
+
+  # creates dataframe for the treatment model.
   df_treatment <- data.frame(cbind(D, Z, X))
   names(df_treatment) <- c("D", paste("B", seq_len(p), sep = ""))
+
+  # selection of the best fitting order of the polynomials. For tsci_poly this step
+  # is already performed here as it influences the choice of the violation space candidates.
+  poly_CV <- get_poly_parameters(df_treatment = df_treatment,
+                                 params_list = params_list,
+                                 order_selection_method = order_selection_method,
+                                 max_iter = max_iter,
+                                 conv_tol = conv_tol,
+                                 gcv = gcv,
+                                 nfolds = nfolds)
 
 
   if (is.null(vio_space)) {
@@ -275,14 +286,10 @@ tsci_poly <- function(Y,
                       threshold_boot = threshold_boot,
                       split_prop = 1,
                       alpha = alpha,
-                      params_grid = poly_orders,
+                      params_grid = poly_CV$params,
                       function_hatmatrix = get_poly_hatmatrix,
                       B = B,
-                      order_selection_method = order_selection_method,
-                      max_iter = max_iter,
-                      conv_tol = conv_tol,
-                      gcv = gcv,
-                      nfolds = nfolds)
+                      mse = poly_CV$mse)
 
   # returns output.
   outputs <- append(outputs,

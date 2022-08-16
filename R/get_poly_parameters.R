@@ -39,7 +39,7 @@ get_poly_parameters <- function(df_treatment,
                            X = A,
                            nfolds)
   return(list(
-    "params" = list(optimal_order),
-    "mse" = MSE_CV
+    params = list(optimal_order),
+    mse = MSE_CV
   ))
 }

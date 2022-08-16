@@ -1,5 +1,5 @@
 #' @noRd
-#' @importFrom xgboost xgb.DMatrix xgb.train
+#' @importFrom xgboost xgb.DMatrix xgb.train xgb.cv
 #' @importFrom stats predict
 #' @importFrom Rfast mat.mult
 get_l2boost_hatmatrix <- function(df_treatment_A1,

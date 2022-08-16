@@ -17,10 +17,10 @@ tsci_poly(
   min_order = 1,
   max_order = 10,
   exact_order = NULL,
-  order_selection_method = c("backfitting", "grid search"),
+  order_selection_method = c("grid search", "backfitting"),
   max_iter = 100,
   conv_tol = 10^-6,
-  gcv = TRUE,
+  gcv = FALSE,
   nfolds = 5,
   iv_threshold = 10,
   threshold_boot = TRUE,
@@ -75,7 +75,7 @@ the exact order of polynomials to use in the treatment model. If a
 single numeric value, the polynomials of all instrumental variables use this value.}
 
 \item{order_selection_method}{method used to select the best fitting order of polynomials
-for the treatment model. Must be either 'backfitting' or 'grid search'.
+for the treatment model. Must be either 'grid search' or 'backfitting'.
 'grid search' can be very slow if the number of instruments is large.}
 
 \item{max_iter}{number of iterations used in the backfitting algorithm if \code{order_selection_method} is 'backfitting'.}
