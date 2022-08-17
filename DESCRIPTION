@@ -1,4 +1,4 @@
-Package: TSML
+Package: TSCI
 Title: Tools for causal inference with possibly invalid instrumental variables
 Version: 0.0.0.9000
 Authors@R: 

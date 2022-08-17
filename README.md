@@ -1,10 +1,10 @@
-# TSML
-R Package of TSML
+# TSCI
+R Package of TSCI
 
 # Data generation
 ```
 library(MASS)
-library(TSML)
+library(TSCI)
 
 # set seeds for reproducibility
 RNGkind("L'Ecuyer-CMRG")
