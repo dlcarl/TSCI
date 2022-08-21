@@ -12,7 +12,6 @@ tsci_forest(
   W = X,
   vio_space,
   create_nested_sequence = TRUE,
-  intercept = TRUE,
   sel_method = c("comparison", "conservative"),
   split_prop = 2/3,
   num_trees = 200,
@@ -25,6 +24,7 @@ tsci_forest(
   alpha = 0.05,
   nsplits = 10,
   mult_split_method = c("FWER", "DML"),
+  intercept = TRUE,
   parallel = "no",
   ncores = 1,
   cl = NULL,
@@ -58,8 +58,6 @@ are defined sequentially starting with an empty violation matrix and subsequentl
 adding the next element of \code{vio_space} to the current violation matrix.
 If \code{FALSE,} the violation space candidates (in form of matrices) are defined as the empty space and the elements of \code{vio_space}.
 See Details for more information.}
-
-\item{intercept}{logical. If \code{TRUE}, an intercept is included in the outcome model.}
 
 \item{sel_method}{The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.}
 
@@ -95,6 +93,8 @@ If \code{FALSE}, it just uses the value specified in \code{iv_threshold}.}
 
 \item{mult_split_method}{method to calculate the standard errors, p-values and to construct the confidence intervals if multi-splitting is performed.
 Default is "DML" if \code{nsplits} == 1 and "FWER" otherwise. See Details.}
+
+\item{intercept}{logical. If \code{TRUE}, an intercept is included in the outcome model.}
 
 \item{parallel}{one out of \code{"no"}, \code{"multicore"}, or \code{"snow"} specifying the parallelization method used.}
 

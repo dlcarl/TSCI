@@ -13,11 +13,11 @@ tsci_secondstage(
   create_nested_sequence = TRUE,
   weight,
   A1_ind = NULL,
-  intercept = TRUE,
   sel_method = c("comparison", "conservative"),
   iv_threshold = 10,
   threshold_boot = TRUE,
   alpha = 0.05,
+  intercept = TRUE,
   B = 300
 )
 }
@@ -50,8 +50,6 @@ See Details for more information.}
 Must be of same length as the number of rows and columns of \code{weight}.
 If \code{NULL}, all observations will be used.}
 
-\item{intercept}{logical. If \code{TRUE}, an intercept is included in the outcome model.}
-
 \item{sel_method}{The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.}
 
 \item{iv_threshold}{minimal value of the threshold of IV strength test.}
@@ -60,6 +58,8 @@ If \code{NULL}, all observations will be used.}
 If \code{FALSE}, it just uses the value specified in \code{iv_threshold}.}
 
 \item{alpha}{the significance level.}
+
+\item{intercept}{logical. If \code{TRUE}, an intercept is included in the outcome model.}
 
 \item{B}{number of bootstrap samples.
 Bootstrap methods are used to calculate the iv strength threshold if \code{threshold_boot} is \code{TRUE} and for the violation space selection.}

@@ -12,7 +12,6 @@ tsci_boosting(
   W = X,
   vio_space,
   create_nested_sequence = TRUE,
-  intercept = TRUE,
   sel_method = c("comparison", "conservative"),
   split_prop = 2/3,
   nrounds = 50,
@@ -25,6 +24,7 @@ tsci_boosting(
   iv_threshold = 10,
   threshold_boot = TRUE,
   alpha = 0.05,
+  intercept = TRUE,
   parallel = "no",
   nsplits = 10,
   mult_split_method = c("FWER", "DML"),
@@ -61,8 +61,6 @@ adding the next element of \code{vio_space} to the current violation matrix.
 If \code{FALSE,} the violation space candidates (in form of matrices) are defined as the empty space and the elements of \code{vio_space}.
 See Details for more information.}
 
-\item{intercept}{logical. If \code{TRUE}, an intercept is included in the outcome model.}
-
 \item{sel_method}{The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.}
 
 \item{split_prop}{proportion of observations used to fit the outcome model. Has to be a value in (0, 1).}
@@ -95,6 +93,8 @@ choose the optimal number of boosting iteration using the cross-validation mean 
 If \code{FALSE}, it just uses the value specified in \code{iv_threshold}.}
 
 \item{alpha}{the significance level.}
+
+\item{intercept}{logical. If \code{TRUE}, an intercept is included in the outcome model.}
 
 \item{parallel}{one out of \code{"no"}, \code{"multicore"}, or \code{"snow"} specifying the parallelization method used.}
 

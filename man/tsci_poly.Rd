@@ -12,7 +12,6 @@ tsci_poly(
   W = X,
   vio_space = NULL,
   create_nested_sequence = TRUE,
-  intercept = TRUE,
   sel_method = c("comparison", "conservative"),
   min_order = 1,
   max_order = 10,
@@ -25,6 +24,7 @@ tsci_poly(
   iv_threshold = 10,
   threshold_boot = TRUE,
   alpha = 0.05,
+  intercept = TRUE,
   B = 300
 )
 }
@@ -57,8 +57,6 @@ are defined sequentially starting with an empty violation matrix and subsequentl
 adding the next element of \code{vio_space} to the current violation matrix.
 If \code{FALSE,} the violation space candidates (in form of matrices) are defined as the empty space and the elements of \code{vio_space}.
 See Details for more information.}
-
-\item{intercept}{logical. If \code{TRUE}, an intercept is included in the outcome model.}
 
 \item{sel_method}{The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.}
 
@@ -94,6 +92,8 @@ If \code{FALSE}, k-fold cross-validation is used instead.}
 If \code{FALSE}, it just uses the value specified in \code{iv_threshold}.}
 
 \item{alpha}{the significance level.}
+
+\item{intercept}{logical. If \code{TRUE}, an intercept is included in the outcome model.}
 
 \item{B}{number of bootstrap samples.
 Bootstrap methods are used to calculate the iv strength threshold if \code{threshold_boot} is \code{TRUE} and for the violation space selection.}

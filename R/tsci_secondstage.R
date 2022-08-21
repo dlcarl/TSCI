@@ -26,12 +26,12 @@
 #' @param A1_ind indices of the observations that wil be used to fit the outcome model.
 #' Must be of same length as the number of rows and columns of \code{weight}.
 #' If \code{NULL}, all observations will be used.
-#' @param intercept logical. If \code{TRUE}, an intercept is included in the outcome model.
 #' @param sel_method The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.
 #' @param iv_threshold minimal value of the threshold of IV strength test.
 #' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
 #' If \code{FALSE}, it just uses the value specified in \code{iv_threshold}.
 #' @param alpha the significance level.
+#' @param intercept logical. If \code{TRUE}, an intercept is included in the outcome model.
 #' @param B number of bootstrap samples.
 #' Bootstrap methods are used to calculate the iv strength threshold if \code{threshold_boot} is \code{TRUE} and for the violation space selection.
 #'
@@ -163,11 +163,11 @@ tsci_secondstage <- function(Y,
                              create_nested_sequence = TRUE,
                              weight,
                              A1_ind = NULL,
-                             intercept = TRUE,
                              sel_method = c("comparison", "conservative"),
                              iv_threshold = 10,
                              threshold_boot = TRUE,
                              alpha = 0.05,
+                             intercept = TRUE,
                              B = 300) {
   sel_method <- match.arg(sel_method)
   # check that input is in the correct format.

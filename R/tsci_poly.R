@@ -28,7 +28,6 @@
 #' adding the next element of \code{vio_space} to the current violation matrix.
 #' If \code{FALSE,} the violation space candidates (in form of matrices) are defined as the empty space and the elements of \code{vio_space}.
 #' See Details for more information.
-#' @param intercept logical. If \code{TRUE}, an intercept is included in the outcome model.
 #' @param sel_method The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.
 #' @param min_order either a single numeric value or a numeric vector of length s specifying
 #' the smallest order of polynomials to use in the selection of the treatment model. If a
@@ -52,6 +51,7 @@
 #' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
 #' If \code{FALSE}, it just uses the value specified in \code{iv_threshold}.
 #' @param alpha the significance level.
+#' @param intercept logical. If \code{TRUE}, an intercept is included in the outcome model.
 #' @param B number of bootstrap samples.
 #' Bootstrap methods are used to calculate the iv strength threshold if \code{threshold_boot} is \code{TRUE} and for the violation space selection.
 #'
@@ -171,7 +171,6 @@ tsci_poly <- function(Y,
                       W = X,
                       vio_space = NULL,
                       create_nested_sequence = TRUE,
-                      intercept = TRUE,
                       sel_method = c("comparison", "conservative"),
                       min_order = 1,
                       max_order = 10,
@@ -184,6 +183,7 @@ tsci_poly <- function(Y,
                       iv_threshold = 10,
                       threshold_boot = TRUE,
                       alpha = 0.05,
+                      intercept = TRUE,
                       B = 300) {
 
   # checks that input is in the correct format.

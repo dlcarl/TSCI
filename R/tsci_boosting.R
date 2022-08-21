@@ -25,7 +25,6 @@
 #' adding the next element of \code{vio_space} to the current violation matrix.
 #' If \code{FALSE,} the violation space candidates (in form of matrices) are defined as the empty space and the elements of \code{vio_space}.
 #' See Details for more information.
-#' @param intercept logical. If \code{TRUE}, an intercept is included in the outcome model.
 #' @param sel_method The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.
 #' @param split_prop proportion of observations used to fit the outcome model. Has to be a value in (0, 1).
 #' @param nrounds number of boosting iterations.
@@ -50,6 +49,7 @@
 #' @param nsplits number of times the data will be split. Has to be an integer larger or equal 1. See Details.
 #' @param mult_split_method method to calculate the standard errors, p-values and to construct the confidence intervals if multi-splitting is performed.
 #' Default is "DML" if \code{nsplits} == 1 and "FWER" otherwise. See Details.
+#' @param intercept logical. If \code{TRUE}, an intercept is included in the outcome model.
 #' @param parallel one out of \code{"no"}, \code{"multicore"}, or \code{"snow"} specifying the parallelization method used.
 #' @param ncores the number of cores to use.
 #' @param cl either a parallel or snow cluster or \code{NULL}.
@@ -208,7 +208,6 @@ tsci_boosting <- function(Y,
                           W = X,
                           vio_space,
                           create_nested_sequence = TRUE,
-                          intercept = TRUE,
                           sel_method = c("comparison", "conservative"),
                           split_prop = 2 / 3,
                           nrounds = 50,
@@ -221,6 +220,7 @@ tsci_boosting <- function(Y,
                           iv_threshold = 10,
                           threshold_boot = TRUE,
                           alpha = 0.05,
+                          intercept = TRUE,
                           parallel = "no",
                           nsplits = 10,
                           mult_split_method = c("FWER", "DML"),
