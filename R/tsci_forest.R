@@ -33,7 +33,8 @@
 #' @param mtry number of covariates to possibly split at in each node of the tree of the random forest.
 #' Can either be a single numeric value or a vector containing multiple numeric values to try.
 #' Can also be a list of single argument function(s) returning an integer, given the number of independent variables.
-#' The values have to be positive integers not larger than the number of independent variables in the treatment model.
+#' The values have to be positive integers not larger than the number of independent variables in the treatment model. Default
+#' is to try all integer values between one-third of the independent variables and two-thirds of the independent variables.
 #' @param max_depth maximal tree depth in random forests.
 #' Can either be a single integer value or a vector containing multiple integer values to try.
 #' 0 correspond to unlimited depth.
@@ -210,10 +211,7 @@ tsci_forest <- function(Y,
                         sel_method = c("comparison", "conservative"),
                         split_prop = 2 / 3,
                         num_trees = 200,
-                        mtry = list(function(p) round(sqrt(p)),
-                                    function(p) max(c(1, round(p / 3))),
-                                    function(p) max(c(1, round(p / 2))),
-                                    function(p) round(2 * p / 3)),
+                        mtry = NULL,
                         max_depth = 0,
                         min_node_size = c(5, 10, 20),
                         self_predict = TRUE,
@@ -227,7 +225,6 @@ tsci_forest <- function(Y,
                         cl = NULL,
                         raw_output = NULL,
                         B = 300) {
-
   # checks that input is in the correct format.
   check_input(Y = Y,
               D = D,
@@ -277,6 +274,10 @@ tsci_forest <- function(Y,
 
   # initializes parallelization setup.
   do_parallel <- parallelization_setup(parallel = parallel, ncpus = ncores, cl = cl)
+
+  # sets default values for mtry if not specified by the user. This is done here, because
+  # the default value depends on p.
+  if (is.null(mtry)) mtry <- seq(max(c(round(p / 3), 1)), round(2*p/3),by=1)
 
   # sets up grid search over the hyperparameter combinations.
   params_grid <- expand.grid(
