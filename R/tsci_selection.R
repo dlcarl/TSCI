@@ -16,8 +16,8 @@
 #' @param sel_method The selection method used to estimate the treatment effect.
 #' Either "comparison" or "conservative".
 #' @param iv_threshold the minimal value of the threshold of IV strength test.
-#' @param threshold_boot logical. if \code{TRUE} it determines the threshold of the IV strength using a bootstrap approach.
-#' If \code{FALSE}, the value specified in \code{iv_threshold} is used only.
+#' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
+#' If \code{FALSE}, it does not perform a bootstrap.
 #' @param alpha alpha the significance level.
 #' @param B number of bootstrap samples.
 #'

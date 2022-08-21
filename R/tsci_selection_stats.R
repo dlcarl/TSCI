@@ -9,7 +9,7 @@
 #' @param delta_hat residuals of the treatment model corresponding to samples in A1.
 #' @param iv_threshold the minimal value of the threshold of IV strength test.
 #' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
-#' If \code{FALSE}, the value specified in \code{iv_threshold} is used only.
+#' If \code{FALSE}, it does not perform a bootstrap.
 #' @param B number of bootstrap samples.
 #'
 #' @return:
@@ -52,7 +52,7 @@ tsci_selection_stats <- function(D_rep, Cov_rep, weight, eps_hat, delta_hat, iv_
     iv_thol <- quantile(boot_vec, 0.975) /
       SigmaSqD + max(2 * trace_M, iv_threshold)
   } else {
-    iv_thol <- iv_threshold
+    iv_thol <- max(2 * trace_M, iv_threshold)
   }
   returnList <- list(
     sd = sd,

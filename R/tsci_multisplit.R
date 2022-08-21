@@ -12,7 +12,7 @@
 #' @param sel_method The selection method used to estimate the treatment effect. Either "comparison" or "conservative".
 #' @param iv_threshold minimal value of the threshold of IV strength test.
 #' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
-#' If \code{FALSE}, the value specified in \code{iv_threshold} is used only.
+#' If \code{FALSE}, it does not perform a bootstrap.
 #' @param alpha the significance level.
 #' @param params_grid a data frame containing the hyperparameter combinations of the treatment model fitting method.
 #' @param function_hatmatrix a function to get the hat matrix of the treatment model.

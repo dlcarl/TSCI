@@ -16,7 +16,7 @@
 #' @param split_prop split_prop numeric, proportion of observations used to fit the outcome model.
 #' @param iv_threshold minimal value of the threshold of IV strength test, default by 10.
 #' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
-#' If \code{FALSE}, the value specified in \code{iv_threshold} is used only.
+#' If \code{FALSE}, it does not perform a bootstrap.
 #' @param alpha the significance level, default by 0.05.
 #' @param params_grid a data frame containing the hyperparameter combinations of the treatment model fitting method.
 #' @param function_hatmatrix a function to get the hat matrix of the treatment model.

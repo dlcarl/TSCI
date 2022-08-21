@@ -90,7 +90,7 @@ choose the optimal number of boosting iteration using the cross-validation mean 
 \item{iv_threshold}{minimal value of the threshold of IV strength test.}
 
 \item{threshold_boot}{logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
-If \code{FALSE}, it just uses the value specified in \code{iv_threshold}.}
+If \code{FALSE}, it does not perform a bootstrap. See Details.}
 
 \item{alpha}{the significance level.}
 
@@ -186,6 +186,17 @@ of \eqn{g(Z_i, X_i)} might not address the bias caused by the violation of the I
 The function \code{\link[TSML]{create_monomials}} can be used to create a predefined sequence of violation space candidates (monomials).  \cr \cr
 \code{W} should be chosen to be flexible enough to approximate the functional form of \eqn{\phi} well
 as otherwise the treatment estimator might be biased. \cr \cr
+The instrumental variable(s) are considered strong enough for violation space candidate \eqn{V_q} if the estimated IV strength using this
+violation space candidate is larger than the obtained value of the threshold of the IV strength.
+The formula of the threshold of the IV strength has the form
+\eqn{\max \{ 2 \cdot \text{Trace} [ \text{M} (V_q) ], \text{iv{\_}threshold} \} + S (V_q) } if \code{threshold_boot} is \code{TRUE}, and
+\eqn{\max \{ 2 \cdot \text{Trace} [ \text{M} (V_q) ], \text{iv{\_}threshold} \}} if \code{threshold_boot} is \code{FALSE}. The matrix
+\eqn{\text{M} (V_q)} depends on the hat matrix obtained from estimating \eqn{f(Z_i, X_i)}, the violation space candidate \eqn{V_q} and
+the variables to include in the outcome model \code{W}. \eqn{S (V_q)} is obtained using a bootstrap and aims to adjust for the estimation error
+of the IV strength.
+Usually, the value of the threshold of the IV strength obtained using the bootstrap approach is larger.
+Thus, using \code{threshold_boot} equals \code{TRUE} leads to a more conservative IV strength test.
+For more information see subsection 3.3 in Guo and Bühlmann (2022).\cr \cr
 \code{nsplits} specifies the number of data splits that should be performed.
 For each data split the output statistics such as the point estimates of the
 treatment effect are calculated. Those statistics will then be aggregated
