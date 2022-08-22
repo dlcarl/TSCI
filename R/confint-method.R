@@ -33,7 +33,7 @@ confint.tsci <- function(object, parm = NULL, level = 0.95, ...) {
     ind <- parm
   }
   if (is.null(parm)) {
-    ind <- which(rownames(conf_intervals) == "TSCI-robust")
+    ind <- which(rownames(conf_intervals) == "TSCI-Estimate")
   }
   conf_intervals <- conf_intervals[ind, , drop = FALSE]
 
