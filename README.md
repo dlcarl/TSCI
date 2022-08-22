@@ -53,19 +53,19 @@ vio_space <- create_monomials(Z, 4, "monomials_main")
 
 # TSCI with random forest
 ```
-output_RF <- tsci_forest(Y, D, Z, X, vio_space, nsplits = 10)
+output_RF <- tsci_forest(Y = Y, D = D, Z = Z, X = X, vio_space = vio_space)
 summary(output_RF)
 ```
 
 # TSCI with boosting
 ```
-output_BO <- tsci_boosting(Y, D, Z, X, vio_space = vio_space, nsplits = 10)
+output_BO <- tsci_boosting(Y = Y, D = D, Z 0 Z, X = X, vio_space = vio_space)
 summary(output_BO)
 ```
 
 # TSCI with polynomials
 ```
-output_PY <- tsci_poly(Y, D, Z, X)
+output_PY <- tsci_poly(Y = Y, D = D, Z = Z, X = X)
 summary(output_PY)
 ```
 
@@ -73,6 +73,6 @@ summary(output_PY)
 ```
 A <- cbind(1, Z, Z^2, Z^3, Z^4, X)
 weight <- A %*% chol2inv(chol(t(A) %*% A)) %*% t(A)
-output_UD <- tsci_secondstage(Y, D, Z, X, vio_space = vio_space, weight = weight)
+output_UD <- tsci_secondstage(Y = Y, D = D, Z = Z, X = X, vio_space = vio_space, weight = weight)
 summary(output_UD)
 ```
