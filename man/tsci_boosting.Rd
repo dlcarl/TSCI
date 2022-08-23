@@ -16,7 +16,7 @@ tsci_boosting(
   split_prop = 2/3,
   nrounds = 50,
   eta = 0.3,
-  max_depth = 6,
+  max_depth = c(1:6),
   subsample = 1,
   colsample_bytree = 1,
   early_stopping = TRUE,
