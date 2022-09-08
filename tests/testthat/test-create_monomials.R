@@ -1,7 +1,7 @@
 test_that("violation space candidates are correct for 'monomials_main' for s = 1", {
   n <- 10
   s <- 1
-  df <- readRDS("df_create_monomials.rds")
+  df <- readRDS("df_create_vio_space_candidates.rds")
   Z <- matrix(df$Z[seq_len(n * s)], nrow = n, ncol = s)
   degree <- 3
   vio_space <- create_monomials(Z = Z, degre = degree, type = "monomials_main")
@@ -13,7 +13,7 @@ test_that("violation space candidates are correct for 'monomials_main' for s = 1
 test_that("violation space candidates are correct for 'monomials_full' for s = 1", {
   n <- 10
   s <- 1
-  df <- readRDS("df_create_monomials.rds")
+  df <- readRDS("df_create_vio_space_candidates.rds")
   Z <- matrix(df$Z[seq_len(n * s)], nrow = n, ncol = s)
   degree <- 3
   vio_space <- create_monomials(Z = Z, degre = degree, type = "monomials_full")
@@ -25,7 +25,7 @@ test_that("violation space candidates are correct for 'monomials_full' for s = 1
 test_that("violation space candidates are correct for 'monomials_main' for s > 1", {
   n <- 10
   s <- 3
-  df <- readRDS("df_create_monomials.rds")
+  df <- readRDS("df_create_vio_space_candidates.rds")
   Z <- matrix(df$Z[seq_len(n * s)], nrow = n, ncol = s)
   degree <- c(3, 1, 2)
   vio_space <- create_monomials(Z = Z, degre = degree, type = "monomials_main")
@@ -37,7 +37,7 @@ test_that("violation space candidates are correct for 'monomials_main' for s > 1
 test_that("violation space candidates are correct for 'monomials_full' for s > 1", {
   n <- 10
   s <- 3
-  df <- readRDS("df_create_monomials.rds")
+  df <- readRDS("df_create_vio_space_candidates.rds")
   Z <- matrix(df$Z[seq_len(n * s)], nrow = n, ncol = s)
   degree <- c(3, 1, 2)
   vio_space <- create_monomials(Z = Z, degre = degree, type = "monomials_full")
@@ -56,11 +56,3 @@ test_that("violation space candidates are correct for 'monomials_full' for s > 1
   expect_equal(actual, expected)
 })
 
-test_that("wrong type of input", {
-  n <- 10
-  s <- 1
-  Z <- matrix(rep("a", 10), nrow = n, ncol = s)
-  degree <- c(1, "b")
-  expect_error(create_monomials(Z = Z, degre = degree, type = type),
-               "\nZ is not numeric.\ndegree is not numeric.\n")
-})

@@ -178,9 +178,11 @@ violation space candidate will be returned. If \code{sel_method} is 'conservativ
 of the successive violation space candidate will be returned provided that the IV strength is large enough.
 The specification of suitable violation space candidates is a crucial step because a poor approximation
 of \eqn{g(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently well.
-The function \code{\link[TSML]{create_monomials}} can be used to create a predefined sequence of violation space candidates (monomials).  \cr \cr
-\code{W} should be chosen to be flexible enough to approximate the functional form of \eqn{\phi} well
-as otherwise the treatment estimator might be biased. \cr \cr
+The function \code{\link[TSML]{create_monomials}} can be used to create a predefined sequence of
+violation space candidates consisting of monomials.
+The function \code{\link[TSML]{create_interactions}} can be used to create a predefined sequence of
+violation space candidates consisting of two-way interactions between the instrumens themselves and between
+the instruments and the instruments and baseline covariates.  \cr \cr
 The instrumental variable(s) are considered strong enough for violation space candidate \eqn{V_q} if the estimated IV strength using this
 violation space candidate is larger than the obtained value of the threshold of the IV strength.
 The formula of the threshold of the IV strength has the form
