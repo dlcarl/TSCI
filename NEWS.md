@@ -1,3 +1,3 @@
-# TSCI 0.0.0.9000
+# TSCI 1.0.0
 
 * First version of the package. 

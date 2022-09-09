@@ -129,9 +129,9 @@
 #' The instrumental variable(s) are considered strong enough for violation space candidate \eqn{V_q} if the estimated IV strength using this
 #' violation space candidate is larger than the obtained value of the threshold of the IV strength.
 #' The formula of the threshold of the IV strength has the form
-#' \eqn{\max \{ 2 \cdot \text{Trace} [ \text{M} (V_q) ], \text{iv{\_}threshold} \} + S (V_q) } if \code{threshold_boot} is \code{TRUE}, and
-#' \eqn{\max \{ 2 \cdot \text{Trace} [ \text{M} (V_q) ], \text{iv{\_}threshold} \}} if \code{threshold_boot} is \code{FALSE}. The matrix
-#' \eqn{\text{M} (V_q)} depends on the hat matrix obtained from estimating \eqn{f(Z_i, X_i)}, the violation space candidate \eqn{V_q} and
+#' \eqn{\max \{ 2 \cdot Trace [ M (V_q) ], \text{iv{\_}threshold} \} + S (V_q) } if \code{threshold_boot} is \code{TRUE}, and
+#' \eqn{\max \{ 2 \cdot Trace [ M (V_q) ], \text{iv{\_}threshold} \}} if \code{threshold_boot} is \code{FALSE}. The matrix
+#' \eqn{M (V_q)} depends on the hat matrix obtained from estimating \eqn{f(Z_i, X_i)}, the violation space candidate \eqn{V_q} and
 #' the variables to include in the outcome model \code{W}. \eqn{S (V_q)} is obtained using a bootstrap and aims to adjust for the estimation error
 #' of the IV strength.
 #' Usually, the value of the threshold of the IV strength obtained using the bootstrap approach is larger.
