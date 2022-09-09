@@ -211,6 +211,13 @@
 #' vio_space <- create_monomials(Z, 4, "monomials_main")
 #' output_BO <- tsci_boosting(Y, D, Z, X, vio_space = vio_space)
 #' summary(output_BO)
+#' 
+#' 
+#' # use B-spline basis functions as W
+#' vio_space <- create_monomials(Z, 4, "monomials_main")
+#' W <- get_bspline(X)
+#' output_BO <- tsci_boosting(Y, D, Z, X, vio_space = vio_space, W = W)
+#' summary(output_BO)
 #' }
 tsci_boosting <- function(Y,
                           D,
