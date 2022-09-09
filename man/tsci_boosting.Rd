@@ -193,9 +193,9 @@ as otherwise the treatment estimator might be biased. \cr \cr
 The instrumental variable(s) are considered strong enough for violation space candidate \eqn{V_q} if the estimated IV strength using this
 violation space candidate is larger than the obtained value of the threshold of the IV strength.
 The formula of the threshold of the IV strength has the form
-\eqn{\max \{ 2 \cdot Trace [ M (V_q) ], \text{iv{\_}threshold} \} + S (V_q) } if \code{threshold_boot} is \code{TRUE}, and
-\eqn{\max \{ 2 \cdot Trace [ M (V_q) ], \text{iv{\_}threshold} \}} if \code{threshold_boot} is \code{FALSE}. The matrix
-\eqn{M (V_q)} depends on the hat matrix obtained from estimating \eqn{f(Z_i, X_i)}, the violation space candidate \eqn{V_q} and
+\eqn{\max \{ 2 \cdot \mathrm{Trace} [ \mathrm{M} (V_q) ], \mathrm{iv{\_}threshold} \} + S (V_q) } if \code{threshold_boot} is \code{TRUE}, and
+\eqn{\max \{ 2 \cdot \mathrm{Trace} [ \mathrm{M} (V_q) ], \mathrm{iv{\_}threshold} \}} if \code{threshold_boot} is \code{FALSE}. The matrix
+\eqn{\mathrm{M} (V_q)} depends on the hat matrix obtained from estimating \eqn{f(Z_i, X_i)}, the violation space candidate \eqn{V_q} and
 the variables to include in the outcome model \code{W}. \eqn{S (V_q)} is obtained using a bootstrap and aims to adjust for the estimation error
 of the IV strength.
 Usually, the value of the threshold of the IV strength obtained using the bootstrap approach is larger.
@@ -213,7 +213,19 @@ specified by the parameter \code{mult_split_method}. 'DML' uses the approach by
 Chernozhukov et al. (2018). 'FWER' uses the approach by Meinshausen et al. (2009)
 and controls for the family-wise error rate. 'FWER' does not provide standard errors.
 For large sample sizes, a large values for \code{nsplits} can lead to a high
-running time as for each split a new hat matrix must be calculated.
+running time as for each split a new hat matrix must be calculated. \cr \cr
+There are three possibilities to set the argument \code{parallel}, namely
+\code{"no"} for serial evaluation (default),
+\code{"multicore"} for parallel evaluation using forking,
+and \code{"snow"} for parallel evaluation using a parallel
+socket cluster. It is recommended to select \link[base]{RNGkind}
+(\code{"L'Ecuyer-CMRG"}) and to set a seed to ensure that the parallel
+computing of the package \code{TSCI} is reproducible.
+This ensures that each processor receives a different substream of the
+pseudo random number generator stream.
+Thus, the results reproducible if the arguments remain unchanged.
+There is an optional argument \code{cl} to specify a custom cluster
+if \code{parallel = "snow"}.
 }
 \examples{
 \dontrun{
