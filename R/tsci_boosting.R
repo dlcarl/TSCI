@@ -119,9 +119,9 @@
 #' of the successive violation space candidate will be returned provided that the IV strength is large enough.
 #' The specification of suitable violation space candidates is a crucial step because a poor approximation
 #' of \eqn{g(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently well.
-#' The function \code{\link[TSML]{create_monomials}} can be used to create a predefined sequence of
+#' The function \code{\link[TSCI]{create_monomials}} can be used to create a predefined sequence of
 #' violation space candidates consisting of monomials.
-#' The function \code{\link[TSML]{create_interactions}} can be used to create a predefined sequence of
+#' The function \code{\link[TSCI]{create_interactions}} can be used to create a predefined sequence of
 #' violation space candidates consisting of two-way interactions between the instrumens themselves and between
 #' the instruments and the instruments and baseline covariates.  \cr \cr
 #' \code{W} should be chosen to be flexible enough to approximate the functional form of \eqn{\phi} well
@@ -166,9 +166,9 @@
 #' }
 #'
 #' @seealso
-#' \code{\link[TSML]{tsci_forest}} for TSCI with random forest. \cr \cr
-#' \code{\link[TSML]{tsci_poly}} for TSCI with polynomial basis expansion. \cr \cr
-#' \code{\link[TSML]{tsci_secondstage}} for TSCI with user provided hat matrix. \cr \cr
+#' \code{\link[TSCI]{tsci_forest}} for TSCI with random forest. \cr \cr
+#' \code{\link[TSCI]{tsci_poly}} for TSCI with polynomial basis expansion. \cr \cr
+#' \code{\link[TSCI]{tsci_secondstage}} for TSCI with user provided hat matrix. \cr \cr
 #'
 #' @export
 #'

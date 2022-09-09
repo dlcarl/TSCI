@@ -126,9 +126,9 @@
 #' }
 #'
 #' @seealso
-#' \code{\link[TSML]{tsci_forest}} for TSCI with random forest. \cr \cr
-#' \code{\link[TSML]{tsci_boosting}} for TSCI with boosting. \cr \cr
-#' \code{\link[TSML]{tsci_secondstage}} for TSCI with user provided hat matrix. \cr \cr
+#' \code{\link[TSCI]{tsci_forest}} for TSCI with random forest. \cr \cr
+#' \code{\link[TSCI]{tsci_boosting}} for TSCI with boosting. \cr \cr
+#' \code{\link[TSCI]{tsci_secondstage}} for TSCI with user provided hat matrix. \cr \cr
 #'
 #' @export
 #'

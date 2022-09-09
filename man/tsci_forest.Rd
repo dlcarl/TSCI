@@ -178,9 +178,9 @@ violation space candidate will be returned. If \code{sel_method} is 'conservativ
 of the successive violation space candidate will be returned provided that the IV strength is large enough.
 The specification of suitable violation space candidates is a crucial step because a poor approximation
 of \eqn{g(Z_i, X_i)} might not address the bias caused by the violation of the IV assumption sufficiently well.
-The function \code{\link[TSML]{create_monomials}} can be used to create a predefined sequence of
+The function \code{\link[TSCI]{create_monomials}} can be used to create a predefined sequence of
 violation space candidates consisting of monomials.
-The function \code{\link[TSML]{create_interactions}} can be used to create a predefined sequence of
+The function \code{\link[TSCI]{create_interactions}} can be used to create a predefined sequence of
 violation space candidates consisting of two-way interactions between the instrumens themselves and between
 the instruments and the instruments and baseline covariates.  \cr \cr
 The instrumental variable(s) are considered strong enough for violation space candidate \eqn{V_q} if the estimated IV strength using this
@@ -268,7 +268,7 @@ and structural parameters: Double/debiased machine learning.
 }
 }
 \seealso{
-\code{\link[TSML]{tsci_boosting}} for TSCI with boosting. \cr \cr
-\code{\link[TSML]{tsci_poly}} for TSCI with polynomial basis expansion. \cr \cr
-\code{\link[TSML]{tsci_secondstage}} for TSCI with user provided hat matrix. \cr \cr
+\code{\link[TSCI]{tsci_boosting}} for TSCI with boosting. \cr \cr
+\code{\link[TSCI]{tsci_poly}} for TSCI with polynomial basis expansion. \cr \cr
+\code{\link[TSCI]{tsci_secondstage}} for TSCI with user provided hat matrix. \cr \cr
 }
