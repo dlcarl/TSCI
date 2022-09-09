@@ -1,5 +1,5 @@
 Package: TSCI
-Title: Tools for causal inference with possibly invalid instrumental variables
+Title: Tools for Causal Inference with Possibly Invalid Instrumental Variables
 Version: 0.0.0.9000
 Authors@R: 
     c(person(given="David", 

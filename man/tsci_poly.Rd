@@ -132,7 +132,7 @@ violation space candidate (besides the empty violation space). Testing for viola
 }
 \description{
 \code{tsci_poly} implements Two Stage Curvature Identification
-(Guo and Bühlmann 2022) with a basis expansion by monomials. Through a data-dependent way it
+(Guo and Buehlmann 2022) with a basis expansion by monomials. Through a data-dependent way it
 tests for the smallest sufficiently large violation space among a pre-specified
 sequence of nested violation space candidates. Point and uncertainty estimates
 of the treatment effect for all violation space candidates including the
@@ -141,7 +141,7 @@ selected violation space will be returned amongst other relevant statistics.
 \details{
 The treatment and outcome models are assumed to be of the following forms:
 \deqn{D_i = f(Z_i, X_i) + \delta_i}
-\deqn{Y_i = \beta * D_i + h(Z_i, X_i) + \phi(X_i) + \epsilon_i}
+\deqn{Y_i = \beta \cdot D_i + h(Z_i, X_i) + \phi(X_i) + \epsilon_i}
 where \eqn{f(Z_i, X_i)} is estimated using a polynomial basis expansion of the instrumental variables
 and a linear combination of the baseline covariates,
 \eqn{h(Z_i X_i)} is approximated using the violation space candidates and \eqn{\phi(X_i)} is approximated by
@@ -161,14 +161,14 @@ for \code{W} and \code{vio_space}. \cr \cr
 The instrumental variable(s) are considered strong enough for violation space candidate \eqn{V_q} if the estimated IV strength using this
 violation space candidate is larger than the obtained value of the threshold of the IV strength.
 The formula of the threshold of the IV strength has the form
-\eqn{\max \{ 2 \cdot \text{Trace} [ \text{M} (V_q) ], \text{iv{\_}threshold} \} + S (V_q) } if \code{threshold_boot} is \code{TRUE}, and
+\eqn{\max \{ 2 \cdot Trace [ \text{M} (V_q) ], \text{iv{\_}threshold} \} + S (V_q) } if \code{threshold_boot} is \code{TRUE}, and
 \eqn{\max \{ 2 \cdot \text{Trace} [ \text{M} (V_q) ], \text{iv{\_}threshold} \}} if \code{threshold_boot} is \code{FALSE}. The matrix
 \eqn{\text{M} (V_q)} depends on the hat matrix obtained from estimating \eqn{f(Z_i, X_i)}, the violation space candidate \eqn{V_q} and
 the variables to include in the outcome model \code{W}. \eqn{S (V_q)} is obtained using a bootstrap and aims to adjust for the estimation error
 of the IV strength.
 Usually, the value of the threshold of the IV strength obtained using the bootstrap approach is larger.
 Thus, using \code{threshold_boot} equals \code{TRUE} leads to a more conservative IV strength test.
-For more information see subsection 3.3 in Guo and Bühlmann (2022). \cr \cr
+For more information see subsection 3.3 in Guo and Buehlmann (2022). \cr \cr
 }
 \examples{
 \dontrun{
@@ -216,7 +216,7 @@ summary(output_PO)
 }
 \references{
 \itemize{
-\item{Zijian Guo, and Peter Bühlmann. Two Stage Curvature Identification with
+\item{Zijian Guo, and Peter Buehlmann. Two Stage Curvature Identification with
 Machine Learning: Causal Inference with Possibly Invalid Instrumental Variables.
 \emph{arXiv:2203.12808}, 2022}
 }

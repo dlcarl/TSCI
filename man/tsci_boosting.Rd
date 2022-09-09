@@ -154,7 +154,7 @@ violation space candidate (besides the empty violation space). Testing for viola
 }
 \description{
 \code{tsci_boosting} implements Two Stage Curvature Identification
-(Guo and Bühlmann 2022) with boosting. Through a data-dependent way, it
+(Guo and Buehlmann 2022) with boosting. Through a data-dependent way, it
 tests for the smallest sufficiently large violation space among a pre-specified
 sequence of nested violation space candidates. Point and uncertainty estimates
 of the treatment effect for all violation space candidates including the
@@ -163,7 +163,7 @@ selected violation space will be returned amongst other relevant statistics.
 \details{
 The treatment and outcome models are assumed to be of the following forms:
 \deqn{D_i = f(Z_i, X_i) + \delta_i}
-\deqn{Y_i = \beta * D_i + h(Z_i, X_i) + \phi(X_i) + \epsilon_i}
+\deqn{Y_i = \beta \cdot D_i + h(Z_i, X_i) + \phi(X_i) + \epsilon_i}
 where \eqn{f(Z_i, X_i)} is estimated using L2 boosting with regression trees as base learners,
 \eqn{h(Z_i X_i)} is approximated using the violation space candidates and \eqn{\phi(X_i)} is approximated by
 a linear combination of the columns in \code{W}. The errors are allowed to be heteroscedastic.
@@ -200,7 +200,7 @@ the variables to include in the outcome model \code{W}. \eqn{S (V_q)} is obtaine
 of the IV strength.
 Usually, the value of the threshold of the IV strength obtained using the bootstrap approach is larger.
 Thus, using \code{threshold_boot} equals \code{TRUE} leads to a more conservative IV strength test.
-For more information see subsection 3.3 in Guo and Bühlmann (2022).\cr \cr
+For more information see subsection 3.3 in Guo and Buehlmann (2022).\cr \cr
 \code{nsplits} specifies the number of data splits that should be performed.
 For each data split the output statistics such as the point estimates of the
 treatment effect are calculated. Those statistics will then be aggregated
@@ -262,10 +262,10 @@ summary(output_BO)
 }
 \references{
 \itemize{
-\item{Zijian Guo, and Peter Bühlmann. Two Stage Curvature Identification with
+\item{Zijian Guo, and Peter Buehlmann. Two Stage Curvature Identification with
 Machine Learning: Causal Inference with Possibly Invalid Instrumental Variables.
 \emph{arXiv:2203.12808}, 2022}
-\item{Nicolai Meinshausen, Lukas Meier, and Peter Bühlmann. P-values for high-dimensional
+\item{Nicolai Meinshausen, Lukas Meier, and Peter Buehlmann. P-values for high-dimensional
 regression. \emph{Journal of the American Statistical Association},
 104(488):1671-1681, 2009. 16, 18}
 \item{Victor Chernozhukov, Denis Chetverikov, Mert Demirer, Esther Duflo, Christian Hansen,
