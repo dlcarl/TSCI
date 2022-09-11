@@ -229,6 +229,7 @@ if \code{parallel = "snow"}.
 }
 \examples{
 \dontrun{
+library("fda") # only needed to build the basis splines of the baseline covariates.
 # dimension
 p <- 10
 # sample size
@@ -267,7 +268,16 @@ Y <- D * beta + tau * Z + X \%*\% gamma + Error[, 2]
 
 
 # Two Stage L2 Boosting
+# create violation space candidates
 vio_space <- create_monomials(Z, 4, "monomials_main")
+# specify suitable basis W for the baseline covariates (here we choose basis splines)
+W <- do.call(cbind,
+             lapply(seq_len(p), FUN = function(i) {
+               knots <- quantile(X[, i], seq(0, 1, length = 10))
+               eval.basis(X[, i], create.bspline.basis(rangeval = range(knots),
+                                                       breaks = knots, norder = 4))
+             }))
+# perform two stage curvature identification
 output_BO <- tsci_boosting(Y, D, Z, X, vio_space = vio_space)
 summary(output_BO)
 }
