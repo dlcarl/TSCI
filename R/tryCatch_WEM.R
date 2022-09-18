@@ -6,9 +6,8 @@
 #' - package simsalapar: R/tryCatchWE.R function tryCatch.W.E() and R/doCallWE.R
 #'   with function doCallWE()
 #' - https://stackoverflow.com/questions/4948361
-#
-# We would also like to thank Martin Maechler.
-
+#' We would also like to thank Martin Maechler -- who also added 'message handling'
+#' to be used e.g. for catching  lmer() messages {for C.Emmenegger's dblmlMixed pkg}
 #'
 #' @param expr expression to be evaluated.
 #' @param ret.obj ret.obj return argument ret.obj (input) if an error occcurs.
