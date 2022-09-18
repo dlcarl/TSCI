@@ -171,47 +171,79 @@ Thus, using \code{threshold_boot} equals \code{TRUE} leads to a more conservativ
 For more information see subsection 3.3 in Guo and Buehlmann (2022). \cr \cr
 }
 \examples{
-\dontrun{
-# dimension
-p <- 10
-# sample size
-n <- 1000
-# interaction value
-inter_val <- 1
-# the IV strength
-a <- 1
-# violation strength
-tau <- 1
-f <- function(x) {a * (1 * sin(2 * pi * x) + 1.5 * cos(2 * pi * x))}
-rho <- 0.5
-Cov <- stats::toeplitz(rho^c(0 : p))
-mu <- rep(0, p + 1)
-# true effect
-beta <- 1
-alpha <- as.matrix(rep(-0.3, p))
-gamma <- as.matrix(rep(0.2, p))
-inter <- as.matrix(c(rep(inter_val, 5),rep(0, p - 5)))
+### a small example without baseline covariates
+if (require("MASS")) {
+  # sample size
+  n <- 150
+  # the IV strength
+  a <- 1
+  # the violation strength
+  tau <- 1
+  # true effect
+  beta <- 1
+  # treatment model
+  f <- function(x) {1 + a * (x + x^2)}
+  # outcome model
+  g <- function(x) {1 + tau * x}
 
+  # generate data
+  mu_error <- rep(0, 2)
+  Cov_error <- matrix(c(1, 0.5, 0.5, 1), 2, 2)
+  Error <- MASS::mvrnorm(n, mu_error, Cov_error)
+  # instrumental variable
+  Z <- rnorm(n)
+  # treatment variable
+  D <- f(Z) + Error[, 1]
+  # outcome variable
+  Y <- beta * D + g(Z) + Error[, 2]
 
-# generate the data
-mu_error <- rep(0,2)
-Cov_error <- matrix(c(1, 0.5, 0.5,1), 2, 2)
-Error <- MASS::mvrnorm(n, mu_error, Cov_error)
-W_original <- MASS::mvrnorm(n, mu, Cov)
-W <- pnorm(W_original)
-# instrument variable
-Z <- W[, 1]
-# baseline covariates
-X <- W[, -1]
-# generate the treatment variable D
-D <- f(Z) + X \%*\% alpha + Z * X \%*\% inter + Error[, 1]
-# generate the outcome variable Y
-Y <- D * beta + tau * Z + X \%*\% gamma + Error[, 2]
+  # Two Stage Polynomials
+  output_PO <- tsci_poly(Y, D, Z)
+  summary(output_PO)
+}
 
+\donttest{
+### a larger example with baseline covariates
+if (require("MASS")) {
+  # dimension
+  p <- 10
+  # sample size
+  n <- 1000
+  # interaction value
+  inter_val <- 1
+  # the IV strength
+  a <- 1
+  # violation strength
+  tau <- 1
+  f <- function(x) {a * (1 * sin(2 * pi * x) + 1.5 * cos(2 * pi * x))}
+  rho <- 0.5
+  Cov <- stats::toeplitz(rho^c(0 : p))
+  mu <- rep(0, p + 1)
+  # true effect
+  beta <- 1
+  alpha <- as.matrix(rep(-0.3, p))
+  gamma <- as.matrix(rep(0.2, p))
+  inter <- as.matrix(c(rep(inter_val, 5),rep(0, p - 5)))
 
-# Two Stage Polynomials
-output_PO <- tsci_poly(Y, D, Z, X)
-summary(output_PO)
+  # generate the data
+  mu_error <- rep(0,2)
+  Cov_error <- matrix(c(1, 0.5, 0.5,1), 2, 2)
+  Error <- MASS::mvrnorm(n, mu_error, Cov_error)
+  W_original <- MASS::mvrnorm(n, mu, Cov)
+  W <- pnorm(W_original)
+  # instrumental variable
+  Z <- W[, 1]
+  # baseline covariates
+  X <- W[, -1]
+  # generate the treatment variable D
+  D <- f(Z) + X \%*\% alpha + Z * X \%*\% inter + Error[, 1]
+  # generate the outcome variable Y
+  Y <- D * beta + tau * Z + X \%*\% gamma + Error[, 2]
+
+  # Two Stage Polynomials
+  output_PO <- tsci_poly(Y, D, Z, X)
+  summary(output_PO)
+}
 }
 }
 \references{

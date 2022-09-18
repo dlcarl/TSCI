@@ -35,6 +35,8 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.0
 Depends: R (>= 4.0.0)
 Suggests: 
+    fda,
+    MASS,
     testthat (>= 3.0.0),
     withr
 Config/testthat/edition: 3
