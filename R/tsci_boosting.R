@@ -293,7 +293,7 @@ tsci_boosting <- function(Y,
                           threshold_boot = TRUE,
                           alpha = 0.05,
                           intercept = TRUE,
-                          parallel = "no",
+                          parallel = c("no", "multicore", "snow"),
                           nsplits = 10,
                           mult_split_method = c("FWER", "DML"),
                           ncores = 1,
@@ -321,7 +321,6 @@ tsci_boosting <- function(Y,
               iv_threshold = iv_threshold,
               threshold_boot = threshold_boot,
               alpha = alpha,
-              parallel = parallel,
               nsplits = nsplits,
               ncores = ncores,
               cl = cl,
@@ -336,6 +335,7 @@ tsci_boosting <- function(Y,
   }
   mult_split_method <- match.arg(mult_split_method)
   sel_method <- match.arg(sel_method)
+  parallel <- match.arg(parallel)
   # if TRUE returns the estimate of the treatment effect and its standard error
   # for each data split. Is needed for the confint method if mult_split_method is "FWER".
   if (is.null(raw_output)) {

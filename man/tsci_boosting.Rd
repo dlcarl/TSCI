@@ -25,7 +25,7 @@ tsci_boosting(
   threshold_boot = TRUE,
   alpha = 0.05,
   intercept = TRUE,
-  parallel = "no",
+  parallel = c("no", "multicore", "snow"),
   nsplits = 10,
   mult_split_method = c("FWER", "DML"),
   ncores = 1,

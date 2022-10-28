@@ -25,7 +25,7 @@ tsci_forest(
   nsplits = 10,
   mult_split_method = c("FWER", "DML"),
   intercept = TRUE,
-  parallel = "no",
+  parallel = c("no", "multicore", "snow"),
   ncores = 1,
   cl = NULL,
   raw_output = NULL,
