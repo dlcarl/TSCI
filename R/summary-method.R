@@ -83,6 +83,7 @@ summary.tsci <- function(object,
                         n_splits = object$nsplits,
                         mult_split_method = object$mult_split_method,
                         alpha = object$alpha,
+                        sel_method = object$sel_method,
                         extended_output = extended_output)
     class(output_list) <- "summary.tsci"
     return(output_list)
@@ -98,6 +99,7 @@ summary.tsci <- function(object,
                       n_splits = object$nsplits,
                       mult_split_method = object$mult_split_method,
                       alpha = object$alpha,
+                      sel_method = object$sel_method,
                       extended_output = extended_output)
   class(output_list) <- "summary.tsci"
   return(output_list)

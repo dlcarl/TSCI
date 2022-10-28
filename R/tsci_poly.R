@@ -341,7 +341,8 @@ tsci_poly <- function(Y,
                          n_A2 = 0,
                          nsplits = 0,
                          mult_split_method = "No sample splitting was performed",
-                         alpha = alpha))
+                         alpha = alpha,
+                         sel_method = sel_method))
   class(outputs) <- c("tsci", "list")
   return(outputs)
 }

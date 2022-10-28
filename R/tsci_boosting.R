@@ -406,7 +406,8 @@ tsci_boosting <- function(Y,
                          n_A2 = n_A2,
                          nsplits = nsplits,
                          mult_split_method = mult_split_method,
-                         alpha = alpha))
+                         alpha = alpha,
+                         sel_method = sel_method))
   class(outputs) <- c("tsci", "list")
   return(outputs)
 }
