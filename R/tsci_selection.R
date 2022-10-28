@@ -248,7 +248,7 @@ tsci_selection <- function(Y,
           output$Coef_all + qnorm(1 - alpha / 2) * output$sd_all)
   output$pval_all[] <-
     sapply(seq_len(length(output$Coef_all)),
-      FUN = function(i) p_val(Coef = output$CI_all[i], SE = output$sd_all[i], beta_test = 0)
+      FUN = function(i) p_val(Coef = output$Coef_all[i], SE = output$sd_all[i], beta_test = 0)
     )
 
   # Even if the instrument is too weak, we still select the empty violation space.
@@ -277,7 +277,7 @@ tsci_selection <- function(Y,
   )
   output$pval_sel[] <-
     sapply(seq_len(length(output$Coef_sel)),
-      FUN = function(i) p_val(Coef = output$CI_sel[i], SE = output$sd_sel[i], beta_test = 0)
+      FUN = function(i) p_val(Coef = output$Coef_sel[i], SE = output$sd_sel[i], beta_test = 0)
     )
   output
 }
