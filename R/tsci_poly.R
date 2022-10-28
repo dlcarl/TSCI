@@ -8,18 +8,25 @@
 #'
 #' @param Y observations of the outcome variable. Either a numeric vector of length n
 #' or a numeric matrix with dimension n by 1.
+#' If outcome variable is binary use dummy encoding.
 #' @param D observations of the treatment variable. Either a numeric vector of length n
 #' or a numeric matrix with dimension n by 1.
-#' @param Z observations of the instrumental variable(s). Either a numeric vector of length n
-#' or a numeric matrix with dimension n by s.
-#' @param X observations of baseline covariate(s) used to fit the treatment model. Either a numeric vector of length n
-#' or a numeric matrix with dimension n by p or \code{NULL}
+#' If treatment variable is binary use dummy encoding.
+#' @param Z observations of the instrumental variable(s). Either a vector of length n
+#' or a matrix with dimension n by s.
+#' If observations are not numeric dummy encoding will be applied.
+#' @param X observations of baseline covariate(s). Either a vector of length n
+#' or a matrix with dimension n by p or \code{NULL}
 #' (if no covariates should be included).
-#' @param W (transformed) observations of baseline covariate(s) used to fit the outcome model. Either a numeric vector of length n
-#' or a numeric matrix with dimension n by p_w or \code{NULL}
+#' If observations are not numeric dummy encoding will be applied.
+#' @param W (transformed) observations of baseline covariate(s) used to fit the outcome model. Either a vector of length n
+#' or a matrix with dimension n by p_w or \code{NULL}
 #' (if no covariates should be included).
+#' If observations are not numeric dummy encoding will be applied.
 #' @param vio_space either \code{NULL} or a list with numeric vectors of length n and/or numeric matrices with n rows as elements to
 #' specify the violation space candidates.
+#' If observations are not numeric dummy encoding will be applied.
+#' See Details for more information.
 #' If \code{NULL}, then the violation space candidates are chosen to be a nested sequence
 #' of monomials with degree depending on the orders of the polynomials used to fit
 #' the treatment model.
@@ -228,7 +235,19 @@ tsci_poly <- function(Y,
                       alpha = 0.05,
                       intercept = TRUE,
                       B = 300) {
-
+  # encodes categorical variables to dummy variables.
+  ls_encoded <- dummy_encoding(Y = Y,
+                               D = D,
+                               Z = Z,
+                               X = X,
+                               W = W,
+                               vio_space = vio_space)
+  Y <- ls_encoded$Y
+  D <- ls_encoded$D
+  Z <- ls_encoded$Z
+  X <- ls_encoded$X
+  W <- ls_encoded$W
+  vio_space <- ls_encoded$vio_space
   # checks that input is in the correct format.
   check_input(Y = Y,
               D = D,
@@ -252,11 +271,6 @@ tsci_poly <- function(Y,
               tsci_method = "poly")
   order_selection_method <- match.arg(order_selection_method)
   sel_method <- match.arg(sel_method)
-
-
-  Y = as.matrix(Y); D = as.matrix(D); Z = as.matrix(Z)
-  if (!is.null(X)) X <- as.matrix(X)
-  if (!is.null(W)) W <- as.matrix(W)
 
   n <- NROW(Y)
   p <- NCOL(Z) + ifelse(is.null(X), 0, NCOL(X))

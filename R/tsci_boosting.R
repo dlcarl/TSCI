@@ -8,18 +8,25 @@
 #'
 #' @param Y observations of the outcome variable. Either a numeric vector of length n
 #' or a numeric matrix with dimension n by 1.
+#' If outcome variable is binary use dummy encoding.
 #' @param D observations of the treatment variable. Either a numeric vector of length n
 #' or a numeric matrix with dimension n by 1.
-#' @param Z observations of the instrumental variable(s). Either a numeric vector of length n
-#' or a numeric matrix with dimension n by s.
-#' @param X observations of baseline covariate(s) used to fit the treatment model. Either a numeric vector of length n
-#' or a numeric matrix with dimension n by p or \code{NULL}
+#' If treatment variable is binary use dummy encoding.
+#' @param Z observations of the instrumental variable(s). Either a vector of length n
+#' or a matrix with dimension n by s.
+#' If observations are not numeric dummy encoding will be applied.
+#' @param X observations of baseline covariate(s). Either a vector of length n
+#' or a matrix with dimension n by p or \code{NULL}
 #' (if no covariates should be included).
-#' @param W (transformed) observations of baseline covariate(s) used to fit the outcome model. Either a numeric vector of length n
-#' or a numeric matrix with dimension n by p_w or \code{NULL}
+#' If observations are not numeric dummy encoding will be applied.
+#' @param W (transformed) observations of baseline covariate(s) used to fit the outcome model. Either a vector of length n
+#' or a matrix with dimension n by p_w or \code{NULL}
 #' (if no covariates should be included).
-#' @param vio_space  list with numeric vectors of length n and/or numeric matrices with n rows as elements to
-#' specify the violation space candidates. See Details for more information.
+#' If observations are not numeric dummy encoding will be applied.
+#' @param vio_space  list with vectors of length n and/or matrices with n rows as elements to
+#' specify the violation space candidates.
+#' If observations are not numeric dummy encoding will be applied.
+#' See Details for more information.
 #' @param create_nested_sequence logical. If \code{TRUE}, the violation space candidates (in form of matrices)
 #' are defined sequentially starting with an empty violation matrix and subsequently
 #' adding the next element of \code{vio_space} to the current violation matrix.
@@ -300,6 +307,19 @@ tsci_boosting <- function(Y,
                           cl = NULL,
                           raw_output = NULL,
                           B = 300) {
+  # encodes categorical variables to dummy variables.
+  ls_encoded <- dummy_encoding(Y = Y,
+                               D = D,
+                               Z = Z,
+                               X = X,
+                               W = W,
+                               vio_space = vio_space)
+  Y <- ls_encoded$Y
+  D <- ls_encoded$D
+  Z <- ls_encoded$Z
+  X <- ls_encoded$X
+  W <- ls_encoded$W
+  vio_space <- ls_encoded$vio_space
 
   # checks that input is in the correct format.
   check_input(Y = Y,
@@ -341,11 +361,6 @@ tsci_boosting <- function(Y,
   if (is.null(raw_output)) {
     raw_output <- ifelse(mult_split_method == "FWER", TRUE, FALSE)
   }
-
-  # stores variables as matrices as matrix multiplications will be performed later.
-  Y = as.matrix(Y); D = as.matrix(D); Z = as.matrix(Z)
-  if (!is.null(X)) X <- as.matrix(X)
-  if (!is.null(W)) W <- as.matrix(W)
 
   n <- NROW(Y)
   p <- NCOL(Z) + ifelse(is.null(X), 0, NCOL(X))

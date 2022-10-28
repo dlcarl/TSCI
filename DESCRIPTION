@@ -45,4 +45,5 @@ Imports:
     Rfast,
     stats,
     ranger,
-    parallel
+    parallel,
+    fastDummies

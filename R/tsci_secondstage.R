@@ -8,15 +8,21 @@
 #'
 #' @param Y observations of the outcome variable. Either a numeric vector of length n
 #' or a numeric matrix with dimension n by 1.
+#' If outcome variable is binary use dummy encoding.
 #' @param D observations of the treatment variable. Either a numeric vector of length n
 #' or a numeric matrix with dimension n by 1.
-#' @param Z observations of the instrumental variable(s). Either a numeric vector of length n
-#' or a numeric matrix with dimension n by s.
-#' @param W (transformed) observations of baseline covariate(s) used to fit the outcome model. Either a numeric vector of length n
-#' or a numeric matrix with dimension n by p_w or \code{NULL}
+#' If treatment variable is binary use dummy encoding.
+#' @param Z observations of the instrumental variable(s). Either a vector of length n
+#' or a matrix with dimension n by s.
+#' If observations are not numeric dummy encoding will be applied.
+#' @param W (transformed) observations of baseline covariate(s) used to fit the outcome model. Either a vector of length n
+#' or a matrix with dimension n by p_w or \code{NULL}
 #' (if no covariates should be included).
-#' @param vio_space  list with numeric vectors of length n and/or numeric matrices with n rows as elements to
-#' specify the violation space candidates. See Details for more information.
+#' If observations are not numeric dummy encoding will be applied.
+#' @param vio_space  list with vectors of length n and/or matrices with n rows as elements to
+#' specify the violation space candidates.
+#' If observations are not numeric dummy encoding will be applied.
+#' See Details for more information.
 #' @param create_nested_sequence logical. If \code{TRUE}, the violation space candidates (in form of matrices)
 #' are defined sequentially starting with an empty violation matrix and subsequently
 #' adding the next element of \code{vio_space} to the current violation matrix.
@@ -223,6 +229,18 @@ tsci_secondstage <- function(Y,
                              intercept = TRUE,
                              B = 300) {
   sel_method <- match.arg(sel_method)
+  # encodes categorical variables to dummy variables.
+  ls_encoded <- dummy_encoding(Y = Y,
+                               D = D,
+                               Z = Z,
+                               X = NULL,
+                               W = W,
+                               vio_space = vio_space)
+  Y <- ls_encoded$Y
+  D <- ls_encoded$D
+  Z <- ls_encoded$Z
+  W <- ls_encoded$W
+  vio_space <- ls_encoded$vio_space
   # check that input is in the correct format.
   check_input(Y = Y,
               D = D,
@@ -242,11 +260,6 @@ tsci_secondstage <- function(Y,
 
   if (is.null(A1_ind)) A1_ind <- seq_len(NROW(Y))
 
-
-  Y <- as.matrix(Y)
-  D <- as.matrix(D)
-  Z <- as.matrix(Z)
-  if (!is.null(W)) W <- as.matrix(W)
   n <- NROW(Y)
   n_A1 <- length(A1_ind)
 

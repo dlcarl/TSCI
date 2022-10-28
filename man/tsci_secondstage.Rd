@@ -23,20 +23,26 @@ tsci_secondstage(
 }
 \arguments{
 \item{Y}{observations of the outcome variable. Either a numeric vector of length n
-or a numeric matrix with dimension n by 1.}
+or a numeric matrix with dimension n by 1.
+If outcome variable is binary use dummy encoding.}
 
 \item{D}{observations of the treatment variable. Either a numeric vector of length n
-or a numeric matrix with dimension n by 1.}
+or a numeric matrix with dimension n by 1.
+If treatment variable is binary use dummy encoding.}
 
-\item{Z}{observations of the instrumental variable(s). Either a numeric vector of length n
-or a numeric matrix with dimension n by s.}
+\item{Z}{observations of the instrumental variable(s). Either a vector of length n
+or a matrix with dimension n by s.
+If observations are not numeric dummy encoding will be applied.}
 
-\item{W}{(transformed) observations of baseline covariate(s) used to fit the outcome model. Either a numeric vector of length n
-or a numeric matrix with dimension n by p_w or \code{NULL}
-(if no covariates should be included).}
+\item{W}{(transformed) observations of baseline covariate(s) used to fit the outcome model. Either a vector of length n
+or a matrix with dimension n by p_w or \code{NULL}
+(if no covariates should be included).
+If observations are not numeric dummy encoding will be applied.}
 
-\item{vio_space}{list with numeric vectors of length n and/or numeric matrices with n rows as elements to
-specify the violation space candidates. See Details for more information.}
+\item{vio_space}{list with vectors of length n and/or matrices with n rows as elements to
+specify the violation space candidates.
+If observations are not numeric dummy encoding will be applied.
+See Details for more information.}
 
 \item{create_nested_sequence}{logical. If \code{TRUE}, the violation space candidates (in form of matrices)
 are defined sequentially starting with an empty violation matrix and subsequently
