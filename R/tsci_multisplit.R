@@ -123,7 +123,7 @@ tsci_multisplit <- function(df_treatment,
     } else if (parallel == "snow") {
       if (is.null(cl)) {
         cl <- parallel::makePSOCKcluster(rep("localhost", ncores))
-        parallel::clusterExport(cl, varlist = getNamespaceExports("TSML"))
+        parallel::clusterExport(cl, varlist = getNamespaceExports("TSCI"))
         if (RNGkind()[1L] == "L'Ecuyer-CMRG")
           parallel::clusterSetRNGStream(cl)
         list_outputs <- parallel::parLapply(cl, seq_len(nsplits), tsci_parallel)
@@ -151,7 +151,7 @@ tsci_multisplit <- function(df_treatment,
       } else if (parallel == "snow") {
         if (is.null(cl)) {
           cl <- parallel::makePSOCKcluster(rep("localhost", ncores))
-          parallel::clusterExport(cl, varlist = getNamespaceExports("TSML"))
+          parallel::clusterExport(cl, varlist = getNamespaceExports("TSCI"))
           if (RNGkind()[1L] == "L'Ecuyer-CMRG")
             parallel::clusterSetRNGStream(cl)
           list_outputs_new <- parallel::parLapply(cl, seq_len(nsplits_new), tsci_parallel)
