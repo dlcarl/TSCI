@@ -73,33 +73,33 @@ See Details for more information.}
 \item{split_prop}{proportion of observations used to fit the outcome model. Has to be a value in (0, 1).}
 
 \item{nrounds}{number of boosting iterations.
-Can either be a single integer value or a vector containing multiple integer values to try.}
+Can either be a single integer value or a vector of integer values to try.}
 
 \item{eta}{learning rate of the boosting algorithm.
-Can either be a single numeric value or a vector containing multiple numeric values to try.}
+Can either be a single numeric value or a vector of numeric values to try.}
 
 \item{max_depth}{maximal tree depth.
-Can either be a single integer value or a vector containing multiple integer values to try.}
+Can either be a single integer value or a vector of integer values to try.}
 
 \item{subsample}{subsample ratio of the training instance.
-Can either be a single numeric value or a vector containing multiple numeric values to try.
-Has to be a value in (0, 1].}
+Can either be a single numeric value or a vector of numeric values to try.
+Has to be a numeric value in (0, 1].}
 
 \item{colsample_bytree}{subsample ratio of columns when constructing each tree.
-Can either be a single numeric value or a vector containing multiple numeric values to try.
-Has to be a value in (0, 1].}
+Can either be a single numeric value or a vector of numeric values to try.
+Has to be a numeric value in (0, 1].}
 
 \item{early_stopping}{logical. If \code{TRUE}, early stopping will be applied to
 choose the optimal number of boosting iteration using the cross-validation mean squared error.}
 
-\item{nfolds}{number of folds used for cross-validation to choose best parameter combination.}
+\item{nfolds}{a positive integer value specifying the number of folds used for cross-validation to choose best parameter combination.}
 
-\item{iv_threshold}{minimal value of the threshold of IV strength test.}
+\item{iv_threshold}{a numeric value specifying the minimum of the threshold of IV strength test.}
 
 \item{threshold_boot}{logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
 If \code{FALSE}, it does not perform a bootstrap. See Details.}
 
-\item{alpha}{the significance level.}
+\item{alpha}{the significance level. Has to be a numeric value between 0 and 1.}
 
 \item{intercept}{logical. If \code{TRUE}, an intercept is included in the outcome model.}
 
@@ -110,7 +110,7 @@ If \code{FALSE}, it does not perform a bootstrap. See Details.}
 \item{mult_split_method}{method to calculate the standard errors, p-values and to construct the confidence intervals if multi-splitting is performed.
 Default is "DML" if \code{nsplits} == 1 and "FWER" otherwise. See Details.}
 
-\item{ncores}{the number of cores to use.}
+\item{ncores}{the number of cores to use. Has to be an integer value larger or equal 1.}
 
 \item{cl}{either a parallel or snow cluster or \code{NULL}.}
 
@@ -118,7 +118,7 @@ Default is "DML" if \code{nsplits} == 1 and "FWER" otherwise. See Details.}
 This is only needed for the use of the function \code{confint} if \code{mult_split_method} equals "FWER". Default is
 \code{TRUE} if \code{mult_split_method} is \code{TRUE} and \code{FALSE} otherwise.}
 
-\item{B}{number of bootstrap samples.
+\item{B}{number of bootstrap samples. Has to be a positive integer value.
 Bootstrap methods are used to calculate the IV strength threshold if \code{threshold_boot} is \code{TRUE} and for the violation space selection.}
 }
 \value{

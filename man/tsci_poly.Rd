@@ -67,23 +67,24 @@ See Details for more information.}
 
 \item{sel_method}{The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.}
 
-\item{min_order}{either a single numeric value or a numeric vector of length s specifying
+\item{min_order}{either a single integer value or a vector of integer values of length s specifying
 the smallest order of polynomials to use in the selection of the treatment model. If a
-single numeric value, the polynomials of all instrumental variables use this value.}
+single integer value is provided, the polynomials of all instrumental variables use this value.}
 
-\item{max_order}{either a single numeric value or a numeric vector of length s specifying
+\item{max_order}{either a single integer value or a vector of integer values of length s specifying
 the largest order of polynomials to use in the selection of the treatment model. If a
-single numeric value, the polynomials of all instrumental variables use this value.}
+single integer value is provided, the polynomials of all instrumental variables use this value.}
 
-\item{exact_order}{either a single numeric value or a numeric vector of length s specifying
+\item{exact_order}{either a single integer value or a vector of integer values of length s specifying
 the exact order of polynomials to use in the treatment model. If a
-single numeric value, the polynomials of all instrumental variables use this value.}
+single integer value is provided, the polynomials of all instrumental variables use this value.}
 
 \item{order_selection_method}{method used to select the best fitting order of polynomials
 for the treatment model. Must be either 'grid search' or 'backfitting'.
 'grid search' can be very slow if the number of instruments is large.}
 
-\item{max_iter}{number of iterations used in the backfitting algorithm if \code{order_selection_method} is 'backfitting'.}
+\item{max_iter}{number of iterations used in the backfitting algorithm if \code{order_selection_method} is 'backfitting'.
+Has to be a positive integer value.}
 
 \item{conv_tol}{tolerance of convergence in the backfitting algorithm if \code{order_selection_method} is 'backfitting'.}
 
@@ -91,18 +92,19 @@ for the treatment model. Must be either 'grid search' or 'backfitting'.
 to determine the best fitting order of polynomials for the treatment model.
 If \code{FALSE}, k-fold cross-validation is used instead.}
 
-\item{nfolds}{number of folds used for the k-fold cross-validation if \code{gcv} is \code{FALSE}.}
+\item{nfolds}{number of folds used for the k-fold cross-validation if \code{gcv} is \code{FALSE}.
+Has to be a positive integer value.}
 
-\item{iv_threshold}{minimal value of the threshold of IV strength test.}
+\item{iv_threshold}{a numeric value specifying the minimum of the threshold of IV strength test.}
 
 \item{threshold_boot}{logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
 If \code{FALSE}, it does not perform a bootstrap. See Details.}
 
-\item{alpha}{the significance level.}
+\item{alpha}{the significance level. Has to be a numeric value between 0 and 1.}
 
 \item{intercept}{logical. If \code{TRUE}, an intercept is included in the outcome model.}
 
-\item{B}{number of bootstrap samples.
+\item{B}{number of bootstrap samples. Has to be a positive integer value.
 Bootstrap methods are used to calculate the iv strength threshold if \code{threshold_boot} is \code{TRUE} and for the violation space selection.}
 }
 \value{

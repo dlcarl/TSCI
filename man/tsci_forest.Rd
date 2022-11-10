@@ -66,35 +66,35 @@ adding the next element of \code{vio_space} to the current violation matrix.
 If \code{FALSE,} the violation space candidates (in form of matrices) are defined as the empty space and the elements of \code{vio_space}.
 See Details for more information.}
 
-\item{sel_method}{The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.}
+\item{sel_method}{the selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.}
 
-\item{split_prop}{proportion of observations used to fit the outcome model. Has to be a value in (0, 1).}
+\item{split_prop}{proportion of observations used to fit the outcome model. Has to be a numeric value in (0, 1).}
 
 \item{num_trees}{number of trees in random forests.
-Can either be a single integer value or a vector containing multiple integer values to try.}
+Can either be a single integer value or a vector of integer values to try.}
 
 \item{mtry}{number of covariates to possibly split at in each node of the tree of the random forest.
-Can either be a single numeric value or a vector containing multiple numeric values to try.
-Can also be a list of single argument function(s) returning an integer, given the number of independent variables.
+Can either be a single integer value or a vector of integer values to try.
+Can also be a list of single argument function(s) returning an integer value, given the number of independent variables.
 The values have to be positive integers not larger than the number of independent variables in the treatment model. Default
 is to try all integer values between one-third of the independent variables and two-thirds of the independent variables.}
 
 \item{max_depth}{maximal tree depth in random forests.
-Can either be a single integer value or a vector containing multiple integer values to try.
+Can either be a single integer value or a vector of integer values to try.
 0 correspond to unlimited depth.}
 
 \item{min_node_size}{minimal size of each leaf node in the random forest.
-Can either be a single integer value or a vector containing multiple integer values to try.}
+Can either be a single integer value or a vector of integer values to try.}
 
-\item{self_predict}{logical, if \code{FALSE}, it sets the diagonal of the hat matrix
+\item{self_predict}{logical. If \code{FALSE}, it sets the diagonal of the hat matrix
 of each tree to zero to avoid self-prediction and rescales the off-diagonal elements accordingly.}
 
-\item{iv_threshold}{minimal value of the threshold of IV strength test.}
+\item{iv_threshold}{a numeric value specifying the minimum of the threshold of IV strength test.}
 
-\item{threshold_boot}{logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
+\item{threshold_boot}{logical. If \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
 If \code{FALSE}, it does not perform a bootstrap. See Details.}
 
-\item{alpha}{the significance level.}
+\item{alpha}{the significance level. Has to be a numeric value between 0 and 1.}
 
 \item{nsplits}{number of times the data will be split. Has to be an integer larger or equal 1. See Details.}
 
@@ -106,7 +106,7 @@ Default is "DML" if \code{nsplits} == 1 and "FWER" otherwise. See Details.}
 \item{parallel}{one out of \code{"no"}, \code{"multicore"}, or \code{"snow"}
 specifying the parallelization method used. See Details.}
 
-\item{ncores}{the number of cores to use.}
+\item{ncores}{the number of cores to use. Has to be an integer value larger or equal 1.}
 
 \item{cl}{either a parallel or snow cluster or \code{NULL}.}
 
@@ -114,7 +114,7 @@ specifying the parallelization method used. See Details.}
 This is only needed for the use of the function \code{confint} if \code{mult_split_method} equals "FWER". Default is
 \code{TRUE} if \code{mult_split_method} is \code{TRUE} and \code{FALSE} otherwise.}
 
-\item{B}{number of bootstrap samples.
+\item{B}{number of bootstrap samples. Has to be a positive integer value.
 Bootstrap methods are used to calculate the IV strength threshold if \code{threshold_boot} is \code{TRUE} and for the violation space selection.}
 }
 \value{

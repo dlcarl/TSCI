@@ -32,38 +32,38 @@
 #' adding the next element of \code{vio_space} to the current violation matrix.
 #' If \code{FALSE,} the violation space candidates (in form of matrices) are defined as the empty space and the elements of \code{vio_space}.
 #' See Details for more information.
-#' @param sel_method The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.
-#' @param split_prop proportion of observations used to fit the outcome model. Has to be a value in (0, 1).
+#' @param sel_method the selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.
+#' @param split_prop proportion of observations used to fit the outcome model. Has to be a numeric value in (0, 1).
 #' @param num_trees number of trees in random forests.
-#' Can either be a single integer value or a vector containing multiple integer values to try.
+#' Can either be a single integer value or a vector of integer values to try.
 #' @param mtry number of covariates to possibly split at in each node of the tree of the random forest.
-#' Can either be a single numeric value or a vector containing multiple numeric values to try.
-#' Can also be a list of single argument function(s) returning an integer, given the number of independent variables.
+#' Can either be a single integer value or a vector of integer values to try.
+#' Can also be a list of single argument function(s) returning an integer value, given the number of independent variables.
 #' The values have to be positive integers not larger than the number of independent variables in the treatment model. Default
 #' is to try all integer values between one-third of the independent variables and two-thirds of the independent variables.
 #' @param max_depth maximal tree depth in random forests.
-#' Can either be a single integer value or a vector containing multiple integer values to try.
+#' Can either be a single integer value or a vector of integer values to try.
 #' 0 correspond to unlimited depth.
 #' @param min_node_size minimal size of each leaf node in the random forest.
-#' Can either be a single integer value or a vector containing multiple integer values to try.
-#' @param self_predict logical, if \code{FALSE}, it sets the diagonal of the hat matrix
+#' Can either be a single integer value or a vector of integer values to try.
+#' @param self_predict logical. If \code{FALSE}, it sets the diagonal of the hat matrix
 #' of each tree to zero to avoid self-prediction and rescales the off-diagonal elements accordingly.
-#' @param iv_threshold minimal value of the threshold of IV strength test.
-#' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
+#' @param iv_threshold a numeric value specifying the minimum of the threshold of IV strength test.
+#' @param threshold_boot logical. If \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
 #' If \code{FALSE}, it does not perform a bootstrap. See Details.
-#' @param alpha the significance level.
+#' @param alpha the significance level. Has to be a numeric value between 0 and 1.
 #' @param nsplits number of times the data will be split. Has to be an integer larger or equal 1. See Details.
 #' @param mult_split_method method to calculate the standard errors, p-values and to construct the confidence intervals if multi-splitting is performed.
 #' Default is "DML" if \code{nsplits} == 1 and "FWER" otherwise. See Details.
 #' @param intercept logical. If \code{TRUE}, an intercept is included in the outcome model.
 #' @param parallel one out of \code{"no"}, \code{"multicore"}, or \code{"snow"}
 #' specifying the parallelization method used. See Details.
-#' @param ncores the number of cores to use.
+#' @param ncores the number of cores to use. Has to be an integer value larger or equal 1.
 #' @param cl either a parallel or snow cluster or \code{NULL}.
 #' @param raw_output logical. If \code{TRUE}, the coefficient and standard error estimates of each split will be returned.
 #' This is only needed for the use of the function \code{confint} if \code{mult_split_method} equals "FWER". Default is
 #' \code{TRUE} if \code{mult_split_method} is \code{TRUE} and \code{FALSE} otherwise.
-#' @param B number of bootstrap samples.
+#' @param B number of bootstrap samples. Has to be a positive integer value.
 #' Bootstrap methods are used to calculate the IV strength threshold if \code{threshold_boot} is \code{TRUE} and for the violation space selection.
 #'
 #' @return
@@ -366,10 +366,10 @@ tsci_forest <- function(Y,
 
   # sets up grid search over the hyperparameter combinations.
   params_grid <- expand.grid(
-    num_trees = num_trees,
-    mtry = mtry,
-    max_depth = max_depth,
-    min_node_size = min_node_size,
+    num_trees = as.integer(num_trees),
+    mtry = as.integer(mtry),
+    max_depth = as.integer(max_depth),
+    min_node_size = as.integer(min_node_size),
     self_predict = self_predict
   )
 
@@ -402,12 +402,12 @@ tsci_forest <- function(Y,
                              split_prop = split_prop,
                              parallel = parallel,
                              do_parallel = do_parallel,
-                             nsplits = nsplits,
-                             ncores = ncores,
+                             nsplits = as.integer(nsplits),
+                             ncores = as.integer(ncores),
                              mult_split_method = mult_split_method,
                              cl = cl,
                              raw_output = raw_output,
-                             B = B)
+                             B = as.integer(B))
 
   # returns output
   outputs <- append(outputs,

@@ -36,30 +36,32 @@
 #' If \code{FALSE,} the violation space candidates (in form of matrices) are defined as the empty space and the elements of \code{vio_space}.
 #' See Details for more information.
 #' @param sel_method The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.
-#' @param min_order either a single numeric value or a numeric vector of length s specifying
+#' @param min_order either a single integer value or a vector of integer values of length s specifying
 #' the smallest order of polynomials to use in the selection of the treatment model. If a
-#' single numeric value, the polynomials of all instrumental variables use this value.
-#' @param max_order either a single numeric value or a numeric vector of length s specifying
+#' single integer value is provided, the polynomials of all instrumental variables use this value.
+#' @param max_order either a single integer value or a vector of integer values of length s specifying
 #' the largest order of polynomials to use in the selection of the treatment model. If a
-#' single numeric value, the polynomials of all instrumental variables use this value.
-#' @param exact_order either a single numeric value or a numeric vector of length s specifying
+#' single integer value is provided, the polynomials of all instrumental variables use this value.
+#' @param exact_order either a single integer value or a vector of integer values of length s specifying
 #' the exact order of polynomials to use in the treatment model. If a
-#' single numeric value, the polynomials of all instrumental variables use this value.
+#' single integer value is provided, the polynomials of all instrumental variables use this value.
 #' @param order_selection_method method used to select the best fitting order of polynomials
 #' for the treatment model. Must be either 'grid search' or 'backfitting'.
 #' 'grid search' can be very slow if the number of instruments is large.
 #' @param max_iter number of iterations used in the backfitting algorithm if \code{order_selection_method} is 'backfitting'.
+#' Has to be a positive integer value.
 #' @param conv_tol tolerance of convergence in the backfitting algorithm if \code{order_selection_method} is 'backfitting'.
 #' @param gcv logical. If \code{TRUE}, the generalized cross-validation mean squared error is used
 #' to determine the best fitting order of polynomials for the treatment model.
 #' If \code{FALSE}, k-fold cross-validation is used instead.
 #' @param nfolds number of folds used for the k-fold cross-validation if \code{gcv} is \code{FALSE}.
-#' @param iv_threshold minimal value of the threshold of IV strength test.
+#' Has to be a positive integer value.
+#' @param iv_threshold a numeric value specifying the minimum of the threshold of IV strength test.
 #' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
 #' If \code{FALSE}, it does not perform a bootstrap. See Details.
-#' @param alpha the significance level.
+#' @param alpha the significance level. Has to be a numeric value between 0 and 1.
 #' @param intercept logical. If \code{TRUE}, an intercept is included in the outcome model.
-#' @param B number of bootstrap samples.
+#' @param B number of bootstrap samples. Has to be a positive integer value.
 #' Bootstrap methods are used to calculate the iv strength threshold if \code{threshold_boot} is \code{TRUE} and for the violation space selection.
 #'
 #' @return
@@ -294,7 +296,8 @@ tsci_poly <- function(Y,
     min_order <- c(min_order, rep(1, NCOL(X)))
   }
 
-  params_list <- lapply(seq_len(p), FUN = function(i) seq(min_order[i], max_order[i], by = 1))
+  params_list <- lapply(seq_len(p),
+                        FUN = function(i) seq(as.integer(min_order[i]), as.integer(max_order[i]), by = 1))
 
 
   # creates dataframe for the treatment model.
@@ -306,10 +309,10 @@ tsci_poly <- function(Y,
   poly_CV <- get_poly_parameters(df_treatment = df_treatment,
                                  params_list = params_list,
                                  order_selection_method = order_selection_method,
-                                 max_iter = max_iter,
+                                 max_iter = as.integer(max_iter),
                                  conv_tol = conv_tol,
                                  gcv = gcv,
-                                 nfolds = nfolds)
+                                 nfolds = as.integer(nfolds))
 
 
   if (is.null(vio_space)) {
@@ -345,7 +348,7 @@ tsci_poly <- function(Y,
                       alpha = alpha,
                       params_grid = poly_CV$params,
                       function_hatmatrix = get_poly_hatmatrix,
-                      B = B,
+                      B = as.integer(B),
                       mse = poly_CV$mse)
 
   # returns output.

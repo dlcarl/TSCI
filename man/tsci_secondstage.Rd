@@ -58,16 +58,16 @@ If \code{NULL}, all observations will be used.}
 
 \item{sel_method}{The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.}
 
-\item{iv_threshold}{minimal value of the threshold of IV strength test.}
+\item{iv_threshold}{a numeric value specifying the minimum of the threshold of IV strength test.}
 
 \item{threshold_boot}{logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
 If \code{FALSE}, it does not perform a bootstrap. See Details.}
 
-\item{alpha}{the significance level.}
+\item{alpha}{the significance level. Has to be a numeric value between 0 and 1.}
 
 \item{intercept}{logical. If \code{TRUE}, an intercept is included in the outcome model.}
 
-\item{B}{number of bootstrap samples.
+\item{B}{number of bootstrap samples. Has to be a positive integer value.
 Bootstrap methods are used to calculate the iv strength threshold if \code{threshold_boot} is \code{TRUE} and for the violation space selection.}
 }
 \value{
