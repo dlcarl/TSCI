@@ -18,7 +18,8 @@ tsci_forest(
   mtry = NULL,
   max_depth = 0,
   min_node_size = c(5, 10, 20),
-  self_predict = TRUE,
+  self_predict = FALSE,
+  sd_boot = TRUE,
   iv_threshold = 10,
   threshold_boot = TRUE,
   alpha = 0.05,
@@ -89,6 +90,8 @@ Can either be a single integer value or a vector of integer values to try.}
 \item{self_predict}{logical. If \code{FALSE}, it sets the diagonal of the hat matrix
 of each tree to zero to avoid self-prediction and rescales the off-diagonal elements accordingly.}
 
+\item{sd_boot}{logical. if \code{TRUE}, it determines the standard error using a bootstrap approach.}
+
 \item{iv_threshold}{a numeric value specifying the minimum of the threshold of IV strength test.}
 
 \item{threshold_boot}{logical. If \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
@@ -115,7 +118,8 @@ This is only needed for the use of the function \code{confint} if \code{mult_spl
 \code{TRUE} if \code{mult_split_method} is \code{TRUE} and \code{FALSE} otherwise.}
 
 \item{B}{number of bootstrap samples. Has to be a positive integer value.
-Bootstrap methods are used to calculate the IV strength threshold if \code{threshold_boot} is \code{TRUE} and for the violation space selection.}
+Bootstrap methods are used to calculate the IV strength threshold if \code{threshold_boot} is \code{TRUE} and for the violation space selection.
+It is also used to calculate the standard error if \code{sd_boot} is \code{TRUE}.}
 }
 \value{
 A list containing the following elements:

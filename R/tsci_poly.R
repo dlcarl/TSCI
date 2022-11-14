@@ -56,6 +56,7 @@
 #' If \code{FALSE}, k-fold cross-validation is used instead.
 #' @param nfolds number of folds used for the k-fold cross-validation if \code{gcv} is \code{FALSE}.
 #' Has to be a positive integer value.
+#' @param sd_boot logical. if \code{TRUE}, it determines the standard error using a bootstrap approach.
 #' @param iv_threshold a numeric value specifying the minimum of the threshold of IV strength test.
 #' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
 #' If \code{FALSE}, it does not perform a bootstrap. See Details.
@@ -232,6 +233,7 @@ tsci_poly <- function(Y,
                       conv_tol = 10^-6,
                       gcv = FALSE,
                       nfolds = 5,
+                      sd_boot = FALSE,
                       iv_threshold = 10,
                       threshold_boot = TRUE,
                       alpha = 0.05,
@@ -267,6 +269,7 @@ tsci_poly <- function(Y,
               gcv = gcv,
               nfolds = nfolds,
               iv_threshold = iv_threshold,
+              sd_boot = sd_boot,
               threshold_boot = threshold_boot,
               alpha = alpha,
               B = B,
@@ -342,6 +345,7 @@ tsci_poly <- function(Y,
                       list_vio_space = list_vio_space,
                       intercept = intercept,
                       sel_method = sel_method,
+                      sd_boot = sd_boot,
                       iv_threshold = iv_threshold,
                       threshold_boot = threshold_boot,
                       split_prop = 1,

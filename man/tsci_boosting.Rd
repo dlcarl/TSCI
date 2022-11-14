@@ -21,6 +21,7 @@ tsci_boosting(
   colsample_bytree = 1,
   early_stopping = TRUE,
   nfolds = 5,
+  sd_boot = FALSE,
   iv_threshold = 10,
   threshold_boot = TRUE,
   alpha = 0.05,
@@ -93,6 +94,8 @@ Has to be a numeric value in (0, 1].}
 choose the optimal number of boosting iteration using the cross-validation mean squared error.}
 
 \item{nfolds}{a positive integer value specifying the number of folds used for cross-validation to choose best parameter combination.}
+
+\item{sd_boot}{logical. if \code{TRUE}, it determines the standard error using a bootstrap approach.}
 
 \item{iv_threshold}{a numeric value specifying the minimum of the threshold of IV strength test.}
 

@@ -33,6 +33,7 @@
 #' Must be of same length as the number of rows and columns of \code{weight}.
 #' If \code{NULL}, all observations will be used.
 #' @param sel_method The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.
+#' @param sd_boot logical. if \code{TRUE}, it determines the standard error using a bootstrap approach.
 #' @param iv_threshold a numeric value specifying the minimum of the threshold of IV strength test.
 #' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
 #' If \code{FALSE}, it does not perform a bootstrap. See Details.
@@ -223,6 +224,7 @@ tsci_secondstage <- function(Y,
                              weight,
                              A1_ind = NULL,
                              sel_method = c("comparison", "conservative"),
+                             sd_boot = FALSE,
                              iv_threshold = 10,
                              threshold_boot = TRUE,
                              alpha = 0.05,
@@ -252,6 +254,7 @@ tsci_secondstage <- function(Y,
               weight = weight,
               A1_ind = A1_ind,
               intercept = intercept,
+              sd_boot = sd_boot,
               iv_threshold = iv_threshold,
               threshold_boot = threshold_boot,
               alpha = alpha,
@@ -298,6 +301,7 @@ tsci_secondstage <- function(Y,
     weight = weight,
     intercept = intercept,
     sel_method = sel_method,
+    sd_boot = sd_boot,
     iv_threshold = iv_threshold,
     threshold_boot = threshold_boot,
     alpha = alpha,

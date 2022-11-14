@@ -14,6 +14,7 @@ tsci_secondstage(
   weight,
   A1_ind = NULL,
   sel_method = c("comparison", "conservative"),
+  sd_boot = FALSE,
   iv_threshold = 10,
   threshold_boot = TRUE,
   alpha = 0.05,
@@ -57,6 +58,8 @@ Must be of same length as the number of rows and columns of \code{weight}.
 If \code{NULL}, all observations will be used.}
 
 \item{sel_method}{The selection method used to estimate the treatment effect. Either "comparison" or "conservative". See Details.}
+
+\item{sd_boot}{logical. if \code{TRUE}, it determines the standard error using a bootstrap approach.}
 
 \item{iv_threshold}{a numeric value specifying the minimum of the threshold of IV strength test.}
 

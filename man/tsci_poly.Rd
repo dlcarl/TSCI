@@ -21,6 +21,7 @@ tsci_poly(
   conv_tol = 10^-6,
   gcv = FALSE,
   nfolds = 5,
+  sd_boot = FALSE,
   iv_threshold = 10,
   threshold_boot = TRUE,
   alpha = 0.05,
@@ -94,6 +95,8 @@ If \code{FALSE}, k-fold cross-validation is used instead.}
 
 \item{nfolds}{number of folds used for the k-fold cross-validation if \code{gcv} is \code{FALSE}.
 Has to be a positive integer value.}
+
+\item{sd_boot}{logical. if \code{TRUE}, it determines the standard error using a bootstrap approach.}
 
 \item{iv_threshold}{a numeric value specifying the minimum of the threshold of IV strength test.}
 

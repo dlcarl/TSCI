@@ -48,15 +48,9 @@
 #' Can either be a single integer value or a vector of integer values to try.
 #' @param self_predict logical. If \code{FALSE}, it sets the diagonal of the hat matrix
 #' of each tree to zero to avoid self-prediction and rescales the off-diagonal elements accordingly.
-<<<<<<< Updated upstream
+#' @param sd_boot logical. if \code{TRUE}, it determines the standard error using a bootstrap approach.
 #' @param iv_threshold a numeric value specifying the minimum of the threshold of IV strength test.
 #' @param threshold_boot logical. If \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
-=======
-#' @param sd_boot logical. if \code{TRUE}, it determines the standard error using a bootstrap approach.
-#' If \code{FALSE}, it does not perform a bootstrap.
-#' @param iv_threshold minimal value of the threshold of IV strength test.
-#' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
->>>>>>> Stashed changes
 #' If \code{FALSE}, it does not perform a bootstrap. See Details.
 #' @param alpha the significance level. Has to be a numeric value between 0 and 1.
 #' @param nsplits number of times the data will be split. Has to be an integer larger or equal 1. See Details.
