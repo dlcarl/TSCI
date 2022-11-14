@@ -7,6 +7,7 @@ check_input <- function(Y,
                         vio_space,
                         create_nested_sequence,
                         intercept,
+                        sd_boot,
                         iv_threshold,
                         threshold_boot,
                         alpha,
@@ -53,6 +54,8 @@ check_input <- function(Y,
     error_message <- paste(error_message, "iv_threshold is not numeric.", sep = "\n")
   if (!is.logical(threshold_boot))
     error_message <- paste(error_message, "threshold_boot is neither TRUE nor FALSE.", sep = "\n")
+  if (!is.logical(sd_boot))
+    error_message <- paste(error_message, "sd_boot is neither TRUE nor FALSE.", sep = "\n")
   if (!is.numeric(alpha))
     error_message <- paste(error_message, "alpha is not numeric.", sep = "\n")
   if (!is.numeric(B))

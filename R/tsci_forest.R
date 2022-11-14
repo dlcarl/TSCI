@@ -48,8 +48,15 @@
 #' Can either be a single integer value or a vector of integer values to try.
 #' @param self_predict logical. If \code{FALSE}, it sets the diagonal of the hat matrix
 #' of each tree to zero to avoid self-prediction and rescales the off-diagonal elements accordingly.
+<<<<<<< Updated upstream
 #' @param iv_threshold a numeric value specifying the minimum of the threshold of IV strength test.
 #' @param threshold_boot logical. If \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
+=======
+#' @param sd_boot logical. if \code{TRUE}, it determines the standard error using a bootstrap approach.
+#' If \code{FALSE}, it does not perform a bootstrap.
+#' @param iv_threshold minimal value of the threshold of IV strength test.
+#' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
+>>>>>>> Stashed changes
 #' If \code{FALSE}, it does not perform a bootstrap. See Details.
 #' @param alpha the significance level. Has to be a numeric value between 0 and 1.
 #' @param nsplits number of times the data will be split. Has to be an integer larger or equal 1. See Details.
@@ -65,6 +72,7 @@
 #' \code{TRUE} if \code{mult_split_method} is \code{TRUE} and \code{FALSE} otherwise.
 #' @param B number of bootstrap samples. Has to be a positive integer value.
 #' Bootstrap methods are used to calculate the IV strength threshold if \code{threshold_boot} is \code{TRUE} and for the violation space selection.
+#' It is also used to calculate the standard error if \code{sd_boot} is \code{TRUE}.
 #'
 #' @return
 #' A list containing the following elements:
@@ -290,7 +298,8 @@ tsci_forest <- function(Y,
                         mtry = NULL,
                         max_depth = 0,
                         min_node_size = c(5, 10, 20),
-                        self_predict = TRUE,
+                        self_predict = FALSE,
+                        sd_boot = TRUE,
                         iv_threshold = 10,
                         threshold_boot = TRUE,
                         alpha = 0.05,
@@ -330,6 +339,7 @@ tsci_forest <- function(Y,
               max_depth = max_depth,
               min_node_size = min_node_size,
               self_predict = self_predict,
+              sd_boot = sd_boot,
               iv_threshold = iv_threshold,
               threshold_boot = threshold_boot,
               alpha = alpha,
@@ -394,6 +404,7 @@ tsci_forest <- function(Y,
                              create_nested_sequence = create_nested_sequence,
                              intercept = intercept,
                              sel_method = sel_method,
+                             sd_boot = sd_boot,
                              iv_threshold = iv_threshold,
                              threshold_boot = threshold_boot,
                              alpha = alpha,

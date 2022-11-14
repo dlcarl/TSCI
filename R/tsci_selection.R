@@ -15,6 +15,8 @@
 #' @param intercept logic, to include an intercept in the outcome model or not.
 #' @param sel_method The selection method used to estimate the treatment effect.
 #' Either "comparison" or "conservative".
+#' @param sd_boot logical. if \code{TRUE}, it determines the standard error using a bootstrap approach.
+#' If \code{FALSE}, it does not perform a bootstrap.
 #' @param iv_threshold the minimal value of the threshold of IV strength test.
 #' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
 #' If \code{FALSE}, it does not perform a bootstrap.
@@ -72,6 +74,7 @@ tsci_selection <- function(Y,
                            weight,
                            intercept,
                            sel_method,
+                           sd_boot,
                            iv_threshold,
                            threshold_boot,
                            alpha,
@@ -133,6 +136,7 @@ tsci_selection <- function(Y,
                                          weight = weight,
                                          eps_hat = eps_hat[[index]],
                                          delta_hat = delta_hat,
+                                         sd_boot = sd_boot,
                                          iv_threshold = iv_threshold,
                                          threshold_boot = threshold_boot,
                                          B = B)
