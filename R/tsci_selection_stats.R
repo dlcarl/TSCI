@@ -49,10 +49,13 @@ tsci_selection_stats <- function(D_rep, Cov_rep, weight, eps_hat, delta_hat, sd_
     delta_boo_matrix <- u_matrix * delta_cent
     if (sd_boot) {
       #DC: It would help a lot if we could add some lines of comments on why this bootstrap standard error estimator works i.e. why it has this form.
+      #MC: I think Zijian will add this part to his latest version. How about we referring the code to the updated paper later?
       eps_cent <- as.vector(eps_hat - mean(eps_hat))
       #DC: Is there no issue in using the same u_matrix twice?
+      #MC: No, Zijian has confirmed that there is no issue by doing so. 
       eps_boo_matrix <- u_matrix * eps_cent
       #DC: If possible we try to avoid solving for inverses and matrix matrix multiplications. Here, we can avoid it using the following code lines.
+      #MC: I see. Then we can do it in your way.
       #DC: delta_resid <- resid(lm(weight %*% delta_boo_matrix ~ Cov_rep - 1))
       #DC: eps_resid <- resid(lm(weight %*% eps_boo_matrix ~ Cov_rep - 1))
       #DC: bias_term1 <- t(D_resid) %*% eps_resid
