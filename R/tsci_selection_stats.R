@@ -48,22 +48,13 @@ tsci_selection_stats <- function(D_rep, Cov_rep, weight, eps_hat, delta_hat, sd_
     u_matrix <- matrix(rnorm(n_A1 * B), ncol = B)
     delta_boo_matrix <- u_matrix * delta_cent
     if (sd_boot) {
-      #DC: It would help a lot if we could add some lines of comments on why this bootstrap standard error estimator works i.e. why it has this form.
-      #MC: I think Zijian will add this part to his latest version. How about we referring the code to the updated paper later?
+      # PLACEHOLDER: Add reference to paper for bootstrap method
       eps_cent <- as.vector(eps_hat - mean(eps_hat))
-      #DC: Is there no issue in using the same u_matrix twice?
-      #MC: No, Zijian has confirmed that there is no issue by doing so. 
       eps_boo_matrix <- u_matrix * eps_cent
-      #DC: If possible we try to avoid solving for inverses and matrix matrix multiplications. Here, we can avoid it using the following code lines.
-      #MC: I see. Then we can do it in your way.
-      #DC: delta_resid <- resid(lm(weight %*% delta_boo_matrix ~ Cov_rep - 1))
-      #DC: eps_resid <- resid(lm(weight %*% eps_boo_matrix ~ Cov_rep - 1))
-      #DC: bias_term1 <- t(D_resid) %*% eps_resid
-      #DC: bias_Err1 <- colSums(eps_resid * delta_resid) - colSums(eps_boo_matrix * delta_boo_matrix * diag_M)
-      pro_matrix <- diag(n_A1) - Cov_rep %*% solve(crossprod(Cov_rep)) %*% t(Cov_rep)
-      M <- t(weight) %*% pro_matrix %*% weight
-      bias_term1 <- t(D_rep) %*% pro_matrix %*% weight %*% eps_boo_matrix
-      bias_Err1 <- diag(t(eps_boo_matrix) %*% M %*% delta_boo_matrix) - colSums(eps_boo_matrix * delta_boo_matrix * diag(M))
+      delta_resid <- resid(lm(weight %*% delta_boo_matrix ~ Cov_rep - 1))
+      eps_resid <- resid(lm(weight %*% eps_boo_matrix ~ Cov_rep - 1))
+      bias_term1 <- t(D_resid) %*% eps_resid
+      bias_Err1 <- colSums(eps_resid * delta_resid) - colSums(eps_boo_matrix * delta_boo_matrix * diag_M)
       N_vec <- (bias_term1 + bias_Err1) / D_RSS
       sd <- sd(N_vec)
     } else {
