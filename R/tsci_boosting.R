@@ -49,6 +49,8 @@
 #' @param early_stopping logical. If \code{TRUE}, early stopping will be applied to
 #' choose the optimal number of boosting iteration using the cross-validation mean squared error.
 #' @param nfolds a positive integer value specifying the number of folds used for cross-validation to choose best parameter combination.
+#' @param self_predict logical. If \code{FALSE}, it sets the diagonal of the hat matrix
+#' of each tree to zero to avoid self-prediction and rescales the off-diagonal elements accordingly.
 #' @param sd_boot logical. if \code{TRUE}, it determines the standard error using a bootstrap approach.
 #' @param iv_threshold a numeric value specifying the minimum of the threshold of IV strength test.
 #' @param threshold_boot logical. if \code{TRUE}, it determines the threshold of the IV strength using a bootstrap approach.
@@ -297,6 +299,7 @@ tsci_boosting <- function(Y,
                           colsample_bytree = 1,
                           early_stopping = TRUE,
                           nfolds = 5,
+                          self_predict = FALSE,
                           sd_boot = FALSE,
                           iv_threshold = 10,
                           threshold_boot = TRUE,
@@ -340,6 +343,7 @@ tsci_boosting <- function(Y,
               colsample_bytree = colsample_bytree,
               early_stopping = early_stopping,
               nfolds = nfolds,
+              self_predict = self_predict,
               sd_boot = sd_boot,
               iv_threshold = iv_threshold,
               threshold_boot = threshold_boot,
@@ -379,6 +383,7 @@ tsci_boosting <- function(Y,
     subsample = subsample,
     colsample_bytree = colsample_bytree,
     early_stopping = early_stopping,
+    self_predict = self_predict,
     lambda = 0
   )
 

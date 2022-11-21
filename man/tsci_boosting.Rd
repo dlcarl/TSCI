@@ -21,6 +21,7 @@ tsci_boosting(
   colsample_bytree = 1,
   early_stopping = TRUE,
   nfolds = 5,
+  self_predict = FALSE,
   sd_boot = FALSE,
   iv_threshold = 10,
   threshold_boot = TRUE,
@@ -94,6 +95,9 @@ Has to be a numeric value in (0, 1].}
 choose the optimal number of boosting iteration using the cross-validation mean squared error.}
 
 \item{nfolds}{a positive integer value specifying the number of folds used for cross-validation to choose best parameter combination.}
+
+\item{self_predict}{logical. If \code{FALSE}, it sets the diagonal of the hat matrix
+of each tree to zero to avoid self-prediction and rescales the off-diagonal elements accordingly.}
 
 \item{sd_boot}{logical. if \code{TRUE}, it determines the standard error using a bootstrap approach.}
 
