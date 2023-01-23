@@ -34,7 +34,8 @@ get_forest_hatmatrix <- function(df_treatment_A1, df_treatment_A2, params_grid, 
       unique_leaves = unique(leaves_tree)
       for(leave in unique_leaves){
         leaves_pos <- which(leave == leaves_tree)
-        forest_hatmatrix[leaves_pos, leaves_pos] <- forest_hatmatrix[leaves_pos, leaves_pos] + 1 / length(leaves_pos) / params_A2$num_trees
+        forest_hatmatrix[leaves_pos, leaves_pos] <-
+          forest_hatmatrix[leaves_pos, leaves_pos] + 1 / length(leaves_pos) / params_A2$num_trees
       }
     }
   }
@@ -45,7 +46,8 @@ get_forest_hatmatrix <- function(df_treatment_A1, df_treatment_A2, params_grid, 
       unique_leaves = unique(leaves_tree)
       for(leave in unique_leaves){
         leaves_pos <- which(leave == leaves_tree)
-        forest_hatmatrix[leaves_pos, leaves_pos] <- forest_hatmatrix[leaves_pos, leaves_pos] + 1 / (length(leaves_pos) - 1) / params_A2$num_trees
+        forest_hatmatrix[leaves_pos, leaves_pos] <-
+          forest_hatmatrix[leaves_pos, leaves_pos] + 1 / (length(leaves_pos) - 1) / params_A2$num_trees
       }
       diag(forest_hatmatrix) <- 0
     }
