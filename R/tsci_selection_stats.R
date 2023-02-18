@@ -48,13 +48,13 @@ tsci_selection_stats <- function(D_rep, Cov_rep, weight, eps_hat, delta_hat, sd_
     u_matrix <- matrix(rnorm(n_A1 * B), ncol = B)
     delta_boo_matrix <- u_matrix * delta_cent
     if (sd_boot) {
-      # PLACEHOLDER: Add reference to paper for bootstrap method
       eps_cent <- as.vector(eps_hat - mean(eps_hat))
       eps_boo_matrix <- u_matrix * eps_cent
-      delta_resid <- resid(lm(weight %*% delta_boo_matrix ~ Cov_rep - 1))
+      #delta_resid <- resid(lm(weight %*% delta_boo_matrix ~ Cov_rep - 1))
       eps_resid <- resid(lm(weight %*% eps_boo_matrix ~ Cov_rep - 1))
       bias_term1 <- t(D_resid) %*% eps_resid
-      bias_Err1 <- colSums(eps_resid * delta_resid) - colSums(eps_boo_matrix * delta_boo_matrix * diag_M)
+      #bias_Err1 <- colSums(eps_resid * delta_resid) - colSums(eps_boo_matrix * delta_boo_matrix * diag_M)
+      bias_Err1 <- - colSums(eps_boo_matrix * delta_boo_matrix * diag_M)
       N_vec <- (bias_term1 + bias_Err1) / D_RSS
       sd <- sd(N_vec)
     } else {
