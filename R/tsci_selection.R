@@ -185,45 +185,55 @@ tsci_selection <- function(Y,
     ### Selection
     # defines comparison matrix (20).
     H <- beta_diff <- matrix(0, Qmax, Qmax)
-    ################### change part: start ##############################
-    diff_mat_boo <- matrix(0, 0, B)
-    # computes H matrix (20).
-    u_matrix <- matrix(rnorm(n_A1 * B), ncol = B)
-    eps_Qmax_cent <- as.vector(eps_Qmax - mean(eps_Qmax))
-    eps_Qmax_boo <- u_matrix * eps_Qmax_cent
-    for (q1 in seq_len(Qmax) - 1) {
-      for (q2 in (q1 + 1):(Qmax)) {
-        beta_q1_term1 <- t(D_resid[[q1 + 1]]) %*% weight %*% eps_Qmax_boo / D_RSS[q1 + 1]
-        beta_q2_term1 <- t(D_resid[[q2 + 1]]) %*% weight %*% eps_Qmax_boo / D_RSS[q2 + 1]
-        H[q1 + 1, q2] <- var(as.numeric(beta_q2_term1 - beta_q1_term1))
-        # test: try to merge the calculation of diff_mat
-        one_diff_boo <- abs(as.numeric(beta_q2_term1 - beta_q1_term1))
-        diff_mat_boo <- rbind(diff_mat_boo, one_diff_boo)
+    if (!sd_boot) {
+      for (q1 in seq_len(Qmax) - 1) {
+        for (q2 in (q1 + 1):(Qmax)) {
+          H[q1 + 1, q2] <-
+            as.numeric(sum((weight %*% D_resid[[q1 + 1]])^2 * eps_Qmax^2) / (D_RSS[q1 + 1]^2) +
+                         sum((weight %*% D_resid[[q2 + 1]])^2 * eps_Qmax^2) / (D_RSS[q2 + 1]^2) -
+                         2 * sum(eps_Qmax^2 * (weight %*% D_resid[[q1 + 1]]) * (weight %*% D_resid[[q2 + 1]])) /
+                         (D_RSS[q1 + 1] * D_RSS[q2 + 1]))
+        }
       }
+      # computes beta difference matrix, uses Qmax.
+      for (q in seq_len(Qmax) - 1) {
+        beta_diff[q + 1, (q + 1):(Qmax)] <- abs(Coef_Qmax[q + 1] - Coef_Qmax[(q + 2):(Qmax + 1)]) # use bias-corrected estimator
+      }
+      # bootstrap for the quantile of the differences (23).
+      eps_Qmax_cent <- as.vector(eps_Qmax - mean(eps_Qmax))
+      eps_rep_matrix <- weight %*% (eps_Qmax_cent * matrix(rnorm(n_A1 * B), ncol = B))
+      diff_mat <- matrix(0, Qmax, Qmax)
+      max_val <-
+        apply(eps_rep_matrix, 2,
+              FUN = function(eps_rep) {
+                for (q1 in seq_len(Qmax) - 1) {
+                  for (q2 in (q1 + 1):(Qmax)) {
+                    diff_mat[q1 + 1, q2] <- sum(D_resid[[q2 + 1]] * eps_rep) /
+                      (D_RSS[q2 + 1]) - sum(D_resid[[q1 + 1]] * eps_rep) / (D_RSS[q1 + 1])
+                  }
+                }
+                diff_mat <- abs(diff_mat) / sqrt(H)
+                max(diff_mat, na.rm = TRUE)
+              })
+    } else {
+      diff_mat_boo <- matrix(0, 0, B)
+      u_matrix <- matrix(rnorm(n_A1 * B), ncol = B)
+      eps_Qmax_cent <- as.vector(eps_Qmax - mean(eps_Qmax))
+      eps_Qmax_boo <- u_matrix * eps_Qmax_cent
+      for (q1 in seq_len(Qmax) - 1) {
+        for (q2 in (q1 + 1):(Qmax)) {
+          beta_q1_term1 <- t(D_resid[[q1 + 1]]) %*% weight %*% eps_Qmax_boo / D_RSS[q1 + 1]
+          beta_q2_term1 <- t(D_resid[[q2 + 1]]) %*% weight %*% eps_Qmax_boo / D_RSS[q2 + 1]
+          H[q1 + 1, q2] <- var(as.numeric(beta_q2_term1 - beta_q1_term1))
+          # test: try to merge the calculation of diff_mat
+          one_diff_boo <- abs(as.numeric(beta_q2_term1 - beta_q1_term1))
+          diff_mat_boo <- rbind(diff_mat_boo, one_diff_boo)
+        }
+      }
+      H_vec <- c(t(H))[c(t(H)) != 0]
+      diff_mat_boo <- diff_mat_boo / sqrt(H_vec)
+      max_val <- apply(diff_mat_boo, 2, max, na.rm=TRUE)
     }
-    H_vec <- c(t(H))[c(t(H)) != 0]
-    diff_mat_boo <- diff_mat_boo / sqrt(H_vec)
-    max_val <- apply(diff_mat_boo, 2, max, na.rm=TRUE)
-    ################### change part: end ##############################
-    # # computes beta difference matrix, uses Qmax.
-    # for (q in seq_len(Qmax) - 1) {
-    #   beta_diff[q + 1, (q + 1):(Qmax)] <- abs(Coef_Qmax[q + 1] - Coef_Qmax[(q + 2):(Qmax + 1)]) # use bias-corrected estimator
-    # }
-    # # bootstrap for the quantile of the differences (23).
-    # eps_rep_matrix <- weight %*% (eps_Qmax_cent * matrix(rnorm(n_A1 * B), ncol = B))
-    # diff_mat <- matrix(0, Qmax, Qmax)
-    # max_val <-
-    #   apply(eps_rep_matrix, 2,
-    #         FUN = function(eps_rep) {
-    #           for (q1 in seq_len(Qmax) - 1) {
-    #             for (q2 in (q1 + 1):(Qmax)) {
-    #               diff_mat[q1 + 1, q2] <- sum(D_resid[[q2 + 1]] * eps_rep) /
-    #                 (D_RSS[q2 + 1]) - sum(D_resid[[q1 + 1]] * eps_rep) / (D_RSS[q1 + 1])
-    #             }
-    #           }
-    #           diff_mat <- abs(diff_mat) / sqrt(H)
-    #           max(diff_mat, na.rm = TRUE)
-    #         })
     # corresponds to (24).
     z_alpha <- 1.01 * quantile(max_val, 0.975)
     diff_thol <- z_alpha * sqrt(H)
