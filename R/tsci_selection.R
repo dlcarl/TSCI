@@ -233,6 +233,10 @@ tsci_selection <- function(Y,
       H_vec <- c(t(H))[c(t(H)) != 0]
       diff_mat_boo <- diff_mat_boo / sqrt(H_vec)
       max_val <- apply(diff_mat_boo, 2, max, na.rm=TRUE)
+      # computes beta difference matrix, uses Qmax.
+      for (q in seq_len(Qmax) - 1) {
+        beta_diff[q + 1, (q + 1):(Qmax)] <- abs(Coef_Qmax[q + 1] - Coef_Qmax[(q + 2):(Qmax + 1)]) # use bias-corrected estimator
+      }
     }
     # corresponds to (24).
     z_alpha <- 1.01 * quantile(max_val, 0.975)
