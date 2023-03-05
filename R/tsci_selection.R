@@ -81,7 +81,7 @@ tsci_selection <- function(Y,
                            B) {
   # this function performs violation space selection and calculates the output statistics.
   # For better understanding what certain parts in the codes do (x) will refer to the
-  # corresponding equation in Guo and Bühlmann (2022)
+  # corresponding equation in Guo and Bühlmann (2022, https://doi.org/10.48550/arXiv.2203.12808)
 
   # adding a column to W ensures that W is always a matrix even if no covariates should
   # be included. This avoids case distinctions further down in the code.
