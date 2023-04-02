@@ -1,17 +1,18 @@
 Cran-Comments
 ==========================
 
-## Test environments
-* local OS X install, R 4.1.0
-* Fedora 32, R 4.2.1
-* win-builder (devel and release) 
-
 ## R CMD check results
-There were no ERRORs, WARNINGs, or NOTEs.
+
+0 errors | 0 warnings | 1 note
+
+Note: 
+  New maintainer:
+      David Carl <david.carl@phd.unibocconi.it>
+    Old maintainer(s):
+      David Carl <dcarl@ethz.ch>
+      
+The old e-mail address will expire in fall 2023.
+
 
 ## Downstream dependencies
 There are currently no downstream dependencies for this package.
-
-## Additional remarks
-This is the second submission of this package after implemented changes
-based on the feedback of the first submission.
