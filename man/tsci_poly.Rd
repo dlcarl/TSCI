@@ -181,6 +181,7 @@ of the IV strength.
 Usually, the value of the threshold of the IV strength obtained using the bootstrap approach is larger.
 Thus, using \code{threshold_boot} equals \code{TRUE} leads to a more conservative IV strength test.
 For more information see subsection 3.3 in Guo and Buehlmann (2022). \cr \cr
+See also Carl et al. (2023) for more details.
 }
 \examples{
 ### a small example without baseline covariates
@@ -263,6 +264,9 @@ if (require("MASS")) {
 \item{Zijian Guo, and Peter Buehlmann. Two Stage Curvature Identification with
 Machine Learning: Causal Inference with Possibly Invalid Instrumental Variables.
 \emph{arXiv:2203.12808}, 2022}
+\item{David Carl, Corinne Emmenegger, Peter Buehlmann, and Zijian Guo. TSCI:
+two stage curvature identification for causal inference with invalid instruments.
+\emph{arXiv:2304.00513}, 2023}
 }
 }
 \seealso{

@@ -168,7 +168,8 @@
 #' pseudo random number generator stream.
 #' Thus, the results reproducible if the arguments remain unchanged.
 #' There is an optional argument \code{cl} to specify a custom cluster
-#' if \code{parallel = "snow"}.
+#' if \code{parallel = "snow"}. \cr \cr
+#' See also Carl et al. (2023) for more details.
 #'
 #' @seealso
 #' \code{\link[TSCI]{tsci_boosting}} for TSCI with boosting. \cr \cr
@@ -187,6 +188,9 @@
 #' Whitney Newey, and James Robins. Double/debiased machine learning for treatment
 #' and structural parameters: Double/debiased machine learning.
 #' \emph{The Econometrics Journal}, 21(1), 2018. 4, 16, 18}
+#' \item{David Carl, Corinne Emmenegger, Peter Buehlmann, and Zijian Guo. TSCI:
+#' two stage curvature identification for causal inference with invalid instruments.
+#' \emph{arXiv:2304.00513}, 2023}
 #' }
 #'
 #' @export

@@ -106,6 +106,7 @@
 #' Usually, the value of the threshold of the IV strength obtained using the bootstrap approach is larger.
 #' Thus, using \code{threshold_boot} equals \code{TRUE} leads to a more conservative IV strength test.
 #' For more information see subsection 3.3 in Guo and Buehlmann (2022).\cr \cr
+#' See also Carl et al. (2023) for more details.
 #'
 #' @references
 #' \itemize{
@@ -119,6 +120,9 @@
 #' Whitney Newey, and James Robins. Double/debiased machine learning for treatment
 #' and structural parameters: Double/debiased machine learning.
 #' \emph{The Econometrics Journal}, 21(1), 2018. 4, 16, 18}
+#' \item{David Carl, Corinne Emmenegger, Peter Buehlmann, and Zijian Guo. TSCI:
+#' two stage curvature identification for causal inference with invalid instruments.
+#' \emph{arXiv:2304.00513}, 2023}
 #' }
 #'
 #' @seealso
