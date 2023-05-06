@@ -8,7 +8,7 @@
 #' \code{monomials_full} creates the monomials for the polynomials of a combination of all instrumental variables up to degree \code{degree}. \cr
 #' Default is \code{monomials_full}.
 #'
-#' @return A ordered list. Each element is a matrix consisting of the monomials to be added to
+#' @return A list. Each element is a matrix consisting of the monomials to be added to
 #' the next violation space candidate.
 #'
 #' @details assuming there are 3 instrumental variables Z1, Z2, and Z3 and \code{degree} = c(d1, d2, d3) with d1 < d2 < d3,
