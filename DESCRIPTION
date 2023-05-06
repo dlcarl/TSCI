@@ -1,6 +1,6 @@
 Package: TSCI
 Title: Tools for Causal Inference with Possibly Invalid Instrumental Variables
-Version: 2.0.0
+Version: 2.0.1
 Authors@R: 
     c(
     person(given="David",
@@ -31,7 +31,7 @@ Description: Two stage curvature identification with machine learning for causal
     because of potentially invalid instrumental variables. Based on Guo and 
     Buehlmann (2022) "Two Stage Curvature Identification with Machine Learning: 
     Causal Inference with Possibly Invalid Instrumental Variables"
-    <arXiv:2203.12808> and Carl, Emmenegger, Bühlmann and Guo (2023) 
+    <arXiv:2203.12808>. The vignette is available in Carl, Emmenegger, Bühlmann and Guo (2023) 
     "TSCI: two stage curvature identification for causal inference with 
     invalid instruments" <arXiv:2304.00513>.
 URL: https://github.com/dlcarl/TSCI
