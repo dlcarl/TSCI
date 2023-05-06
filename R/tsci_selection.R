@@ -105,7 +105,7 @@ tsci_selection <- function(Y,
   output <- tsci_fit_NA_return(Q = Q)
 
   # initializes a vector for the treatment effect estimates for each violation space candidate.
-  Coef_all <- rep(NA, Q)
+  Coef_all <- rep(NA_real_, Q)
 
   # the noise of treatment model. Needed for the bias correction (12) and to estimate
   # the iv strength (17) and iv threshold (18).
@@ -119,7 +119,7 @@ tsci_selection <- function(Y,
   # the position of the columns of W in Cov_aug_A1.
   pos_W <- seq(NCOL(vio_space) + 1, NCOL(Cov_aug_A1))
   ### fixed violation space, compute necessary inputs of selection part.
-  D_resid <- diag_M_list <- rep(list(NA), Q)
+  D_resid <- diag_M_list <- rep(list(NA_real_), Q)
   for (index in seq_len(Q)) {
     # the first violation space candidate is always the empty space (i.e. assuming no violation).
     if (index == 1) pos_VW <- pos_W else pos_VW <- c(vio_ind[[index - 1]], pos_W)
@@ -176,7 +176,7 @@ tsci_selection <- function(Y,
   # if IV test fails at q0 (empty space) or q1, we do not need to do selection.
   if (Qmax >= 1) {
     eps_Qmax <- eps_hat[[Qmax + 1]]
-    Coef_Qmax <- rep(NA, Q)
+    Coef_Qmax <- rep(NA_real_, Q)
     for (i in seq_len(Q)) {
       # corresponds to (19)
       Coef_Qmax[i] <- Coef_all[i] - sum(diag_M_list[[i]] * delta_hat * eps_Qmax) / D_RSS[i]

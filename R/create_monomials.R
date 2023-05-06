@@ -53,8 +53,8 @@ create_monomials <- function(Z, degree, type = c("monomials_main", "monomials_fu
     if (type == "monomials_full") {
       # starts with a constant. multiplies each instrumental variable with all columns
       # obtained from the previous iteration for which 'degree' is not reached.
-      current_monomials_degrees <- matrix(NA, nrow = p, ncol = p * NCOL(monomials[[q]]))
-      current_monomials <- matrix(NA, nrow = n, ncol = p * NCOL(monomials[[q]]))
+      current_monomials_degrees <- matrix(NA_real_, nrow = p, ncol = p * NCOL(monomials[[q]]))
+      current_monomials <- matrix(NA_real_, nrow = n, ncol = p * NCOL(monomials[[q]]))
       for (i in seq_len(NCOL(monomials[[q]]))) {
         for (j in seq_len(p)) {
           ind <- (i - 1) * p + j
@@ -65,8 +65,8 @@ create_monomials <- function(Z, degree, type = c("monomials_main", "monomials_fu
       }
     } else if (type == "monomials_main") {
       # works similar as 'monomials_full' but without interactions.
-      current_monomials_degrees <- matrix(NA, nrow = p, ncol = NCOL(monomials[[q]]))
-      current_monomials <- matrix(NA, nrow = n, ncol = NCOL(monomials[[q]]))
+      current_monomials_degrees <- matrix(NA_real_, nrow = p, ncol = NCOL(monomials[[q]]))
+      current_monomials <- matrix(NA_real_, nrow = n, ncol = NCOL(monomials[[q]]))
       if (q == 1) {
         current_monomials_degrees <- diag(p)
         current_monomials <- Z
