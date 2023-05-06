@@ -25,8 +25,6 @@
 summary.tsci <- function(object,
                          extended_output = FALSE,
                          ...) {
-  stopifnot(inherits(object, "tsci"))
-
 
   if (!is.null(object$mult_split_method)) {
     if (object$mult_split_method == "FWER") {

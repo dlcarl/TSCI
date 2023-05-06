@@ -13,7 +13,6 @@
 confint.tsci <- function(object, parm = NULL, level = 0.95, ...) {
   # this functions calculates the confidence intervals for the treatment effect estimates at
   # the desired level.
-  stopifnot(inherits(object, "tsci"))
   alpha <- 1 - level
   conf_intervals <- t(cbind(object$CI_sel, object$CI_all))
 
