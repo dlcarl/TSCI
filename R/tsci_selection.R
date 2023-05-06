@@ -61,7 +61,7 @@
 #' }
 #' @noRd
 #'
-#' @importFrom stats coef lm qnorm quantile resid rnorm var
+#' @importFrom stats coef lm.fit qnorm quantile resid rnorm var
 tsci_selection <- function(Y,
                            D,
                            W,
@@ -124,10 +124,10 @@ tsci_selection <- function(Y,
     # the first violation space candidate is always the empty space (i.e. assuming no violation).
     if (index == 1) pos_VW <- pos_W else pos_VW <- c(vio_ind[[index - 1]], pos_W)
     # the initial treatment effect estimate (11).
-    reg_ml <- lm(Y_rep ~ D_rep + Cov_rep[, pos_VW] - 1)
+    reg_ml <- lm.fit(x = cbind(D_rep, Cov_rep[, pos_VW]), y = Y_rep)
     betaHat <- coef(reg_ml)[1]
     Coef_all[index] <- betaHat
-    eps_hat[[index]] <- resid(lm(Y_A1 - D_A1 * betaHat ~ Cov_aug_A1[, pos_VW] - 1))
+    eps_hat[[index]] <- resid(lm.fit(x = as.matrix(Cov_aug_A1[, pos_VW]), y = Y_A1 - D_A1 * betaHat))
     # tsci_selection_stats returns the standard error of the trace of the
     # treatment effect estimate (14), D_resid used for the violation space selection (20, 23),
     # the estimated iv strength (17), the iv strength threshold (18) and the trace of M (11).
