@@ -31,6 +31,7 @@ print.summary.tsci <- function(x,
   coefficient_df <- data.frame(lapply(x$coefficient, FUN = function(y) if (is.numeric(y)) {signif(y, digits)}  else {y}))
   rownames(coefficient_df) <- rownames(x$coefficient)
   colnames(coefficient_df) <- colnames(x$coefficient)
+  coefficient_df$`Pr(>|t|)` <- format.pval(coefficient_df$`Pr(>|t|)`, digits = digits)
   print(coefficient_df)
   cat(paste("Selection method:", x$sel_method, "\n"))
 
@@ -40,6 +41,7 @@ print.summary.tsci <- function(x,
     coefficients_all_df <- data.frame(lapply(x$coefficients_all, FUN = function(y) if (is.numeric(y)) {signif(y, digits)}  else {y}))
     rownames(coefficients_all_df) <- rownames(x$coefficients_all)
     colnames(coefficients_all_df) <- colnames(x$coefficients_all)
+    coefficients_all_df$`Pr(>|t|)` <- format.pval(coefficients_all_df$`Pr(>|t|)`, digits = digits)
     print(coefficients_all_df)
   }
 

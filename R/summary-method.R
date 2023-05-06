@@ -28,8 +28,8 @@ summary.tsci <- function(object,
 
   if (!is.null(object$mult_split_method)) {
     if (object$mult_split_method == "FWER") {
-      sd_sel <- rep(".", length(object$Coef_sel))
-      sd_all <- rep(".", length(object$Coef_all))
+      sd_sel <- rep("-", length(object$Coef_sel))
+      sd_all <- rep("-", length(object$Coef_all))
     } else {
       sd_sel <- object$sd_sel
       sd_all <- object$sd_all
