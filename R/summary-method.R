@@ -1,10 +1,10 @@
 #' Summarizing Two Stage Curvature Identification Fits
 #'
-#' @param object a object of class 'tsci'.
+#' @param object an object of class 'tsci'.
 #' @param extended_output logical. If \code{TRUE} are more detailed summary is returned.
 #' @param ... arguments to be passed to or from other methods.
 #'
-#' @return a object of class 'summary.tsci' containing the following elements:
+#' @return an object of class 'summary.tsci' containing the following elements:
 #' \describe{
 #'     \item{\code{coefficient}}{a data frame with columns for the estimated treatment coefficient, its standard error, confidence interval and (two-sided) p-value.}
 #'     \item{\code{invalidity}}{a vector containing the number of times the instrumental variable(s) were considered valid, invalid or too weak to perform the test.}

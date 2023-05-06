@@ -1,4 +1,10 @@
-#' @exportS3Method
+#' Print Content of tsci Object.
+#'
+#' @param x an object of class 'tsci'.
+#' @param digits number of significant digits to display.
+#' @param ... arguments to be passed to or from other methods.
+#'
+#' @export
 print.tsci <- function(x,
                        digits = max(3, getOption("digits") - 3),
                        ...) {
