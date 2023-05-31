@@ -59,7 +59,7 @@ summary(output_RF)
 
 # TSCI with boosting
 ```
-output_BO <- tsci_boosting(Y = Y, D = D, Z 0 Z, X = X, vio_space = vio_space)
+output_BO <- tsci_boosting(Y = Y, D = D, Z = Z, X = X, vio_space = vio_space)
 summary(output_BO)
 ```
 
