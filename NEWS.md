@@ -1,3 +1,14 @@
+# TSCI 3.0.0
+
+## breaking changes
+
+* `coef.tsci()` does now accept the argument `parm`, replacing `all`, that will provide the same
+  functionality as in `confint.tsci()`. 
+  
+## Minor improvements and fixes
+
+* `summary.tsci()` will now print p-values as by `format.pval()`.
+
 # TSCI 2.0.0
 
 ## breaking changes
