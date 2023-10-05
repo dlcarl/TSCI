@@ -156,8 +156,8 @@ tsci_multisplit <- function(df_treatment,
         if (is.null(cl)) {
           cl <- parallel::makePSOCKcluster(rep("localhost", ncores))
           parallel::clusterExport(cl, varlist = getNamespaceExports("TSCI"))
-          # if (RNGkind()[1L] == "L'Ecuyer-CMRG")
-          #   parallel::clusterSetRNGStream(cl)
+          if (RNGkind()[1L] == "L'Ecuyer-CMRG")
+            parallel::clusterSetRNGStream(cl)
           list_outputs <- parallel::parLapply(cl,
                                               seq_len(nsplits),
                                               fun = function(i) tsci_parallel(seeds[i]))
@@ -189,8 +189,8 @@ tsci_multisplit <- function(df_treatment,
           if (is.null(cl)) {
             cl <- parallel::makePSOCKcluster(rep("localhost", ncores))
             parallel::clusterExport(cl, varlist = getNamespaceExports("TSCI"))
-            # if (RNGkind()[1L] == "L'Ecuyer-CMRG")
-            #   parallel::clusterSetRNGStream(cl)
+            if (RNGkind()[1L] == "L'Ecuyer-CMRG")
+              parallel::clusterSetRNGStream(cl)
             list_outputs_new <- parallel::parLapply(cl,
                                                     seq_len(nsplits_new),
                                                     fun = function(i) tsci_parallel(seeds[i]))
