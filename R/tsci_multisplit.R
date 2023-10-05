@@ -99,7 +99,8 @@ tsci_multisplit <- function(df_treatment,
     function_hatmatrix
     ncores
     B
-    function(colnames.cluster) {
+    function(seed) {
+      set.seed(seed)
       tryCatch_WEM(tsci_fit(
         df_treatment = df_treatment,
         Y = Y,
@@ -120,82 +121,123 @@ tsci_multisplit <- function(df_treatment,
       ), tsci_fit_NA_return(Q = list_vio_space$Q))}
   })
 
-  # Performs calculations for each data split, check outputs for NAs and depending on the number of NAs performs a second round of data splits.
-  if (do_parallel) {
-    if (parallel == "multicore") {
-      list_outputs <- parallel::mclapply(seq_len(nsplits), tsci_parallel, mc.cores = ncores)
-    } else if (parallel == "snow") {
-      if (is.null(cl)) {
-        cl <- parallel::makePSOCKcluster(rep("localhost", ncores))
-        parallel::clusterExport(cl, varlist = getNamespaceExports("TSCI"))
-        if (RNGkind()[1L] == "L'Ecuyer-CMRG")
-          parallel::clusterSetRNGStream(cl)
-        list_outputs <- parallel::parLapply(cl, seq_len(nsplits), tsci_parallel)
-        parallel::stopCluster(cl)
-        cl <- NULL # overwrite object which is responsible for the connection
-      } else list_outputs <- parallel::parLapply(cl, seq_len(nsplits), tsci_parallel)
-    }
-  } else list_outputs <- lapply(seq_len(nsplits), tsci_parallel)
+  # samples a sequence of integers. In case of parallel computing, each time
+  #  tsci_parallel is called an element of this sequences will be passed and
+  #  will be used to set the seed in the corresponding cluster. This enables
+  #  to get reproducible results across different number of clusters and across
+  #  using "mutlicore" and "snow".
+  # The probability of having ties in two randomly (and independently) generated
+  #  sequences of integers with size nsplits by sampling from N integers without
+  #  replacement can be upper bounded by 1 - e^(-2 n^2 / N) for large N.
+  #  Thus, as long as nsplits is of order 10^3 or smaller, the probability of using
+  #  the same seed in any of the calls to tsci_parallel is small when starting from
+  #  a different .Random.seed.
+  # The initial .Random.seed will be stored in the beginning and restored at the end
+  #  such that any random number generation after calling the function is not
+  #  affected.
+  N <- 10^8
 
-  check_list_outputs <- check_output(list_outputs = list_outputs, ind_start = 1)
-  # if in more than 25% of the data splits the output statistics could not be calculated,
-  # then an error is raised as there might be something systematically wrong.
-  if (check_list_outputs$prop_na > 0.25) {
-    stop(paste0("In more then 25% of the sample splits the output statistics could not be calculated.",
-               check_list_outputs$error_string), call. = FALSE)
+  if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
+    oldseed <- get(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
+  } else {
+    oldseed <- NULL
   }
 
-  # if in less than 25% but at least in one data splits the output statistics could not be calculated,
-  # perform another set of 0.5 * nsplits data splits.
-  if (check_list_outputs$prop_na > 0) {
-    nsplits_new <- ceiling(nsplits * 0.5)
+  output <- tryCatch({
+    seeds <- sample.int(N, nsplits)
+    # performs calculations for each data split, check outputs for NAs and depending
+    #  on the number of NAs performs a second round of data splits.
     if (do_parallel) {
       if (parallel == "multicore") {
-        list_outputs_new <- parallel::mclapply(seq_len(nsplits_new), tsci_parallel, mc.cores = ncores)
+        list_outputs <- parallel::mclapply(seq_len(nsplits),
+                                           FUN = function(i) tsci_parallel(seeds[i]),
+                                           mc.cores = ncores)
       } else if (parallel == "snow") {
         if (is.null(cl)) {
           cl <- parallel::makePSOCKcluster(rep("localhost", ncores))
           parallel::clusterExport(cl, varlist = getNamespaceExports("TSCI"))
-          if (RNGkind()[1L] == "L'Ecuyer-CMRG")
-            parallel::clusterSetRNGStream(cl)
-          list_outputs_new <- parallel::parLapply(cl, seq_len(nsplits_new), tsci_parallel)
+          # if (RNGkind()[1L] == "L'Ecuyer-CMRG")
+          #   parallel::clusterSetRNGStream(cl)
+          list_outputs <- parallel::parLapply(cl,
+                                              seq_len(nsplits),
+                                              fun = function(i) tsci_parallel(seeds[i]))
           parallel::stopCluster(cl)
           cl <- NULL # overwrite object which is responsible for the connection
-        } else list_outputs_new <- parallel::parLapply(cl, seq_len(nsplits_new), tsci_parallel)
+        } else list_outputs <- parallel::parLapply(cl, seq_len(nsplits), tsci_parallel)
       }
-    } else list_outputs_new <- lapply(seq_len(nsplits_new), tsci_parallel)
-    check_list_outputs_new <- check_output(list_outputs = list_outputs_new, ind_start = nsplits + 1)
-    error_string <- paste0(check_list_outputs$error_string, check_list_outputs_new$error_string)
-    if ((1 - check_list_outputs_new$prop_na) * nsplits_new < check_list_outputs$prop_na * nsplits) {
-      stop(paste("Even after performing ",
-                 nsplits + nsplits_new,
-                 "sample splits there were still less than",
-                 nsplits,
-                 "for which the output statistics could be calculated.",
-                 error_string), call. = FALSE)
-    }
-    pos_na <- which(check_list_outputs$ind_na)
-    pos_stat <- which(!(check_list_outputs_new$ind_na))
-    for(i in seq_len(length(pos_na))) {
-      list_outputs[[pos_na[i]]] <- list_outputs_new[[pos_stat[i]]]
-    }
-    warning(paste0("In ",
-                   sum(check_list_outputs$ind_na),
-                   " of the ",
-                   nsplits,
-                   " data splits the output statistics could not be calculated.",
-                   " Thus another ",
-                   nsplits_new,
-                   " data splits were performed.",
-                   error_string), call. = FALSE)
-  } else if (!is.null(check_list_outputs$error_string)) {
-    warning(check_list_outputs$error_string)
-  }
+    } else list_outputs <- lapply(seq_len(nsplits), FUN = function(i) tsci_parallel(seeds[i]))
 
-  # aggregates outputs of data splits.
-  aggregate_output(output_list = list_outputs,
-                   alpha = alpha,
-                   Q = list_vio_space$Q,
-                   mult_split_method = mult_split_method,
-                   raw_output = raw_output)
+    check_list_outputs <- check_output(list_outputs = list_outputs, ind_start = 1)
+    # if in more than 25% of the data splits the output statistics could not be calculated,
+    # then an error is raised as there might be something systematically wrong.
+    if (check_list_outputs$prop_na > 0.25) {
+      stop(paste0("In more then 25% of the sample splits the output statistics could not be calculated.",
+                  check_list_outputs$error_string), call. = FALSE)
+    }
+
+    # if in less than 25% but at least in one data splits the output statistics could not be calculated,
+    # perform another set of 0.5 * nsplits data splits.
+    if (check_list_outputs$prop_na > 0) {
+      nsplits_new <- ceiling(nsplits * 0.5)
+      seeds <- sample.int(N, nsplits_new)
+      if (do_parallel) {
+        if (parallel == "multicore") {
+          list_outputs_new <- parallel::mclapply(seq_len(nsplits_new),
+                                                 FUN = function(i) tsci_parallel(seeds[i]),
+                                                 mc.cores = ncores)
+        } else if (parallel == "snow") {
+          if (is.null(cl)) {
+            cl <- parallel::makePSOCKcluster(rep("localhost", ncores))
+            parallel::clusterExport(cl, varlist = getNamespaceExports("TSCI"))
+            # if (RNGkind()[1L] == "L'Ecuyer-CMRG")
+            #   parallel::clusterSetRNGStream(cl)
+            list_outputs_new <- parallel::parLapply(cl,
+                                                    seq_len(nsplits_new),
+                                                    fun = function(i) tsci_parallel(seeds[i]))
+            parallel::stopCluster(cl)
+            cl <- NULL # overwrite object which is responsible for the connection
+          } else list_outputs_new <- parallel::parLapply(cl, seq_len(nsplits_new), tsci_parallel)
+        }
+      } else list_outputs_new <- lapply(seq_len(nsplits_new), FUN = function(i) tsci_parallel(seeds[i]))
+
+      check_list_outputs_new <- check_output(list_outputs = list_outputs_new, ind_start = nsplits + 1)
+      error_string <- paste0(check_list_outputs$error_string, check_list_outputs_new$error_string)
+      if ((1 - check_list_outputs_new$prop_na) * nsplits_new < check_list_outputs$prop_na * nsplits) {
+        stop(paste("Even after performing ",
+                   nsplits + nsplits_new,
+                   "sample splits there were still less than",
+                   nsplits,
+                   "for which the output statistics could be calculated.",
+                   error_string), call. = FALSE)
+      }
+      pos_na <- which(check_list_outputs$ind_na)
+      pos_stat <- which(!(check_list_outputs_new$ind_na))
+      for(i in seq_len(length(pos_na))) {
+        list_outputs[[pos_na[i]]] <- list_outputs_new[[pos_stat[i]]]
+      }
+      warning(paste0("In ",
+                     sum(check_list_outputs$ind_na),
+                     " of the ",
+                     nsplits,
+                     " data splits the output statistics could not be calculated.",
+                     " Thus another ",
+                     nsplits_new,
+                     " data splits were performed.",
+                     error_string), call. = FALSE)
+    } else if (!is.null(check_list_outputs$error_string)) {
+      warning(check_list_outputs$error_string)
+    }
+
+    # aggregates outputs of data splits.
+    aggregate_output(output_list = list_outputs,
+                     alpha = alpha,
+                     Q = list_vio_space$Q,
+                     mult_split_method = mult_split_method,
+                     raw_output = raw_output)
+  },
+  error = function(e) e,
+  finally = {if (!is.null(oldseed)) assign(".Random.seed", oldseed, envir = .GlobalEnv)
+    else rm(.Random.seed, envir = .GlobalEnv)})
+
+  return(output)
 }
