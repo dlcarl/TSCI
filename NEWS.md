@@ -1,3 +1,9 @@
+# TSCI 3.0.1
+
+## Minor improvements and fixes
+
+* Added information about reproducibility issue of `tsci_forest()' when using     different operating systems to the documentation.
+
 # TSCI 3.0.0
 
 ## breaking changes
