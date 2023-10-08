@@ -166,9 +166,17 @@
 #' computing of the package \code{TSCI} is reproducible.
 #' This ensures that each processor receives a different substream of the
 #' pseudo random number generator stream.
-#' Thus, the results reproducible if the arguments remain unchanged.
+#' Thus, the results are reproducible if the arguments (including \code{ncores})
+#' remain unchanged.
 #' There is an optional argument \code{cl} to specify a custom cluster
 #' if \code{parallel = "snow"}. \cr \cr
+#' Results obtained on different operating systems might differ even when the same
+#' seed is set. The reason for this lies in the way the random forest algorithm in
+#' \code{ranger} is implemented. Currently, we are not aware of a solution to
+#' ensure reproducibility across operating systems when using \code{tsci_forest}.
+#' However, \code{\link[TSCI]{tsci_boosting}}, \code{\link[TSCI]{tsci_poly}} and
+#' \code{\link[TSCI]{tsci_secondstage}} do not have this issue.
+#'
 #' See also Carl et al. (2023) for more details.
 #'
 #' @seealso
