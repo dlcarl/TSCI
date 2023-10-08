@@ -174,9 +174,9 @@
 #' \donttest{
 #'  if (require("MASS")) {
 #'    # dimension
-#'    p <- 10
+#'    p <- 8
 #'    # sample size
-#'    n <- 1000
+#'    n <- 500
 #'    # interaction value
 #'    inter_val <- 1
 #'    # the IV strength
@@ -213,8 +213,9 @@
 #'    weight <- A %*% chol2inv(chol(t(A) %*% A)) %*% t(A)
 #'
 #'    # Two Stage User Defined
-#'    vio_space <- create_monomials(Z, 4, "monomials_main")
-#'    output_UD <- tsci_secondstage(Y, D, Z, X, vio_space = vio_space, weight = weight)
+#'    vio_space <- create_monomials(Z, 2, "monomials_main")
+#'    output_UD <- tsci_secondstage(Y, D, Z, X,
+#'                                  vio_space = vio_space, weight = weight, B = 10)
 #'    summary(output_UD)
 #'  }
 #' }

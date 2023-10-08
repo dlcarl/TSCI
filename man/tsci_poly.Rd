@@ -219,9 +219,9 @@ if (require("MASS")) {
 ### a larger example with baseline covariates
 if (require("MASS")) {
   # dimension
-  p <- 10
+  p <- 8
   # sample size
-  n <- 1000
+  n <- 500
   # interaction value
   inter_val <- 1
   # the IV strength
@@ -254,7 +254,7 @@ if (require("MASS")) {
   Y <- D * beta + tau * Z + X \%*\% gamma + Error[, 2]
 
   # Two Stage Polynomials
-  output_PO <- tsci_poly(Y, D, Z, X)
+  output_PO <- tsci_poly(Y, D, Z, X, exact_order = 3, max_iter = 10, B = 10)
   summary(output_PO)
 }
 }

@@ -280,9 +280,9 @@ if (require("MASS")) {
 ### a larger example with baseline covariates
 if (require("MASS") & require("fda")) {
   # dimension
-  p <- 10
+  p <- 8
   # sample size
-  n <- 1000
+  n <- 500
   # interaction value
   inter_val <- 1
   # the IV strength
@@ -316,7 +316,7 @@ if (require("MASS") & require("fda")) {
 
   # Two Stage Random Forest
   # create violation space candidates
-  vio_space <- create_monomials(Z, 4, "monomials_main")
+  vio_space <- create_monomials(Z, 2, "monomials_main")
   # specify suitable basis W for the baseline covariates (here we choose basis splines)
   W <- do.call(cbind,
                lapply(seq_len(p), FUN = function(i) {
@@ -325,7 +325,8 @@ if (require("MASS") & require("fda")) {
                                                           breaks = knots, norder = 4))
                 }))
   # perform two stage curvature identification
-  output_RF <- tsci_forest(Y, D, Z, X, vio_space = vio_space)
+  output_RF <- tsci_forest(Y, D, Z, X, vio_space = vio_space,
+                           num_trees = 10, nsplits = 2, B = 10)
   summary(output_RF)
 }
 }
