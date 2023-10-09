@@ -1,4 +1,12 @@
-# TSCI 3.0.1
+# TSCI 3.0.3
+
+## Minor improvements and fixes
+
+* Limited the random forest and boosting algorithms to only use one thread.
+* Modified examples and tests to decrease computational burden.
+
+
+# TSCI 3.0.2
 
 ## Minor improvements and fixes
 

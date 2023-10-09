@@ -136,7 +136,7 @@
 #' ### a small example without baseline covariates
 #' if (require("MASS")) {
 #'   # sample size
-#'   n <- 200
+#'   n <- 100
 #'   # the IV strength
 #'   a <- 1
 #'   # the violation strength
@@ -166,7 +166,8 @@
 #'   # create violation space candidates
 #'   vio_space <- create_monomials(Z, 2, "monomials_main")
 #'   # perform two stage curvature identification
-#'   output_UD <- tsci_secondstage(Y, D, Z, vio_space = vio_space, weight = weight)
+#'   output_UD <- tsci_secondstage(Y, D, Z, vio_space = vio_space, weight = weight,
+#'                                 B = 100)
 #'   summary(output_UD)
 #' }
 #' @importFrom stats coef lm qnorm quantile resid rnorm

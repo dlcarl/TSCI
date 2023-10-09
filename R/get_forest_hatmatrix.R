@@ -15,8 +15,9 @@ get_forest_hatmatrix <- function(df_treatment_A1, df_treatment_A2, params_grid, 
                       mtry = params_grid$mtry[i][[1]],
                       max.depth = params_grid$max_depth[i],
                       min.node.size = params_grid$min_node_size[i],
-                      importance = "impurity"
-    )
+                      importance = params_grid$importance[i],
+                      num.threads = params_grid$num.threads[i])
+
     if (temp_A2$prediction.error <= MSE_oob_A2) {
       forest_A2 <- temp_A2
       params_A2 <- params_grid[i, ]

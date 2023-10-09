@@ -247,7 +247,7 @@ See also Carl et al. (2023) for more details.
 ### a small example without baseline covariates
 if (require("MASS")) {
   # sample size
-  n <- 150
+  n <- 100
   # the IV strength
   a <- 1
   # the violation strength
@@ -275,7 +275,7 @@ if (require("MASS")) {
   vio_space <- create_monomials(Z, 2, "monomials_main")
   # perform two stage curvature identification
   output_BO <- tsci_boosting(Y, D, Z, vio_space = vio_space, nsplits = 1,
-                             max_depth = 2, nrounds = 20)
+                             max_depth = 2, nrounds = 50, B = 100)
   summary(output_BO)
 }
 }

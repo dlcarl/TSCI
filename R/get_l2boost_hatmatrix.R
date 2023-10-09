@@ -24,7 +24,8 @@ get_l2boost_hatmatrix <- function(df_treatment_A1,
         max_depth = params_grid$max_depth[i],
         subsample = params_grid$subsample[i],
         colsample_bytree = params_grid$colsample_bytree[i],
-        lambda = 0
+        lambda = params_grid$lambda[i],
+        nthread = params_grid$nthread[i]
       ),
       metrics = "rmse",
       nrounds = params_grid$nrounds[i],

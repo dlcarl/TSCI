@@ -203,7 +203,7 @@
 #' ### a small example without baseline covariates
 #' if (require("MASS")) {
 #'   # sample size
-#'   n <- 150
+#'   n <- 100
 #'   # the IV strength
 #'   a <- 1
 #'   # the violation strength
@@ -231,7 +231,7 @@
 #'   vio_space <- create_monomials(Z, 2, "monomials_main")
 #'   # perform two stage curvature identification
 #'   output_BO <- tsci_boosting(Y, D, Z, vio_space = vio_space, nsplits = 1,
-#'                              max_depth = 2, nrounds = 20)
+#'                              max_depth = 2, nrounds = 50, B = 100)
 #'   summary(output_BO)
 #' }
 tsci_boosting <- function(Y,
@@ -335,7 +335,8 @@ tsci_boosting <- function(Y,
     colsample_bytree = colsample_bytree,
     early_stopping = early_stopping,
     self_predict = self_predict,
-    lambda = 0
+    lambda = 0,
+    nthread = 1
   )
 
   # creates the dataframe used to fit the treatment model.

@@ -150,7 +150,7 @@
 #' ### a small example without baseline covariates
 #' if (require("MASS")) {
 #'   # sample size
-#'   n <- 150
+#'   n <- 100
 #'   # the IV strength
 #'   a <- 1
 #'   # the violation strength
@@ -174,7 +174,7 @@
 #'   Y <- beta * D + g(Z) + Error[, 2]
 #'
 #'   # Two Stage Polynomials
-#'   output_PO <- tsci_poly(Y, D, Z)
+#'   output_PO <- tsci_poly(Y, D, Z, max_order = 3, max_iter = 20, B = 100)
 #'   summary(output_PO)
 #' }
 tsci_poly <- function(Y,

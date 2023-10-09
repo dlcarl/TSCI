@@ -245,7 +245,7 @@ See also Carl et al. (2023) for more details.
 ### a small example without baseline covariates
 if (require("MASS")) {
   # sample size
-  n <- 150
+  n <- 100
   # the IV strength
   a <- 1
   # the violation strength
@@ -272,7 +272,8 @@ if (require("MASS")) {
   # create violation space candidates
   vio_space <- create_monomials(Z, 2, "monomials_main")
   # perform two stage curvature identification
-  output_RF <- tsci_forest(Y, D, Z, vio_space = vio_space, nsplits = 1, num_trees = 50)
+  output_RF <- tsci_forest(Y, D, Z, vio_space = vio_space, nsplits = 1,
+                           num_trees = 50, B = 100)
   summary(output_RF)
 }
 }

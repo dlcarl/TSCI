@@ -207,7 +207,7 @@
 #' ### a small example without baseline covariates
 #' if (require("MASS")) {
 #'   # sample size
-#'   n <- 150
+#'   n <- 100
 #'   # the IV strength
 #'   a <- 1
 #'   # the violation strength
@@ -234,7 +234,8 @@
 #'   # create violation space candidates
 #'   vio_space <- create_monomials(Z, 2, "monomials_main")
 #'   # perform two stage curvature identification
-#'   output_RF <- tsci_forest(Y, D, Z, vio_space = vio_space, nsplits = 1, num_trees = 50)
+#'   output_RF <- tsci_forest(Y, D, Z, vio_space = vio_space, nsplits = 1,
+#'                            num_trees = 50, B = 100)
 #'   summary(output_RF)
 #' }
 tsci_forest <- function(Y,
@@ -332,7 +333,9 @@ tsci_forest <- function(Y,
     mtry = as.integer(mtry),
     max_depth = as.integer(max_depth),
     min_node_size = as.integer(min_node_size),
-    self_predict = self_predict
+    self_predict = self_predict,
+    num.threads = 1,
+    importance = "impurity"
   )
 
   # creates the dataframe used to fit the treatment model.
