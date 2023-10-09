@@ -26,7 +26,8 @@ get_forest_hatmatrix <- function(df_treatment_A1, df_treatment_A2, params_grid, 
   }
 
   # calculates the hat matrix.
-  leaves <- predict(forest_A2, data = df_treatment_A1, type = "terminalNodes")$predictions
+  leaves <- predict(forest_A2, data = df_treatment_A1, type = "terminalNodes",
+                    num.threads = params_A2$num.threads)$predictions
   n_A1 <- NROW(leaves)
   forest_hatmatrix <- matrix(0, n_A1, n_A1)
   if (params_A2$self_predict) {

@@ -275,7 +275,7 @@ if (require("MASS")) {
   vio_space <- create_monomials(Z, 2, "monomials_main")
   # perform two stage curvature identification
   output_BO <- tsci_boosting(Y, D, Z, vio_space = vio_space, nsplits = 1,
-                             max_depth = 2, nrounds = 50, B = 100)
+                             max_depth = 2, nrounds = 10, B = 100)
   summary(output_BO)
 }
 }

@@ -1,3 +1,9 @@
+# TSCI 3.0.4
+
+## Minor improvements and fixes
+
+* Performance optimization
+
 # TSCI 3.0.3
 
 ## Minor improvements and fixes
