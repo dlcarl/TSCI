@@ -1,48 +1,47 @@
 # Platform
 
-|field    |value                                    |
-|:--------|:----------------------------------------|
-|version  |R version 4.3.1 (2023-06-16 ucrt)        |
-|os       |Windows 11 x64 (build 22621)             |
-|system   |x86_64, mingw32                          |
-|ui       |RStudio                                  |
-|language |(EN)                                     |
-|collate  |English_Switzerland.utf8                 |
-|ctype    |English_Switzerland.utf8                 |
-|tz       |Europe/Zurich                            |
-|date     |2023-10-08                               |
-|rstudio  |2023.09.0+463 Desert Sunflower (desktop) |
-|pandoc   |NA                                       |
+|field    |value                                   |
+|:--------|:---------------------------------------|
+|version  |R version 4.3.1 (2023-06-16 ucrt)       |
+|os       |Windows 11 x64 (build 26100)            |
+|system   |x86_64, mingw32                         |
+|ui       |RStudio                                 |
+|language |(EN)                                    |
+|collate  |English_Switzerland.utf8                |
+|ctype    |English_Switzerland.utf8                |
+|tz       |Europe/Zurich                           |
+|date     |2025-09-05                              |
+|rstudio  |2025.05.1+513 Mariposa Orchid (desktop) |
+|pandoc   |NA                                      |
 
 # Dependencies
 
-|package       |old        |new        |Δ  |
-|:-------------|:----------|:----------|:--|
-|TSCI          |3.0.0      |3.0.1      |*  |
-|cli           |3.6.1      |3.6.1      |   |
-|data.table    |1.14.8     |1.14.8     |   |
-|fansi         |1.0.4      |1.0.4      |   |
-|fastDummies   |1.7.3      |1.7.3      |   |
-|glue          |1.6.2      |1.6.2      |   |
-|jsonlite      |1.8.7      |1.8.7      |   |
-|lifecycle     |1.0.3      |1.0.3      |   |
-|magrittr      |2.0.3      |2.0.3      |   |
-|pillar        |1.9.0      |1.9.0      |   |
-|pkgconfig     |2.0.3      |2.0.3      |   |
-|ranger        |0.15.1     |0.15.1     |   |
-|Rcpp          |1.0.11     |1.0.11     |   |
-|RcppArmadillo |0.12.6.4.0 |0.12.6.4.0 |   |
-|RcppEigen     |0.3.3.9.3  |0.3.3.9.3  |   |
-|RcppGSL       |0.3.13     |0.3.13     |   |
-|RcppZiggurat  |0.1.6      |0.1.6      |   |
-|Rfast         |2.0.8      |2.0.8      |   |
-|rlang         |1.1.1      |1.1.1      |   |
-|stringi       |1.7.12     |1.7.12     |   |
-|stringr       |1.5.0      |1.5.0      |   |
-|tibble        |3.2.1      |3.2.1      |   |
-|utf8          |1.2.3      |1.2.3      |   |
-|vctrs         |0.6.3      |0.6.3      |   |
-|xgboost       |1.7.5.1    |1.7.5.1    |   |
+|package       |old       |new       |Δ  |
+|:-------------|:---------|:---------|:--|
+|TSCI          |3.0.4     |3.0.5     |*  |
+|cli           |3.6.5     |3.6.4     |*  |
+|data.table    |1.17.8    |1.17.0    |*  |
+|fastDummies   |1.7.5     |1.7.5     |   |
+|glue          |1.8.0     |1.8.0     |   |
+|jsonlite      |2.0.0     |2.0.0     |   |
+|lifecycle     |1.0.4     |1.0.4     |   |
+|magrittr      |2.0.3     |2.0.3     |   |
+|pillar        |NA        |1.11.0    |*  |
+|pkgconfig     |2.0.3     |2.0.3     |   |
+|ranger        |0.17.0    |0.17.0    |   |
+|Rcpp          |1.1.0     |1.0.14    |*  |
+|RcppArmadillo |NA        |14.0.2-1  |*  |
+|RcppEigen     |0.3.4.0.2 |0.3.4.0.2 |   |
+|RcppParallel  |NA        |5.1.10    |*  |
+|Rfast         |2.1.5.1   |2.1.5.1   |   |
+|rlang         |1.1.6     |1.1.5     |*  |
+|stringi       |1.8.7     |1.8.7     |   |
+|stringr       |1.5.1     |1.5.1     |   |
+|tibble        |NA        |3.2.1     |*  |
+|utf8          |1.2.6     |1.2.4     |*  |
+|vctrs         |0.6.5     |0.6.5     |   |
+|xgboost       |1.7.9.1   |1.7.9.1   |   |
+|zigg          |0.0.2     |0.0.2     |   |
 
 # Revdeps
 
