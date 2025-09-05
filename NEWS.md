@@ -1,3 +1,9 @@
+# TSCI 3.0.5
+
+## Minor improvements and fixes
+
+* Updated CITATION and DESCRIPTION file 
+
 # TSCI 3.0.4
 
 ## Minor improvements and fixes

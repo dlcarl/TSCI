@@ -187,9 +187,9 @@
 #' Whitney Newey, and James Robins. Double/debiased machine learning for treatment
 #' and structural parameters: Double/debiased machine learning.
 #' \emph{The Econometrics Journal}, 21(1), 2018. 4, 16, 18}
-#' \item{David Carl, Corinne Emmenegger, Peter Buehlmann, and Zijian Guo. TSCI:
-#' two stage curvature identification for causal inference with invalid instruments.
-#' \emph{arXiv:2304.00513}, 2023}
+#' \item{David Carl, Corinne Emmenegger, Peter Buehlmann, and Zijian Guo.
+#' TSCI: Two Stage Curvature Identification for Causal Inference with Invalid Instruments in \strong{R}.
+#' \emph{doi:10.18637/jss.v114.i07}, 2025}
 #' }
 #'
 #' @seealso

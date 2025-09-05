@@ -220,9 +220,9 @@ if (require("MASS")) {
 \item{Zijian Guo, and Peter Buehlmann. Two Stage Curvature Identification with
 Machine Learning: Causal Inference with Possibly Invalid Instrumental Variables.
 \emph{arXiv:2203.12808}, 2022}
-\item{David Carl, Corinne Emmenegger, Peter Buehlmann, and Zijian Guo. TSCI:
-two stage curvature identification for causal inference with invalid instruments.
-\emph{arXiv:2304.00513}, 2023}
+\item{David Carl, Corinne Emmenegger, Peter Buehlmann, and Zijian Guo.
+TSCI: Two Stage Curvature Identification for Causal Inference with Invalid Instruments in \strong{R}.
+\emph{doi:10.18637/jss.v114.i07}, 2025}
 }
 }
 \seealso{
